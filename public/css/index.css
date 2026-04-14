@@ -1,0 +1,41 @@
+/* Header */
+header nav.navbar {
+    color: #1f2d3d !important;
+}
+
+.tempus-dominus-widget {
+  z-index: 2000;
+}
+
+nav.main-header {
+    height: 50px;
+}
+
+header nav.navbar .nav-link,
+header nav.navbar .navbar-brand,
+header nav.navbar .dropdown-toggle {
+    color: #fff !important;
+}
+
+header nav.navbar .nav-link.active {
+    font-weight: 600;
+}
+
+
+/* Footer */
+footer {
+    color: #fff !important;
+    border-top: 1px solid #ddd !important;
+}
+
+footer p {
+    color: #fff !important;
+}
+
+/* Main */
+main#mainContent {
+    background-color: #f8f9fa !important; /* sobrescreve bg-light */
+}
+
+/* Se quiser manter a sidebar escura, não mexa nela. */
+/* Exemplo de ajustes adicionais de links no main */

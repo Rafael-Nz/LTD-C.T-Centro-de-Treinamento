@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# Impede acesso direto a arquivos sensíveis
+<FilesMatch "\.(env|log|ini|yaml|yml|json)$">
+    Require all denied
+</FilesMatch>
+
+# Garante que Authorization chegue ao PHP (JWT, Bearer, etc)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# Se o arquivo ou pasta existir, não reescreve
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Remove /v1 da URL interna
+RewriteRule ^ bootstrap.php [QSA,L]

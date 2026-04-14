@@ -1,0 +1,430 @@
+/* =========================================================
+   1. VARIÁVEIS GLOBAIS E UTILITÁRIOS (index.css)
+   ========================================================= */
+
+:root {
+    --primary-red: #dc3545;
+    --primary-red-hover: #bb2d3b;
+    --primary-red-subtle: rgba(220, 53, 69, 0.04);
+}
+
+.color {
+    background-color: var(--primary-red) !important;
+    color: #fff !important;
+}
+
+.text-red,
+.text-danger {
+    color: var(--primary-red) !important;
+}
+
+.bg-red {
+    background-color: var(--primary-red) !important;
+    color: #fff;
+}
+
+/* Botão Vermelho Padrão (Usado em Telas Admin) */
+.btn-red {
+    background-color: var(--primary-red);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-red:hover {
+    background-color: var(--primary-red-hover);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.icon {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+}
+
+/* =========================================================
+   2. BASE, LAYOUT E RESET (public.css + index.css)
+   ========================================================= */
+
+html,
+body {
+  font-family: 'Manrope', sans-serif;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* Cor de fundo do Admin (index.css) */
+  background-color: #f8f9fa;
+}
+
+main {
+  flex: 1;
+  /* Cor de fundo do Admin (index.css) */
+  background-color: #f8f9fa !important;
+}
+
+footer {
+  /* Cor e altura do Admin (index.css) */
+  background-color: #f8f9fa;
+  height: 50px;
+}
+
+header nav.navbar {
+    color: #ffffff !important;
+}
+
+nav.main-header {
+    height: 50px;
+}
+
+.tempus-dominus-widget {
+  z-index: 2000;
+}
+
+/* =========================================================
+   3. COMPONENTES ADMIN/CONFIGURAÇÕES (index.css + config.css)
+   ========================================================= */
+
+/* Títulos de Seção (section-title) - Adotado de index.css/config.css */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    /* Linha de separação vinda de index.css */
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Cards (config.css + index.css) */
+.config-card,
+.card-clean {
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.config-card:hover,
+.card-clean:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+/* Navegação em Pílulas (config.css + index.css) */
+.nav-pills .nav-link,
+.nav-pills-custom .nav-link {
+    /* Unificado com 8px de config.css */
+    border-radius: 8px; 
+    margin-bottom: 8px;
+    padding: 12px 16px;
+    color: #495057;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    text-align: left; /* Adotado de index.css */
+}
+
+.nav-pills .nav-link.active,
+.nav-pills-custom .nav-link.active {
+    background-color: var(--primary-red) !important;
+    color: white !important;
+    box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2); /* Adotado de index.css */
+}
+
+.nav-pills .nav-link:hover:not(.active),
+.nav-pills-custom .nav-link:hover:not(.active) {
+    background-color: rgba(220, 53, 69, 0.05); /* Usando variável de index.css */
+    color: var(--primary-red);
+}
+
+/* Input Focus States (index.css) */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Switch Bootstrap (index.css) */
+.form-switch .form-check-input:checked {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+/* Switch Customizado (config.css) - fallback ou componente específico */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked+.toggle-slider {
+    background-color: #dc3545;
+}
+input:checked+.toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* Item de Permissão (index.css e config.css) */
+.permission-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    /* Cor vermelha de config.css */
+    border-left: 3px solid var(--primary-red);
+}
+
+/* Badges e Cores Subtles (index.css + config.css) */
+.badge-status {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    /* Adotado de index.css */
+    border-radius: 4px;
+}
+.bg-success-subtle {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+}
+.bg-secondary-subtle {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+}
+.bg-warning {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #f59e0b;
+}
+
+/* Botões de Ação (config.css e index.css) */
+.action-btn {
+    padding: 6px 12px;
+    /* Adotado de config.css */
+    border-radius: 6px;
+    font-size: 0.875rem;
+    border: none;
+    color: white;
+    transition: opacity 0.2s; /* Adotado de index.css */
+}
+.action-btn:hover {
+    opacity: 0.9;
+    color: white;
+}
+.btn-edit {
+    background-color: #17a2b8;
+}
+.btn-edit:hover {
+    background-color: #138496;
+}
+.btn-delete {
+    background-color: #dc3545;
+}
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Tabelas (index.css) */
+.table-hover tbody tr:hover {
+    background-color: var(--primary-red-subtle);
+}
+
+/* =========================================================
+   4. MENU LATERAL DE CONFIGURAÇÕES (configuracoes.php)
+   ========================================================= */
+
+/* Container principal do menu lateral */
+.config-menu-container {
+    position: relative;
+}
+
+/* Card do menu lateral */
+.config-menu-card {
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    background: white;
+    overflow: hidden; /* Previne quebra de conteúdo */
+}
+
+/* Navegação em pilulas - responsiva */
+.nav-pills.config-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-pills.config-menu .nav-link {
+    border-radius: 8px;
+    margin-bottom: 0;
+    padding: 12px 16px;
+    color: #495057;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    width: 100%;
+}
+
+/* Estados dos botões */
+.nav-pills.config-menu .nav-link.active {
+    background-color: var(--primary-red) !important;
+    color: white !important;
+    box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+}
+
+.nav-pills.config-menu .nav-link:hover:not(.active) {
+    background-color: rgba(220, 53, 69, 0.05);
+    color: var(--primary-red);
+}
+
+/* Ícones nos botões */
+.nav-pills.config-menu .nav-link i {
+    min-width: 20px;
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+/* Estilos específicos para a tela de perfil administrativo */
+.avatar-container {
+    position: relative;
+    display: inline-block;
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f0f0f0; 
+}
+
+.avatar-lg {
+    width: 100%;
+    height: 100%;
+    max-width: 128px;
+    max-height: 128px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.avatar-overlay {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.config-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid var(--bs-border-color);
+}
+
+/* Estilos para as abas */
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--bs-secondary);
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--bs-danger);
+    border-bottom: 2px solid var(--bs-danger);
+    background: transparent;
+}
+
+/* Indicador de força da senha */
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 5px;
+    transition: all 0.3s ease;
+}
+
+.password-strength.weak {
+    background-color: var(--bs-danger);
+    width: 33%;
+}
+
+.password-strength.medium {
+    background-color: var(--bs-warning);
+    width: 66%;
+}
+
+.password-strength.strong {
+    background-color: var(--bs-success);
+    width: 100%;
+}
+
+/* =========================================================
+   6. MEDIA QUERIES PARA RESPONSIVIDADE (configuracoes.php)
+   ========================================================= */
+
+/* Tablets e telas menores (até 1024px) */
+@media (max-width: 1024px) {
+    .config-menu-card {
+        margin-bottom: 1rem;
+    }
+    
+    .nav-pills.config-menu .nav-link {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .nav-pills.config-menu .nav-link i {
+        font-size: 0.9rem;
+        margin-right: 6px;
+    }
+}

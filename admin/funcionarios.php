@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cross C.T | Funcionários</title>
+  <link rel="stylesheet" href="../public/css/bootstrap-5.3.8/bootstrap.css">
+  <link rel="stylesheet" href="../public/css/admin-styles.css">
+  <link rel="stylesheet" href="../public/css/sidebar.css">
+  <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.7/css/responsive.bootstrap5.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+  <style>
+    .dropdown-menu-lg {
+      min-width: 300px;
+    }
+
+    .select2-container--bootstrap-5 .select2-dropdown .select2-results__option {
+      font-size: 0.875rem !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection__choice {
+      font-size: 0.875rem !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection__placeholder,
+    .select2-container--bootstrap-5 .select2-selection__rendered {
+      font-size: 0.9rem !important;
+    }
+  </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+  <?php include __DIR__ . "/partials/sidebar.php"; ?>
+  <?php include __DIR__ . "/partials/header.php"; ?>
+
+  <main class="flex-fill d-flex" id="mainContent">
+    <div class="container-lg p-4 d-flex flex-column flex-fill">
+      <h1 class="h4 mb-4">Funcionários</h1>
+      <div class="card border-0 p-2 shadow-sm mb-4">
+        <div class="card-header bg-body border-0 d-flex gap-2 flex-wrap">
+          <div class="d-flex gap-2 align-items-center">
+            <div class="d-flex" role="search">
+              <div class="input-group">
+                <input id="campoBusca" class="form-control" type="search" placeholder="Buscar funcionário..."
+                  aria-label="Buscar">
+                <button class="btn border border-start-0" type="button" id="botaoBuscar">
+                  <i class="ph ph-magnifying-glass"></i>
+                </button>
+              </div>
+            </div>
+            <div class="dropdown-center">
+              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown"
+                aria-expanded="false" title="Filtrar Funcionários">
+                <i class="ph ph-funnel me-1"></i>
+              </button>
+
+              <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton"
+                style="min-width: 250px;">
+                <p class="h6 text-start" style="font-size: 0.875rem">Cargo</p>
+                <li>
+                  <select class="form-select" id="filtroCargosSelect">
+                    <option></option>
+                  </select>
+                </li>
+
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+
+                <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
+                <li>
+                  <div class="form-check">
+                    <input class="form-check-input filtro-status" type="checkbox" value="ativo" id="funcAtivo">
+                    <label class="form-check-label" style="font-size: 0.975rem" for="funcAtivo">Ativo</label>
+                  </div>
+                </li>
+                <li>
+                  <div class="form-check">
+                    <input class="form-check-input filtro-status" type="checkbox" value="inativo" id="funcInativo">
+                    <label class="form-check-label" style="font-size: 0.975rem" for="funcInativo">Inativo</label>
+                  </div>
+                </li>
+
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+
+                <li class="d-grid">
+                  <button id="aplicarFiltros" class="btn btn-sm btn-primary">Aplicar Filtros</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <a href="funcionario_form" class="btn btn-red d-flex align-items-center color border border-white"
+            title="Adicionar Novo Funcionário">
+            <i class="ph ph-plus me-1"></i> Novo Funcionário
+          </a>
+        </div>
+
+        <div class="card-body">
+          <table id="tabelaFuncionarios" class="table table-hover align-middle w-100"
+            aria-label="Lista de Funcionários">
+            <thead>
+              <tr>
+                <th scope="col" class="text-start">Nome</th>
+                <th scope="col" class="text-start">Cargo</th>
+                <th scope="col" class="text-start">Email</th>
+                <th scope="col" class="text-center">Data Contratação</th>
+                <th scope="col" class="text-center">Status</th>
+                <th scope="col" class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <?php include __DIR__ . "/partials/footer.php"; ?>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.7/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.7/js/responsive.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
+
+  <script src="../public/js/admin/tabelas.js"></script>
+  <script defer src="../public/js/bootstrap-5.3.8/bootstrap.bundle.js"></script>
+  <script src="../public/js/admin/sidebar.js"></script>
+  <script src="../public/js/admin/funcionarios.js"></script>
+</body>
+</html>

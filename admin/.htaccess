@@ -1,0 +1,20 @@
+RewriteEngine On
+
+# Ajuste o caminho da pasta administrativa
+# Exemplo: http://localhost/ctt/admin/
+RewriteBase /ctt/admin/
+
+# Não reescrever arquivos/pastas existentes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Roteamento principal do admin
+# /admin/usuarios  →  admin/index.php?url=usuarios
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+# Desabilitar cache para o painel admin
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "Tue, 01 Jan 2000 00:00:00 GMT"
+</IfModule>

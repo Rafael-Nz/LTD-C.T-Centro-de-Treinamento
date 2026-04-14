@@ -1,0 +1,11 @@
+/* Remove o sublinhado do texto dentro do cabeçalho dos dias da semana */
+.fc .fc-col-header-cell-cushion {
+    text-decoration: none !important;
+}
+
+/* Garante que não haja sublinhado nos nomes dos dias (dom, seg, ter, etc.) */
+.fc-daygrid-week-number a,
+.fc-col-header-cell a {
+    text-decoration: none !important;
+}
+

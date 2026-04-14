@@ -1,0 +1,296 @@
+.preload #sidebar, 
+.preload #mainContent, 
+.preload header, 
+.preload footer,
+.preload .collapse {
+  transition: none !important; 
+}
+
+#sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  background-color: #343a40;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.header-size {
+    height: 50px;
+}
+/* =======================================================
+    CABEÇALHOS (LOGO + PERFIL)
+======================================================= */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.sidebar-header.border-bottom.border-secondary.d-flex.align-items-center {
+    height: 50px;
+}
+
+.sidebar-header img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.nav-link-text {
+  font-size: 0.95rem;
+}
+
+.sidebar-header .nav-link-text {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =======================================================
+    ÁREA SCROLLÁVEL (OverlayScrollbars)
+======================================================= */
+.sidebar-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* =======================================================
+    LISTA DE NAVEGAÇÃO PRINCIPAL
+======================================================= */
+.nav-sidebar {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-sidebar .nav-item {
+  width: 100%;
+}
+
+/* =======================================================
+    LINKS & BOTÕES DE SUBMENU
+======================================================= */
+.nav-sidebar .nav-link,
+.nav-sidebar .btn-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  color: #fff;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.nav-sidebar .nav-link:hover,
+.nav-sidebar .btn-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-sidebar .nav-link.active.root {
+  background-color: #dc3545 !important;
+  color: #fff !important;
+}
+.nav-sidebar .nav-link.active {
+  background-color: rgba(255, 255, 255, .9);
+  color: #343a40 !important;
+}
+
+/* =======================================================
+    ÍCONES
+======================================================= */
+.nav-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px; /* largura fixa → garante alinhamento */
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+/* =======================================================
+    SUBMENUS (Bootstrap Collapse)
+======================================================= */
+#submenuUsuarios {
+  margin-top: 0.25rem;
+  padding-left: 0 !important;
+}
+
+#submenuUsuarios .nav-link {
+  font-size: 1rem;
+  display: flex;
+  align-items: left;
+}
+
+#submenuUsuarios .nav-link i {
+    font-size: 1rem; /* Ícones menores no submenu */
+    width: 25px; /* Mantém a largura do wrapper do ícone principal */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* =======================================================
+    ESTADO MINI (sidebar-closed)
+======================================================= */
+.sidebar-closed #sidebar {
+  width: 60px;
+}
+
+.sidebar-closed .sidebar-header {
+  justify-content: center;
+  padding: 0.6rem 0;
+}
+
+.sidebar-closed .nav-link-text {
+  font-size: 0.5rem;
+}
+
+.sidebar-closed .sidebar-header .nav-link-text,
+.sidebar-closed .nav-link-text,
+.sidebar-closed .angle-icon {
+  opacity: 0;
+  visibility: hidden;
+  width: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.sidebar-closed .nav-icon-wrapper {
+  justify-content: center;
+  margin: 0;
+  width: auto;
+}
+
+.sidebar-closed .angle-icon {
+  margin: 0 !important; 
+  padding: 0 !important;
+  
+  opacity: 0;
+  visibility: hidden;
+  width: 0;
+  max-width: 0;
+  overflow: hidden;
+}
+
+.sidebar-closed .nav-link,
+.sidebar-closed .btn-toggle {
+  justify-content: center;
+  padding: 0.6rem 0;
+}
+
+/* Evita mostrar submenus no modo mini */
+.sidebar-closed .collapse.show {
+  display: none !important;
+}
+
+/* =======================================================
+    CONTEÚDO PRINCIPAL (HEADER, MAIN, FOOTER PUSH) 
+    (Aplicado APENAS em telas Desktop: >= 769px)
+======================================================= */
+@media (min-width: 769px) {
+    /* Estado EXPANDIDO (Padrão) */
+    #mainContent, 
+    header, 
+    footer {
+        /* Empurra o conteúdo principal, dando espaço à sidebar de 260px */
+        margin-left: 250px; 
+        transition: margin-left 0.3s ease-in-out;
+    }
+
+    /* Estado MINIMIZADO (.sidebar-closed) */
+    .sidebar-closed #mainContent, 
+    .sidebar-closed header, 
+    .sidebar-closed footer {
+        /* Reduz a margem para 60px quando a sidebar está minimizada */
+        margin-left: 60px;
+    }
+}
+
+/* =======================================================
+    ESTADO MOBILE (sidebar-open)
+======================================================= */
+#sidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #mainContent, header, footer {
+      margin-left: 0 !important;
+  }
+
+  #sidebar {
+    width: 250px;
+    transform: translateX(-250px);
+  }
+
+  .sidebar-open #sidebar {
+    transform: translateX(0);
+  }
+
+  .sidebar-open #sidebarOverlay {
+    display: block;
+  }
+
+  .sidebar-header {
+    justify-content: flex-start;
+    padding: 0 1rem;
+  }
+
+  .sidebar-header .nav-link-text {
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+  }
+}
+
+/* =======================================================
+    ÍCONE DE SETA (COLLAPSE)
+======================================================= */
+.angle-icon {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+}
+
+.angle-icon.no-transition {
+  transition: none !important;
+}
+
+.btn-toggle:not(.collapsed) .angle-icon {
+  transform: rotate(-180deg);
+}

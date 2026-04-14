@@ -44,14 +44,8 @@ class Database {
             ];
 
             self::$connection = new PDO($dsn, self::$user, self::$pass, $options);
-            self::$connection->exec("SET time_zone = 'America/Fortaleza'");
-            self::$connection->exec("
-                SET sql_mode = 'STRICT_TRANS_TABLES,
-                                NO_ZERO_IN_DATE,
-                                NO_ZERO_DATE,
-                                ERROR_FOR_DIVISION_BY_ZERO,
-                                NO_ENGINE_SUBSTITUTION'
-            ");
+            self::$connection->exec("SET time_zone = '-03:00'");
+            self::$connection->exec("SET sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
 
         } catch (PDOException $e) {
             self::handleError($e);
@@ -83,7 +77,7 @@ class Database {
                 $message .= "Servidor indisponível.";
                 break;
             default:
-                $message .= "Código do erro: {$code}";
+                $message .= $e->getMessage();
         }
 
         http_response_code(500);

@@ -1,23 +1,15 @@
 # Habilita o módulo de reescrita de URLs
 RewriteEngine On
 
-# =====================================================
-# DEFINA O DIRETÓRIO BASE DO PROJETO
-# Troque /ctt/ pelo nome da pasta do seu projeto
-# Exemplo:
-#   http://localhost/ctt/
-# =====================================================
 RewriteBase /ctt/
 
 # 1. Ignorar a pasta de administração
 RewriteRule ^admin($|/) - [L]
+# 2. Ignorar a pasta de API 
+RewriteRule ^api($|/) - [L]
 
 # 2. Não reescrever arquivos e pastas reais
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# 3. Regra de roteamento geral
-# /treinos   → index.php?url=treinos
-# /turmas    → index.php?url=turmas
-# /usuario/1 → index.php?url=usuario/1
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

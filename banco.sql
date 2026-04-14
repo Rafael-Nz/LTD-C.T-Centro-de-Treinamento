@@ -178,7 +178,6 @@ CREATE TABLE aluno_questionario (
     problema_saude_familia BOOLEAN,
     problema_saude_familia_descricao TEXT,
 
-    objetivos TEXT,
     outros_objetivos TEXT,
     observacoes_medicas TEXT,
 
@@ -187,6 +186,31 @@ CREATE TABLE aluno_questionario (
 
     FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE
 );
+
+CREATE TABLE objetivo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE aluno_objetivo (
+    aluno_id INT NOT NULL,
+    objetivo_id INT NOT NULL,
+
+    PRIMARY KEY (aluno_id, objetivo_id),
+
+    FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE,
+    FOREIGN KEY (objetivo_id) REFERENCES objetivo(id) ON DELETE CASCADE
+);
+
+INSERT INTO objetivo (nome) VALUES
+('Perder peso'),
+('Ganhar massa muscular'),
+('Melhorar condicionamento'),
+('Melhorar preparo cardiovascular'),
+('Definição muscular/condicionamento'),
+('Fins de reabilitação'),
+('Redução de estresse'),
+('Melhora na qualidade de vida');
 
 CREATE TABLE avaliacao_fisica (
     id INT AUTO_INCREMENT PRIMARY KEY,

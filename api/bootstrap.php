@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // =====================================================
 
 $uri = $_GET['url'] ?? $_SERVER['REQUEST_URI'] ?? '';
-$uri = str_replace('/ctt/api/', '', $uri);
+$uri = preg_replace('#^(?:/)?(?:ctt/)?api/#', '', $uri);
 $uri = trim($uri, '/');
 
 $partes = explode('/', $uri);

@@ -1,7 +1,7 @@
 <?php
 namespace Aluno;
 
-use Core\Auth;
+//use Core\Auth;
 use Core\Controller;
 
 class AlunoController extends Controller {
@@ -34,7 +34,7 @@ class AlunoController extends Controller {
     // POST /v1/aluno/   → cadastra novo aluno
     // =========================================================================
     public function store(): void {
-        $this->auth();
+        //$this->auth();
         $this->only('POST');
 
         $body = $this->body();
@@ -89,7 +89,7 @@ class AlunoController extends Controller {
                 'ativo'            => 1,
                 'endereco_id'      => $enderecoId,
                 'data_matricula'   => $body['dataMatricula'],
-                'cadastrado_por'   => Auth::id(),
+                'cadastrado_por'   => 1, // futuro: pegar do token de autenticação Auth::id()
             ]);
 
             // 3. Contatos
@@ -127,7 +127,7 @@ class AlunoController extends Controller {
     // PUT /v1/aluno/?id=N   → atualiza aluno
     // =========================================================================
     public function update(array $params = []): void {
-        $this->auth();
+        //$this->auth();
         $this->only('PUT');
 
         $id = isset($params[0]) ? (int)$params[0] : null;
@@ -222,7 +222,7 @@ class AlunoController extends Controller {
     // DELETE /v1/aluno/?id=N  → desativa aluno (soft delete)
     // =========================================================================
     public function destroy(array $params = []): void {
-        $this->auth();
+        //$this->auth();
         $this->only('DELETE');
 
         $id = isset($params[0]) ? (int)$params[0] : null;

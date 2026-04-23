@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS centro_treinamento;
-CREATE DATABASE centro_treinamento CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE centro_treinamento;
+DROP DATABASE IF EXISTS db_centro_treinamento;
+CREATE DATABASE db_centro_treinamento CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE db_centro_treinamento;
 
 CREATE TABLE endereco (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,7 +55,7 @@ CREATE TABLE funcionario (
     sobrenome VARCHAR(100) NOT NULL,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     data_nascimento DATE NOT NULL,
-    genero ENUM('M', 'F', 'O'),
+    genero ENUM('M', 'F', 'O') DEFAULT 'O',
     email VARCHAR(150),
     senha VARCHAR(300),
     cargo_id INT NOT NULL,
@@ -347,4 +347,40 @@ CREATE TABLE sistema_log (
     ip VARCHAR(45),
     user_agent TEXT,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Populando dados iniciais --
+
+-- 1. Criar um endereço para o admin
+INSERT INTO endereco (logradouro, numero, cidade, bairro, cep, complemento)
+VALUES ('Rua Admin', '100', 'São Luís', 'Centro', '65000-000', 'Sistema');
+
+-- 2. Inserir o funcionário admin
+INSERT INTO funcionario (
+    nome,
+    sobrenome,
+    cpf,
+    data_nascimento,
+    genero,
+    email,
+    senha,
+    cargo_id,
+    registro_profissional,
+    observacoes,
+    ativo,
+    endereco_id
+) VALUES (
+    'Admin',
+    'Sistema',
+    '000.000.000-00',
+    '1990-01-01',
+    'O',
+    'admin@admin.com',
+    '$2y$10$exemploHashAqui', -- coloque uma senha hash (bcrypt)
+    (SELECT id FROM cargo WHERE nome = 'Administrador'),
+    'ADM001',
+    'Usuário administrador padrão',
+    TRUE,
+    1
 );

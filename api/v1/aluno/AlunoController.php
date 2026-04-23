@@ -119,7 +119,8 @@ class AlunoController extends Controller {
         } catch (\Throwable $e) {
             $db->rollBack();
             error_log('[AlunoController::store] ' . $e->getMessage());
-            $this->error("Erro interno ao cadastrar aluno.", 500);
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+            $this->error($e->getMessage(), $code);
         }
     }
 

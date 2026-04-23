@@ -10,7 +10,7 @@ class Database {
 
     // Configurações do banco de dados
     private static string $host = 'localhost';
-    private static string $db   = 'centro_treinamento';
+    private static string $db   = 'db_centro_treinamento';
     private static string $user = 'root';
     private static string $pass = '';
     private static string $port = '3306';

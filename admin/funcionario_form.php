@@ -9,7 +9,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T | <?= $id ? 'Editar Funcionário' : 'Cadastrar Funcionário' ?></title>
-    <link rel="stylesheet" href="../public/css/bootstrap-5.3.8/bootstrap.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="../public/css/admin-styles.css">
     <link rel="stylesheet" href="../public/css/form.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
@@ -32,7 +32,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
         <h1 class="h4 mb-4"><?= $id ? "Editar Funcionário" : "Cadastrar Funcionário" ?></h1>
         <div class="card shadow-sm d-flex flex-fill">
           <div class="card-body">
-            <form id="formFuncionario" action="" method="POST">
+            <form id="formFuncionario" data-id="<?= $id ?>" action="" method="POST">
               <?php if ($id): ?><input type="hidden" name="id" value="<?= $id ?>"><?php endif; ?>
               
               <div class="row gy-4">
@@ -78,13 +78,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                       </select>
                     </div>
                     
-                    <div class="col-md-6">
-                      <label for="ativoFuncionario" class="form-label">Status:</label>
-                      <select name="ativo" id="ativoFuncionario" class="form-select">
-                        <option value="1">Ativo</option>
-                        <option value="0">Inativo</option>
-                      </select>
-                    </div>
+                    <div class="col-md-6"></div>
                   </div>
                 </div>
 
@@ -108,8 +102,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                   
                   <div class="mb-3">
                     <label for="email" class="form-label">E-mail:</label>
-                    <input type="email" name="email" id="email" class="form-control" 
-                           placeholder="email@exemplo.com" required>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="email@exemplo.com" required>
                   </div>
                 </div>
 
@@ -146,7 +139,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                       <label for="cep" class="form-label">CEP:</label>
                       <div class="input-group">
                         <input type="text" name="cep" id="cep" class="form-control" placeholder="00000-000" maxlength="9" required>
-                        <button class="btn border border-start-0" type="button" id="buscarCep" title="Buscar CEP">
+                        <button class="btn border border-start-0 border-left-0 rounded-end p-auto " style="min-height: 0; font-size: 1.05rem;" type="button" id="buscarCep" title="Buscar CEP">
                           <i class="ph ph-magnifying-glass"></i>
                         </button>
                       </div>
@@ -174,8 +167,8 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                     </div>
                     
                     <div class="col-md-6">
-                      <label for="registro" class="form-label">Registro Profissional:</label>
-                      <input type="text" name="registro" id="registro" class="form-control" 
+                      <label for="registro_profissional" class="form-label">Registro Profissional:</label>
+                      <input type="text" name="registro_profissional" id="registro_profissional" class="form-control" 
                              placeholder="Ex: CREF 123456-G/MA">
                     </div>
                   </div>
@@ -201,112 +194,13 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
     <?php include __DIR__ . '/partials/footer.php'; ?>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://unpkg.com/imask"></script>
-    <script defer src="../public/js/bootstrap-5.3.8/bootstrap.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
     <script defer src="../public/js/admin/sidebar.js"></script>
-    
-    <script>
-    // Máscaras para os campos
-    document.addEventListener('DOMContentLoaded', function() {
-        // Máscara para CPF
-        const cpfMask = IMask(document.getElementById('cpf'), {
-            mask: '000.000.000-00'
-        });
-        
-        // Máscara para Telefone 1 (celular)
-        const telefone1Mask = IMask(document.getElementById('telefone1'), {
-            mask: '(00) 00000-0000'
-        });
-        
-        // Máscara para Telefone 2 (fixo)
-        const telefone2Mask = IMask(document.getElementById('telefone2'), {
-            mask: '(00) 0000-0000'
-        });
-        
-        // Máscara para CEP
-        const cepMask = IMask(document.getElementById('cep'), {
-            mask: '00000-000'
-        });
-        
-        // Buscar CEP
-        document.getElementById('buscarCep').addEventListener('click', function() {
-            const cep = document.getElementById('cep').value.replace(/\D/g, '');
-            
-            if (cep.length !== 8) {
-                Swal.fire('Atenção', 'Digite um CEP válido com 8 dígitos.', 'warning');
-                return;
-            }
-            
-            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.erro) {
-                        document.getElementById('endereco').value = data.logradouro;
-                        document.getElementById('bairro').value = data.bairro;
-                        document.getElementById('cidade').value = data.localidade;
-                        document.getElementById('numero').focus();
-                    } else {
-                        Swal.fire('Atenção', 'CEP não encontrado.', 'warning');
-                    }
-                })
-                .catch(error => {
-                    Swal.fire('Erro', 'Não foi possível buscar o CEP.', 'error');
-                });
-        });
-        
-        // Validação do formulário
-        document.getElementById('formFuncionario').addEventListener('submit', function(e) {
-            let valid = true;
-            
-            // Limpar erros anteriores
-            document.querySelectorAll('.error-message').forEach(el => el.innerHTML = '');
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            
-            // Validação de CPF
-            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
-            if (cpf.length !== 11) {
-                showError('cpf', 'CPF inválido');
-                valid = false;
-            }
-            
-            // Validação de data de nascimento
-            const nascimento = new Date(document.getElementById('nascimento').value);
-            const hoje = new Date();
-            if (nascimento >= hoje) {
-                showError('nascimento', 'Data de nascimento inválida');
-                valid = false;
-            }
-            
-            // Validação de e-mail
-            const email = document.getElementById('email').value;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showError('email', 'E-mail inválido');
-                valid = false;
-            }
-            
-            if (!valid) {
-                e.preventDefault();
-                Swal.fire('Atenção', 'Por favor, corrija os erros no formulário.', 'warning');
-            }
-        });
-        
-        function showError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            field.classList.add('is-invalid');
-            
-            let errorDiv = field.nextElementSibling;
-            if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
-                errorDiv = document.createElement('div');
-                errorDiv.className = 'invalid-feedback';
-                field.parentNode.insertBefore(errorDiv, field.nextSibling);
-            }
-            errorDiv.textContent = message;
-        }
-    });
-    </script>
+    <script src="../public/js/admin/form/funcionario_form.js"></script>
+
   </body>
 </html>

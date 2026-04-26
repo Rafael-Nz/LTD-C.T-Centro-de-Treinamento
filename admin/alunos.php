@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cross C.T | Alunos</title>
-  <link rel="stylesheet" href="../public/css/bootstrap-5.3.8/bootstrap.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="../public/css/admin-styles.css">
   <link rel="stylesheet" href="../public/css/sidebar.css">
   <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet" />
@@ -48,21 +48,7 @@
                 <i class="ph ph-funnel me-1"></i>
               </button>
 
-              <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton"
-                style="min-width: 250px;">
-                <p class="h6 text-start" style="font-size: 0.875rem">Plano</p>
-                <li>
-                  <select class="form-select" id="filtroPlanosSelect" multiple="multiple">
-                    <option value="Mensal">Mensal</option>
-                    <option value="Trimestral">Trimestral</option>
-                    <option value="Semestral">Semestral</option>
-                    <option value="Anual">Anual</option>
-                  </select>
-                </li>
-
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+              <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton" style="min-width: 250px;">
 
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
                 <li>
@@ -99,118 +85,13 @@
             <thead>
               <tr>
                 <th scope="col" class="text-start">Nome</th>
-                <th scope="col" class="text-start">Email</th>
+                <th scope="col" class="text-start">Matrícula</th>
                 <th scope="col" class="text-center">Data Matrícula</th>
-                <th scope="col" class="text-center">Plano</th>
                 <th scope="col" class="text-center">Status</th>
                 <th scope="col" class="text-center">Ações</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- Exemplo de aluno 1 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Pedro Henrique Oliveira
-                </td>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  pedro.oliveira@email.com
-                </td>
-                <td class="text-center">15/03/2024</td>
-                <td class="text-center">
-                  <span class="badge bg-primary-subtle text-primary-emphasis">Mensal</span>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Ativo</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="aluno_form.php?id=1" title="Ver/Editar Aluno">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-danger ms-2 btn-toggle-status" data-id="1"
-                    data-nome="Pedro Henrique Oliveira" data-ativo="true" title="Desativar Aluno">
-                    <i class="ph ph-x-circle"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Exemplo de aluno 2 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Ana Carolina Silva
-                </td>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  ana.silva@email.com
-                </td>
-                <td class="text-center">10/01/2024</td>
-                <td class="text-center">
-                  <span class="badge bg-warning-subtle text-warning-emphasis">Anual</span>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Ativo</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="aluno_form.php?id=2" title="Ver/Editar Aluno">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-danger ms-2 btn-toggle-status" data-id="2"
-                    data-nome="Ana Carolina Silva" data-ativo="true" title="Desativar Aluno">
-                    <i class="ph ph-x-circle"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Exemplo de aluno 3 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Carlos Eduardo Santos
-                </td>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  carlos.santos@email.com
-                </td>
-                <td class="text-center">22/08/2023</td>
-                <td class="text-center">
-                  <span class="badge bg-info-subtle text-info-emphasis">Trimestral</span>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis">Inativo</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="aluno_form.php?id=3" title="Ver/Editar Aluno">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-success ms-2 btn-toggle-status" data-id="3"
-                    data-nome="Carlos Eduardo Santos" data-ativo="false" title="Reativar Aluno">
-                    <i class="ph ph-arrow-counter-clockwise"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Exemplo de aluno 4 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Mariana Costa Lima
-                </td>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  mariana.lima@email.com
-                </td>
-                <td class="text-center">05/11/2023</td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Semestral</span>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Ativo</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="aluno_form.php?id=4" title="Ver/Editar Aluno">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-danger ms-2 btn-toggle-status" data-id="4"
-                    data-nome="Mariana Costa Lima" data-ativo="true" title="Desativar Aluno">
-                    <i class="ph ph-x-circle"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
@@ -220,8 +101,14 @@
   <?php include __DIR__ . "/partials/footer.php"; ?>
   
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script defer src="../public/js/bootstrap-5.3.8/bootstrap.bundle.js"></script>
+  <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.7/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.7/js/responsive.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
   <script src="../public/js/admin/sidebar.js"></script>
+  <script src="../public/js/admin/tabelas.js"></script>
+  <!-- <script src="../public/js/admin/datatable/alunos.js"></script> -->
 </body>
 </html>

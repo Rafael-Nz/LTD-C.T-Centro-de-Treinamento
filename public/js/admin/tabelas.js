@@ -19,8 +19,9 @@ function inicializarTabela(config) {
     } = config;
 
     // Destruir tabela existente
-    if (tabelas[tableId]) {
-        tabelas[tableId].destroy();
+    if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+        $(`#${tableId}`).DataTable().destroy();
+        $(`#${tableId} tbody`).empty(); 
     }
 
     // Inicializar DataTable
@@ -29,10 +30,43 @@ function inicializarTabela(config) {
         ordering: false,
         pageLength: 10,
         processing: true,
+        serverSide: true,
 
         ajax: {
             url: ajaxUrl,
-            dataSrc: 'data'
+            type: 'GET',
+            data: function (d) {
+                if (typeof config.getFilters === 'function') {
+                    const filtrosExtras = config.getFilters();
+                    return $.extend({}, d, filtrosExtras);
+                }
+                return d;
+            },
+            dataSrc: function (json) {
+                if (json.success && json.data.data) {
+                    // Ajusta os contadores manualmente para o DataTables ler da raiz
+                    json.draw = json.data.draw;
+                    json.recordsTotal = json.data.recordsTotal;
+                    json.recordsFiltered = json.data.recordsFiltered;
+                    return json.data.data;
+                }
+                return json.data || json;
+            },
+            error: function (xhr) {
+                console.error("Erro ao carregar dados:", xhr);
+                Swal.fire('Erro!', 'Não foi possível carregar os dados da tabela.', 'error');
+            }
+        },
+
+        "drawCallback": function(settings) {
+            // log para debug
+            //console.log('Dados recebidos:', settings.json);
+        },
+        "recordsTotal": function(json) {
+            return json.data.recordsTotal;
+        },
+        "recordsFiltered": function(json) {
+            return json.data.recordsFiltered;
         },
 
         columns,
@@ -80,6 +114,7 @@ function inicializarTabela(config) {
 
     /* ===================== FILTRO PERSONALIZADO ===================== */
     if (customFilter) {
+        $.fn.dataTable.ext.search.pop(); // Remove filtro anterior, se existir
         $.fn.dataTable.ext.search.push(customFilter);
     }
 
@@ -94,9 +129,7 @@ function inicializarTabela(config) {
     // Re-inicializar tooltips após carregar dados
     tabela.on('draw', function () {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
     });
 
     return tabela;
@@ -119,7 +152,7 @@ function formatarMoeda(valor) {
 }
 
 function formatarStatus(ativo) {
-    const isAtivo = ativo == 1 || ativo === true || ativo === 'ativo';
+    const isAtivo = (ativo == 1 || ativo === true || ativo === '1');
     return isAtivo
         ? '<span class="badge bg-success-subtle text-success-emphasis">Ativo</span>'
         : '<span class="badge bg-danger-subtle text-danger-emphasis">Inativo</span>';
@@ -147,15 +180,11 @@ function recarregarTabela(tableId) {
     }
 }
 
-/* =====================================================
-   TOGGLE STATUS (PUT REST)
-===================================================== */
 function configurarToggleStatus(config) {
     const {
         botaoSeletor,
         urlAPI,
         tabelaId,
-        metodo = 'PUT',
         mensagens = {
             desativar: { titulo: 'Confirmar desativação', texto: 'Tem certeza que deseja desativar este registro?' },
             reativar: { titulo: 'Confirmar reativação', texto: 'Tem certeza que deseja reativar este registro?' },
@@ -167,9 +196,12 @@ function configurarToggleStatus(config) {
 
     $(document).on('click', botaoSeletor, function () {
         const id = $(this).data('id');
-        const ativo = $(this).data('ativo');
-        const acao = ativo == 1 ? 'desativar' : 'reativar';
-        const mensagem = ativo == 1 ? mensagens.desativar : mensagens.reativar;
+
+        const ativo = parseInt($(this).attr('data-ativo'), 10);
+        const isDesativando = (ativo === 1);
+
+        const acao = isDesativando ? 'desativar' : 'reativar';
+        const mensagem = isDesativando ? mensagens.desativar : mensagens.reativar;
 
         Swal.fire({
             title: mensagem.titulo,
@@ -178,18 +210,25 @@ function configurarToggleStatus(config) {
             showCancelButton: true,
             confirmButtonText: `Sim, ${acao}`,
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: ativo == 1 ? '#dc3545' : '#28a745'
+            confirmButtonColor: isDesativando ? '#dc3545' : '#28a745'
         }).then(res => {
             if (!res.isConfirmed) return;
 
-            const url = urlAPI.endsWith('/') ? urlAPI + id : urlAPI + '/' + id;
+            const metodo = isDesativando ? 'DELETE' : 'PUT';
+
+            const finalUrl = isDesativando 
+                ? `${urlAPI}/${id}` 
+                : `${urlAPI}/${id}/reativar`;
 
             $.ajax({
-                url: url,
+                url: finalUrl,
                 method: metodo,
-                data: JSON.stringify({ status: ativo == 1 ? 'inativo' : 'ativo' }),
+
+                data: null,
+
                 contentType: 'application/json; charset=UTF-8',
                 dataType: 'json',
+
                 success: (response) => {
                     Swal.fire({
                         title: 'Sucesso!',
@@ -203,10 +242,11 @@ function configurarToggleStatus(config) {
                         tabelas[tabelaId].ajax.reload(null, false);
                     }
 
-                    if (onSuccess && typeof onSuccess === 'function') {
+                    if (typeof onSuccess === 'function') {
                         onSuccess(response);
                     }
                 },
+
                 error: (xhr) => {
                     const errorMsg = xhr.responseJSON?.error || mensagens.erro;
                     Swal.fire('Erro!', errorMsg, 'error');
@@ -215,3 +255,4 @@ function configurarToggleStatus(config) {
         });
     });
 }
+

@@ -1,11 +1,12 @@
 <?php
 namespace Aluno;
 
+use Core\Service;
 use Usuario\UsuarioService;
 use Core\Database;
 
 
-class AlunoService {
+class AlunoService extends Service {
     private AlunoRepository $alunoRepo;
     private UsuarioService $usuarioService;
 
@@ -15,10 +16,7 @@ class AlunoService {
     }
 
     public function create(array $data): int {
-        $db = Database::getConnection();
-        $db->beginTransaction();
-        
-        try {
+        return $this->transaction(function() use ($data) {
             // 1. Gerar matrícula
             $codigoMatricula = $this->gerarMatricula();
 
@@ -36,30 +34,25 @@ class AlunoService {
                 'contatos' => $data['contatos'] ?? null
             ];
 
-            // 3. Criar usuário
+            // 3. Criar a base do usuário
             $usuarioId = $this->usuarioService->create($usuarioData);
 
-            // 4. Criar aluno
-            $alunoData = [
+            // 4. Criar o registro na tabela 'aluno'
+            $this->alunoRepo->create([
                 'usuario_id' => $usuarioId,
                 'data_matricula' => $data['data_matricula'] ?? date('Y-m-d'),
                 'codigo_matricula' => $codigoMatricula,
                 'cadastrado_por' => $data['cadastrado_por'] ?? 1
-            ];
+            ]);
 
-            $this->alunoRepo->create($alunoData);
-
-            $db->commit();
             return $usuarioId;
-
-        } catch (\Throwable $e) {
-            $db->rollBack();
-            throw $e;
-        }
+        });
     }
 
     public function update(int $id, array $data): void {
-        $this->alunoRepo->update($id, $data);
+        $this->transaction(function() use ($id, $data) {
+            $this->alunoRepo->update($id, $data);
+        });
     }
 
     // DELETE (soft)

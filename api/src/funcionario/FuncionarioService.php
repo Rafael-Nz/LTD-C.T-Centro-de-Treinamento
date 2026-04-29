@@ -1,10 +1,11 @@
 <?php
 namespace Funcionario;
 
+use Core\Service;
 use Usuario\UsuarioService;
 use Core\Database;
 
-class FuncionarioService {
+class FuncionarioService extends Service {
 
     private FuncionarioRepository $funcionarioRepo;
     private UsuarioService $usuarioService;
@@ -15,37 +16,35 @@ class FuncionarioService {
     }
 
     public function create(array $data): int {
-        $db = Database::getConnection();
-        $db->beginTransaction();
+        return $this->transaction(function() use ($data) {
 
-        try {
             // 1. Montar estrutura para usuário
             $usuarioData = [
-                ...$data,
-                'tipo_usuario' => 'funcionario'
+                'nome' => $data['nome'] ?? null,
+                'sobrenome' => $data['sobrenome'] ?? null,
+                'cpf' => $data['cpf'] ?? null,
+                'email' => $data['email'] ?? null,
+                'data_nascimento' => $data['data_nascimento'] ?? null,
+                'genero' => $data['genero'] ?? 'O',
+                'senha' => $data['senha'] ?? null,
+                'tipo_usuario' => 'funcionario',
+                'endereco' => $data['endereco'] ?? null,
+                'contatos' => $data['contatos'] ?? null
             ];
-            unset($usuarioData['cargo_id'], $usuarioData['registro_profissional'], $usuarioData['observacoes']);
 
-            // 3. Criar usuário
+            // 2. Criar a base do usuário
             $usuarioId = $this->usuarioService->create($usuarioData);
 
-            // 4. Criar funcionário
-            $funcionarioData = [
+            // 4. Criar o registro de funcionário
+            $this->funcionarioRepo->create([
                 'usuario_id' => $usuarioId,
                 'cargo_id' => $data['cargo_id'] ?? null,
                 'registro_profissional' => $data['registro_profissional'] ?? null,
                 'observacoes' => $data['observacoes'] ?? null
-            ];
+            ]);
 
-            $this->funcionarioRepo->create($funcionarioData);
-
-            $db->commit();
             return $usuarioId;
-
-        } catch (\Throwable $e) {
-            $db->rollBack();
-            throw $e;
-        }
+        });
     }
 
     // UPDATE

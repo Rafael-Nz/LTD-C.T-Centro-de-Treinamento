@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pétala Floricultura e Cestas | Novo Perfil</title>
+  <title>Cross C.T | Novo Perfil</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="stylesheet" href="../public/css/admin-styles.css">
-  <link rel="stylesheet" href="../public/css/form.css">
-  <link rel="stylesheet" href="../public/css/sidebar.css">
+  <link rel="stylesheet" href="/ctt/css/admin-styles.css">
+  <link rel="stylesheet" href="/ctt/css/form.css">
+  <link rel="stylesheet" href="/ctt/css/sidebar.css">
 
   <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"/>
@@ -16,76 +16,76 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>
-  /* Container Principal */
-  .permissoes-container {
-    max-height: 450px;
-    overflow-y: auto;
-    overflow-x: hidden; /* Garante que não haja scroll horizontal */
-    padding-right: 5px; /* Espaço para a barra de rolagem não cobrir o conteúdo */
-  }
+  <style>
+    /* Container Principal */
+    .permissoes-container {
+      max-height: 450px;
+      overflow-y: auto;
+      overflow-x: hidden; /* Garante que não haja scroll horizontal */
+      padding-right: 5px; /* Espaço para a barra de rolagem não cobrir o conteúdo */
+    }
 
-  /* Cabeçalho do Módulo */
-  .modulo-header {
-    background: var(--primary-red);
-    color: white;
-    padding: 0.6rem 1rem;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
+    /* Cabeçalho do Módulo */
+    .modulo-header {
+      background: var(--primary-red);
+      color: white;
+      padding: 0.6rem 1rem;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
 
-  /* Item de Permissão */
-  .permissao-item {
-    transition: all 0.2s ease;
-    border: 1px solid #dee2e6;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    padding: 0.75rem 1rem !important;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px; /* Espaço entre texto e o switch */
-  }
+    /* Item de Permissão */
+    .permissao-item {
+      transition: all 0.2s ease;
+      border: 1px solid #dee2e6;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      padding: 0.75rem 1rem !important;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px; /* Espaço entre texto e o switch */
+    }
 
-  /* Ajuste para textos longos */
-  .permissao-info {
-    flex: 1; /* Faz o texto ocupar todo o espaço disponível */
-    min-width: 0; /* Permite que o flex-item encolha se necessário */
-  }
+    /* Ajuste para textos longos */
+    .permissao-info {
+      flex: 1; /* Faz o texto ocupar todo o espaço disponível */
+      min-width: 0; /* Permite que o flex-item encolha se necessário */
+    }
 
-  .permissao-info .fw-bold {
-    display: block;
-    word-wrap: break-word; /* Quebra o texto se for muito longo */
-    font-size: 0.9rem;
-    line-height: 1.2;
-  }
+    .permissao-info .fw-bold {
+      display: block;
+      word-wrap: break-word; /* Quebra o texto se for muito longo */
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
 
-  .permissao-item:hover {
-    background-color: #fff5f8;
-    border-color: var(--primary-red);
-  }
+    .permissao-item:hover {
+      background-color: #fff5f8;
+      border-color: var(--primary-red);
+    }
 
-  /* Switch */
-  .form-check-input:checked {
-    background-color: var(--primary-red);
-    border-color: var(--primary-red);
-  }
+    /* Switch */
+    .form-check-input:checked {
+      background-color: var(--primary-red);
+      border-color: var(--primary-red);
+    }
 
-  /* Estilização da barra de rolagem (opcional) */
-  .permissoes-container::-webkit-scrollbar {
-    width: 6px;
-  }
-  .permissoes-container::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-  }
-</style>
+    /* Estilização da barra de rolagem (opcional) */
+    .permissoes-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .permissoes-container::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -187,10 +187,10 @@
 <?php include __DIR__ . '/partials/footer.php'; ?>
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
-<script defer src="../public/js/admin/sidebar.js"></script>
+<script defer src="/ctt/js/admin/sidebar.js"></script>
 <script>
   function voltar(aba) {
       // Salva a aba desejada no localStorage
@@ -199,6 +199,6 @@
       window.location.href = 'configuracoes';
   }
 </script>
-<script defer src="../public/js/admin/perfil_form.js"></script>
+<script defer src="/ctt/js/admin/perfil_form.js"></script>
 </body>
 </html>

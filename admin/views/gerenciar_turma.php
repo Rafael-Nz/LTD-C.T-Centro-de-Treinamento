@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cross C.T | Gerenciar Alunos da Turma</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="stylesheet" href="../public/css/admin-styles.css">
-  <link rel="stylesheet" href="../public/css/sidebar.css">
+  <link rel="stylesheet" href="/ctt/css/admin-styles.css">
+  <link rel="stylesheet" href="/ctt/css/sidebar.css">
   <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
@@ -289,143 +289,142 @@
   <?php include __DIR__ . '/partials/footer.php'; ?>
 
   <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
-  <script defer src="../public/js/admin/sidebar.js"></script>
+  <script defer src="/ctt/js/admin/sidebar.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  
   <script>
-  $(document).ready(function() {
-    // Inicializar Select2
-    $('#selectAluno').select2({
-      theme: 'bootstrap-5',
-      placeholder: 'Selecione um aluno...',
-      width: '100%'
-    });
-    
-    // Submissão do formulário para adicionar aluno
-    $('#formAdicionarAluno').on('submit', function(e) {
-      e.preventDefault();
+    $(document).ready(function() {
+      // Inicializar Select2
+      $('#selectAluno').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Selecione um aluno...',
+        width: '100%'
+      });
       
-      const turmaId = $('input[name="turma_id"]').val();
-      const alunoId = $('#selectAluno').val();
-      const alunoNome = $('#selectAluno option:selected').text();
-      const dataMatricula = $('#dataMatricula').val();
-      
-      if (!alunoId) {
+      // Submissão do formulário para adicionar aluno
+      $('#formAdicionarAluno').on('submit', function(e) {
+        e.preventDefault();
+        
+        const turmaId = $('input[name="turma_id"]').val();
+        const alunoId = $('#selectAluno').val();
+        const alunoNome = $('#selectAluno option:selected').text();
+        const dataMatricula = $('#dataMatricula').val();
+        
+        if (!alunoId) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Seleção Necessária',
+            text: 'Por favor, selecione um aluno para adicionar à turma.',
+            confirmButtonColor: '#d33'
+          });
+          return;
+        }
+        
         Swal.fire({
-          icon: 'warning',
-          title: 'Seleção Necessária',
-          text: 'Por favor, selecione um aluno para adicionar à turma.',
-          confirmButtonColor: '#d33'
+          title: 'Confirmar Adição',
+          html: `Deseja adicionar <strong>${alunoNome}</strong> à turma?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, adicionar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#198754',
+          cancelButtonColor: '#6c757d'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Simulação de requisição AJAX
+            // Em um sistema real, aqui seria uma chamada AJAX para o backend
+            setTimeout(() => {
+              Swal.fire({
+                icon: 'success',
+                title: 'Aluno Adicionado!',
+                text: `${alunoNome} foi adicionado à turma com sucesso.`,
+                confirmButtonColor: '#198754'
+              }).then(() => {
+                // Recarregar a página para atualizar a lista
+                location.reload();
+              });
+            }, 1000);
+          }
         });
-        return;
-      }
-      
-      Swal.fire({
-        title: 'Confirmar Adição',
-        html: `Deseja adicionar <strong>${alunoNome}</strong> à turma?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sim, adicionar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#198754',
-        cancelButtonColor: '#6c757d'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Simulação de requisição AJAX
-          // Em um sistema real, aqui seria uma chamada AJAX para o backend
-          setTimeout(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Aluno Adicionado!',
-              text: `${alunoNome} foi adicionado à turma com sucesso.`,
-              confirmButtonColor: '#198754'
-            }).then(() => {
-              // Recarregar a página para atualizar a lista
-              location.reload();
-            });
-          }, 1000);
-        }
       });
-    });
-    
-    // Remover aluno da turma
-    $('.btn-remover-aluno').on('click', function() {
-      const alunoId = $(this).data('aluno-id');
-      const alunoNome = $(this).data('aluno-nome');
-      const turmaId = $(this).data('turma-id');
       
-      Swal.fire({
-        title: 'Confirmar Remoção',
-        html: `Deseja remover <strong>${alunoNome}</strong> desta turma?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sim, remover',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Simulação de requisição AJAX
-          // Em um sistema real, aqui seria uma chamada AJAX para o backend
-          setTimeout(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Aluno Removido!',
-              text: `${alunoNome} foi removido da turma com sucesso.`,
-              confirmButtonColor: '#198754'
-            }).then(() => {
-              // Recarregar a página para atualizar a lista
-              location.reload();
-            });
-          }, 1000);
-        }
+      // Remover aluno da turma
+      $('.btn-remover-aluno').on('click', function() {
+        const alunoId = $(this).data('aluno-id');
+        const alunoNome = $(this).data('aluno-nome');
+        const turmaId = $(this).data('turma-id');
+        
+        Swal.fire({
+          title: 'Confirmar Remoção',
+          html: `Deseja remover <strong>${alunoNome}</strong> desta turma?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, remover',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Simulação de requisição AJAX
+            // Em um sistema real, aqui seria uma chamada AJAX para o backend
+            setTimeout(() => {
+              Swal.fire({
+                icon: 'success',
+                title: 'Aluno Removido!',
+                text: `${alunoNome} foi removido da turma com sucesso.`,
+                confirmButtonColor: '#198754'
+              }).then(() => {
+                // Recarregar a página para atualizar a lista
+                location.reload();
+              });
+            }, 1000);
+          }
+        });
       });
-    });
-    
-    // Alterar status da turma (Abrir/Fechar)
-    $('.btn-toggle-turma-status').on('click', function() {
-      const turmaId = $(this).data('turma-id');
-      const turmaNome = $(this).data('turma-nome');
-      const turmaStatus = $(this).data('turma-status');
-      const novoStatus = turmaStatus === 'Aberta' ? 'Fechada' : 'Aberta';
-      const acao = turmaStatus === 'Aberta' ? 'fechar' : 'reabrir';
       
-      Swal.fire({
-        title: 'Confirmar Alteração',
-        html: `Deseja <strong>${acao}</strong> a turma <strong>${turmaNome}</strong>?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: `Sim, ${acao}`,
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: turmaStatus === 'Aberta' ? '#d33' : '#198754',
-        cancelButtonColor: '#6c757d'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Simulação de requisição AJAX
-          // Em um sistema real, aqui seria uma chamada AJAX para o backend
-          setTimeout(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Status Alterado!',
-              text: `A turma ${turmaNome} foi ${acao}da com sucesso.`,
-              confirmButtonColor: '#198754'
-            }).then(() => {
-              // Redirecionar para a página de turmas
-              window.location.href = 'turmas.php';
-            });
-          }, 1000);
-        }
+      // Alterar status da turma (Abrir/Fechar)
+      $('.btn-toggle-turma-status').on('click', function() {
+        const turmaId = $(this).data('turma-id');
+        const turmaNome = $(this).data('turma-nome');
+        const turmaStatus = $(this).data('turma-status');
+        const novoStatus = turmaStatus === 'Aberta' ? 'Fechada' : 'Aberta';
+        const acao = turmaStatus === 'Aberta' ? 'fechar' : 'reabrir';
+        
+        Swal.fire({
+          title: 'Confirmar Alteração',
+          html: `Deseja <strong>${acao}</strong> a turma <strong>${turmaNome}</strong>?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: `Sim, ${acao}`,
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: turmaStatus === 'Aberta' ? '#d33' : '#198754',
+          cancelButtonColor: '#6c757d'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Simulação de requisição AJAX
+            // Em um sistema real, aqui seria uma chamada AJAX para o backend
+            setTimeout(() => {
+              Swal.fire({
+                icon: 'success',
+                title: 'Status Alterado!',
+                text: `A turma ${turmaNome} foi ${acao}da com sucesso.`,
+                confirmButtonColor: '#198754'
+              }).then(() => {
+                // Redirecionar para a página de turmas
+                window.location.href = 'turmas.php';
+              });
+            }, 1000);
+          }
+        });
       });
+      
+      // Desabilitar formulário se turma estiver fechada ou cheia
+      <?php if ($turma['status'] == 'Fechada' || $turma['alunos_ativos'] >= $turma['capacidade']) { ?>
+      $('#formAdicionarAluno input, #formAdicionarAluno select, #formAdicionarAluno button').prop('disabled', true);
+      <?php } ?>
     });
-    
-    // Desabilitar formulário se turma estiver fechada ou cheia
-    <?php if ($turma['status'] == 'Fechada' || $turma['alunos_ativos'] >= $turma['capacidade']) { ?>
-    $('#formAdicionarAluno input, #formAdicionarAluno select, #formAdicionarAluno button').prop('disabled', true);
-    <?php } ?>
-  });
   </script>
 </body>
 </html>

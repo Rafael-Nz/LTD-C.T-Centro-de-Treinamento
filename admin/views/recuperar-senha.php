@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T | Recuperar Senha</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="../public/css/login.css">
+    <link rel="stylesheet" href="/ctt/css/login.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 </head>
 
@@ -75,14 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="ph ph-envelope-open" style="font-size: 3rem; color: var(--bg-thema);"></i>
                 </div>
                 <p class="mb-4">Verifique sua caixa de entrada e siga as instruções do email.</p>
-                <a href="login.php" class="btn btn-login">
+                <a href="login" class="btn btn-login">
                     <i class="ph ph-arrow-left me-2"></i> Voltar para o Login
                 </a>
             </div>
         <?php endif; ?>
 
         <div class="text-center mt-4">
-            <a href="login.php" class="back-link">
+            <a href="login" class="back-link">
                 <i class="ph ph-arrow-left me-1"></i> Voltar para o Login
             </a>
         </div>

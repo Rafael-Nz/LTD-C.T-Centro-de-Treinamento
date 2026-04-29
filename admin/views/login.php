@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cross C.T | Login Admin</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="stylesheet" href="../public/css/login.css">
+  <link rel="stylesheet" href="/ctt/css/login.css">
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 </head>
 
@@ -49,7 +49,7 @@
     </form>
 
     <div class="text-center mt-3">
-      <a href="recuperar-senha.php" class="forgot-password-link" style="color: #aaa; text-decoration: none; font-size: 0.9rem;">
+      <a href="esqueci-senha" class="forgot-password-link" style="color: #aaa; text-decoration: none; font-size: 0.9rem;">
         <i class="ph ph-question me-1"></i> Esqueceu a senha?
       </a>
     </div>

@@ -1,18 +1,30 @@
 <?php
+// O router já processa os parâmetros corretamente
+// Para /alunos/novo: $_GET['acao'] = 'novo'
+// Para /alunos/editar/5: $_GET['acao'] = 'editar', $_GET['id'] = 5
 
+// Captura os parâmetros
+$acao = $_GET['acao'] ?? 'novo';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
+// Se veio da URL antiga (ex: ?id=5 sem acao) - por compatibilidade
+if (!$acao && $id) {
+    $acao = 'editar';
+}
+
+$isEdit = ($acao === 'editar' && $id);
+$pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cross C.T | <?= $id ? 'Editar Aluno' : 'Cadastrar Aluno' ?></title>
+  <title>Cross C.T | <?= $pageTitle ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="stylesheet" href="../public/css/admin-styles.css">
-  <link rel="stylesheet" href="../public/css/form.css">
-  <link rel="stylesheet" href="../public/css/sidebar.css">
+  <link rel="stylesheet" href="/ctt/css/admin-styles.css">
+  <link rel="stylesheet" href="/ctt/css/form.css">
+  <link rel="stylesheet" href="/ctt/css/sidebar.css">
   <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"/>
@@ -109,7 +121,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                 <div class="mb-3">
                   <label for="email2" class="form-label">E-mail Secundário:</label>
                   <input type="email" name="email2" id="email2" class="form-control" 
-                         placeholder="email@exemplo.com" required>
+                         placeholder="email@exemplo.com">
                 </div>
               </div>
 
@@ -192,12 +204,12 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
   <?php include __DIR__ . '/partials/footer.php'; ?>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://unpkg.com/imask"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
-  <script defer src="../public/js/admin/sidebar.js"></script>
-  <script src="../public/js/admin/form/aluno_form.js"></script>
+  <script defer src="/ctt/js/admin/sidebar.js"></script>
+  <script src="/ctt/js/admin/form/aluno_form.js"></script>
 </body>
 </html>

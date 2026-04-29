@@ -1,22 +1,37 @@
 <?php
-$currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+// 1. Pega a URL limpa (ex: /ctt/admin/alunos/novo)
+$currentUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+// 2. Define o prefixo que deve ser ignorado (Base do seu projeto)
+$basePath = '/ctt/admin/'; 
+
+// 3. Obtém a rota real (ex: alunos/novo)
+$currentRoute = str_replace($basePath, '', $currentUri);
+$currentRoute = trim($currentRoute, '/');
+
+/**
+ * Verifica se a rota atual começa com o termo
+ */
 function isCurrent($needle) {
-    global $currentPage;
-    return str_contains($currentPage, $needle);
+    global $currentRoute;
+    if ($needle === '' || $needle === 'inicio') {
+        return ($currentRoute === '' || $currentRoute === 'inicio' || $currentRoute === 'dashboard');
+    }
+    // Verifica se a rota começa com o termo (ex: 'alunos' engloba 'alunos/editar')
+    return strpos($currentRoute, $needle) === 0;
 }
 
+/**
+ * Gera o link correto baseado na BASE_URL do seu router
+ */
 function navHref($target) {
-    return isCurrent($target) ? '' : $target;
+    // Se BASE_URL estiver no seu router.php como '/ctt/admin/'
+    return '/ctt/admin/' . ltrim($target, '/');
 }
 
-// verifica se está em uma página do submenu de usuários
-$isUserSubmenuOpen = (isCurrent('alunos') || isCurrent('funcionarios') || isCurrent('aluno_form') || isCurrent('funcionario_form'));
-$isUserRootActive = $isUserSubmenuOpen;
-
-// verifica se está em páginas de configurações
-$isConfigSubmenuOpen = (isCurrent('configuracoes') || isCurrent('cargo_form') || isCurrent('perfil_form'));
-$isConfigRootActive = $isConfigSubmenuOpen;
+// Lógica de submenus (Mesmos nomes usados no seu sidebar.js)
+$isUserSubmenuOpen = isCurrent('alunos') || isCurrent('funcionarios');
+$isConfigSubmenuOpen = isCurrent('configuracoes') || isCurrent('cargos') || isCurrent('perfil');
 ?>
 <div id="sidebarOverlay"></div>
 
@@ -24,7 +39,7 @@ $isConfigRootActive = $isConfigSubmenuOpen;
   <!-- Header do Sidebar -->
   <div class="sidebar-header border-bottom border-secondary d-flex align-items-center">
     <span class="nav-icon-wrapper">
-      <img src="../public/img/logo.png" alt="Brand Logo" class="rounded-circle" width="30" height="30">
+      <img src="/ctt/public/img/logo.png" alt="Brand Logo" class="rounded-circle" width="30" height="30">
     </span>
     <p class="nav-link-text fw-normal mb-0 text-white text-truncate">Centro de Treinamento</p>
   </div>
@@ -35,12 +50,7 @@ $isConfigRootActive = $isConfigSubmenuOpen;
     <!-- Perfil -->
     <div class="sidebar-header border-bottom border-secondary d-flex align-items-center">
       <span class="nav-icon-wrapper">
-        <img src="<?= htmlspecialchars($fotoUsuario) ?>" 
-             alt="Foto do perfil" 
-             class="rounded-circle" 
-             width="30" 
-             height="30"
-             style="object-fit: cover;">
+        <img src="" alt="Foto do perfil" class="rounded-circle" width="30" height="30" style="object-fit: cover;">
       </span>
       <p class="nav-link-text fw-normal mb-0 text-white text-truncate" title="<?= htmlspecialchars($nicknameUsuario ?: $nomeUsuario) ?>">
         <?= htmlspecialchars($nomeExibicao) ?>
@@ -52,8 +62,8 @@ $isConfigRootActive = $isConfigSubmenuOpen;
       
       <!-- Dashboard -->
       <li class="nav-item mt-2">
-        <a href="<?= navHref('home') ?>" 
-           class="nav-link text-white d-flex align-items-center <?= isCurrent('home') ? 'active root' : '' ?>">
+        <a href="<?= navHref('/') ?>" 
+           class="nav-link text-white d-flex align-items-center <?= isCurrent('d') ? 'active root' : '' ?>">
           <span class="nav-icon-wrapper"><i class="ph ph-house-line nav-icon"></i></span>
           <span class="nav-link-text">Dashboard</span>
         </a>

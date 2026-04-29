@@ -5,8 +5,12 @@ RewriteBase /ctt/
 
 # 1. Ignorar a pasta de administração
 RewriteRule ^admin($|/) - [L]
-# 2. Ignorar a pasta de API 
 RewriteRule ^api($|/) - [L]
+
+# Servir arquivos estáticos de public/ de forma segura
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|pdf|mp4|webm)$ [NC]
+RewriteCond %{REQUEST_URI} !^/ctt/public/ [NC]
+RewriteRule ^(.+)$ public/$1 [L]
 
 # 2. Não reescrever arquivos e pastas reais
 RewriteCond %{REQUEST_FILENAME} !-f

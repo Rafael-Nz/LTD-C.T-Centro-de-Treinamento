@@ -2,8 +2,9 @@
 namespace Usuario;
 
 use Core\Repository;
+use Core\DataTablesRepositoryInterface;
 
-class UsuarioRepository extends Repository {
+class UsuarioRepository extends Repository implements DataTablesRepositoryInterface {
 
     public function countAll(): int {
         $result = $this->fetch("
@@ -106,172 +107,41 @@ class UsuarioRepository extends Repository {
     }
 
     public function create(array $data): int {
-        $db = \Core\Database::getConnection();
-        $db->beginTransaction();
-
-        try {
-            // ENDEREÇO
-            $enderecoId = null;
-
-            if (!empty($data['endereco'])) {
-                $this->execute("
-                    INSERT INTO endereco (logradouro, numero, cidade, bairro, cep, complemento)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ", [
-                    $data['endereco']['logradouro'],
-                    $data['endereco']['numero'],
-                    $data['endereco']['cidade'],
-                    $data['endereco']['bairro'],
-                    $data['endereco']['cep'],
-                    $data['endereco']['complemento'] ?? null
-                ]);
-
-                $enderecoId = (int) $this->lastInsertId();
-            }
-
-            // USUARIO
-            $this->execute("
-                INSERT INTO usuario 
+        $sql = "INSERT INTO usuario 
                 (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ", [
-                $data['nome'],
-                $data['sobrenome'],
-                $data['cpf'],
-                $data['email'],
-                password_hash($data['senha'] ?? $data['cpf'], PASSWORD_ARGON2ID),
-                $data['data_nascimento'],
-                $data['genero'] ?? 'O',
-                $enderecoId,
-                $data['tipo_usuario'] ?? 'aluno'
-            ]);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                
+        $this->execute($sql, [
+            $data['nome'],
+            $data['sobrenome'],
+            $data['cpf'],
+            $data['email'],
+            password_hash($data['senha'] ?? $data['cpf'], PASSWORD_ARGON2ID),
+            $data['data_nascimento'],
+            $data['genero'] ?? 'O',
+            $data['endereco_id'] ?? null, // ID já criado pelo Service
+            $data['tipo_usuario']
+        ]);
 
-            $usuarioId = (int) $this->lastInsertId();
-
-            // CONTATOS
-            if (!empty($data['contatos'])) {
-                foreach ($data['contatos'] as $c) {
-                    $this->execute("
-                        INSERT INTO contato (usuario_id, tipo, valor)
-                        VALUES (?, ?, ?)
-                    ", [$usuarioId, $c['tipo'], $c['valor']]);
-                }
-            }
-
-            $db->commit();
-            return $usuarioId;
-
-        } catch (\Throwable $e) {
-            $db->rollBack();
-            throw $e;
-        }
+        return (int) $this->lastInsertId();
     }
 
     public function update(int $id, array $data): void {
-        $db = \Core\Database::getConnection();
-        $db->beginTransaction();
+        $fields = [];
+        $params = [];
 
-        try {
-            // Atualizar endereço se fornecido
-            if (!empty($data['endereco'])) {
-                // Primeiro, obter o ID do endereço do usuário
-                $usuario = $this->findById($id);
-
-                if ($usuario && $usuario['endereco_id']) {
-                    // Atualizar endereço existente
-                    $this->execute("
-                        UPDATE endereco SET
-                            logradouro = ?, numero = ?, cidade = ?, bairro = ?, cep = ?, complemento = ?
-                        WHERE id = ?
-                    ", [
-                        $data['endereco']['logradouro'] ?? $usuario['logradouro'],
-                        $data['endereco']['numero'] ?? $usuario['numero'],
-                        $data['endereco']['cidade'] ?? $usuario['cidade'],
-                        $data['endereco']['bairro'] ?? $usuario['bairro'],
-                        $data['endereco']['cep'] ?? $usuario['cep'],
-                        $data['endereco']['complemento'] ?? $usuario['complemento'],
-                        $usuario['endereco_id']
-                    ]);
-                } else {
-                    // Criar novo endereço
-                    $this->execute("
-                        INSERT INTO endereco (logradouro, numero, cidade, bairro, cep, complemento)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    ", [
-                        $data['endereco']['logradouro'],
-                        $data['endereco']['numero'],
-                        $data['endereco']['cidade'],
-                        $data['endereco']['bairro'],
-                        $data['endereco']['cep'],
-                        $data['endereco']['complemento'] ?? null
-                    ]);
-
-                    $enderecoId = (int) $this->lastInsertId();
-
-                    $this->execute("UPDATE usuario SET endereco_id = ? WHERE id = ?", [$enderecoId, $id]);
-                }
+        // Lista de campos permitidos para update na tabela usuario
+        $allowed = ['nome', 'sobrenome', 'email', 'cpf', 'genero', 'ativo', 'tipo_usuario'];
+        foreach ($allowed as $field) {
+            if (isset($data[$field])) {
+                $fields[] = "$field = ?";
+                $params[] = $data[$field];
             }
+        }
 
-            // Atualizar dados do usuário
-            $updateFields = [];
-            $updateParams = [];
-
-            if (isset($data['nome'])) {
-                $updateFields[] = 'nome = ?';
-                $updateParams[] = $data['nome'];
-            }
-            if (isset($data['sobrenome'])) {
-                $updateFields[] = 'sobrenome = ?';
-                $updateParams[] = $data['sobrenome'];
-            }
-            if (isset($data['email'])) {
-                $updateFields[] = 'email = ?';
-                $updateParams[] = $data['email'];
-            }
-            if (isset($data['senha'])) {
-                $updateFields[] = 'senha = ?';
-                $updateParams[] = password_hash($data['senha'], PASSWORD_ARGON2ID);
-            }
-            if (isset($data['data_nascimento'])) {
-                $updateFields[] = 'data_nascimento = ?';
-                $updateParams[] = $data['data_nascimento'];
-            }
-            if (isset($data['genero'])) {
-                $updateFields[] = 'genero = ?';
-                $updateParams[] = $data['genero'];
-            }
-            if (isset($data['tipo_usuario'])) {
-                $updateFields[] = 'tipo_usuario = ?';
-                $updateParams[] = $data['tipo_usuario'];
-            }
-
-            if (!empty($updateFields)) {
-                $updateParams[] = $id;
-                $this->execute(
-                    "UPDATE usuario SET " . implode(", ", $updateFields) . " WHERE id = ?",
-                    $updateParams
-                );
-            }
-
-            // Atualizar contatos
-            if (isset($data['contatos'])) {
-                // Remover contatos antigos
-                $this->execute("DELETE FROM contato WHERE usuario_id = ?", [$id]);
-
-                // Inserir novos contatos
-                foreach ($data['contatos'] as $c) {
-                    $this->execute("
-                        INSERT INTO contato (usuario_id, tipo, valor)
-                        VALUES (?, ?, ?)
-                    ", [$id, $c['tipo'], $c['valor']]);
-                }
-            }
-
-            $db->commit();
-
-        } catch (\Throwable $e) {
-            $db->rollBack();
-            throw $e;
+        if (!empty($fields)) {
+            $params[] = $id;
+            $this->execute("UPDATE usuario SET " . implode(', ', $fields) . " WHERE id = ?", $params);
         }
     }
 

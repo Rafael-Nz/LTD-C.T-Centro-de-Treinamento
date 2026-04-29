@@ -2,14 +2,17 @@
 namespace Aluno;
 
 use Core\Controller;
+use Core\DataTablesResponseTrait;
 
 class AlunoController extends Controller {
-    private AlunoService $service;
+    use DataTablesResponseTrait;
+
     private AlunoRepository $repo;
+    private AlunoService $service;
 
     public function __construct() {
-        $this->service = new AlunoService();
         $this->repo = new AlunoRepository();
+        $this->service = new AlunoService();
     }
 
     public function index() {
@@ -17,34 +20,10 @@ class AlunoController extends Controller {
         $start  = (int)($_GET['start']  ?? 0);
         $length = (int)($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
-
-        if ($length === -1) {
-            $length = 10;
-        }
-
-        // Captura de Filtros Adicionais
-        $filters = [
-            'status' => $_GET['status'] ?? ''
-        ];
-
-        // Execução das consultas
-        $data = $this->repo->findPaginated($start, $length, $search, $filters);
+        
+        $filters = ['status' => $_GET['status'] ?? ''];
             
-        // Total geral sem filtros
-        $total = $this->repo->countAll();
-
-        $hasActiveFilters = !empty($search) || !empty(array_filter($filters));
-
-        $totalFiltered = $hasActiveFilters 
-            ? $this->repo->countFiltered($search, $filters)
-            : $total;
-            
-        $this->json([
-            "draw" => $draw,
-            "recordsTotal" => $total,
-            "recordsFiltered" => $totalFiltered,
-            "data" => $data
-        ]);
+        $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }
 
     public function show(int $id) {
@@ -58,26 +37,43 @@ class AlunoController extends Controller {
 
     public function store() {
         $data = $this->body();
-
-        $id = $this->service->create($data);
-
-        $this->json(['id' => $id], 201);
+        try {
+            $id = $this->service->create($data);
+            $this->json(['id' => $id, 'message' =>  'Aluno criado com sucesso.' ], 201);
+        } catch (\Throwable $e) {
+            error_log('[AlunoController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro interno ao processar requisição.", 500);
+        }
     }
 
     public function update(int $id) {
-        $this->service->update($id, $this->body());
-
-        $this->json(['message' => 'Atualizado']);
+        try {
+            $this->service->update($id, $this->body());
+            $this->json(['message' => 'Aluno atualizado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[AlunoController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro ao atualizar aluno.", 500);
+        }
     }
 
-    public function destroy(int $id) {
-        $this->service->delete($id);
-        $this->json(['message' => 'Desativado']);
+    public function deactivate(int $id) {
+        try {
+            $this->service->deactivate($id);
+            $this->json(['message' => 'Aluno desativado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[AlunoController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro ao desativar aluno.", 500);
+        }
     }
 
     public function reactivate(int $id) {
-        $this->service->reactivate($id);
-        $this->json(['message' => 'Reativado']);
+        try {
+            $this->service->reactivate($id);
+            $this->json(['message' => 'Aluno reativado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[AlunoController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro ao reativar aluno.", 500);
+        }
     }
 
 }

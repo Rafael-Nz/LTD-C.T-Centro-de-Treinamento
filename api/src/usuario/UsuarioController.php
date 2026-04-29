@@ -2,14 +2,16 @@
 namespace Usuario;
 
 use Core\Controller;
+use Core\DataTablesResponseTrait;
 
 class UsuarioController extends Controller {
-    private UsuarioService $service;
+    use DataTablesResponseTrait;
     private UsuarioRepository $repo;
-
+    private UsuarioService $service;
+    
     public function __construct() {
-        $this->service = new UsuarioService();
         $this->repo = new UsuarioRepository();
+        $this->service = new UsuarioService();
     }
 
     public function index() {
@@ -17,28 +19,10 @@ class UsuarioController extends Controller {
         $start  = (int)($_GET['start']  ?? 0);
         $length = (int)($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
-
-        if ($length === -1) {
-            $length = 10;
-        }
-
-        $filters = [
-            'status' => $_GET['status'] ?? ''
-        ];
-
-        $data = $this->repo->findPaginated($start, $length, $search, $filters);
-        $total = $this->repo->countAll();
-        $hasActiveFilters = !empty($search) || !empty(array_filter($filters));
-        $totalFiltered = $hasActiveFilters 
-            ? $this->repo->countFiltered($search, $filters)
-            : $total;
-            
-        $this->json([
-            "draw" => $draw,
-            "recordsTotal" => $total,
-            "recordsFiltered" => $totalFiltered,
-            "data" => $data
-        ]);
+        
+        $filters = ['status' => $_GET['status'] ?? ''];
+        
+        $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }
 
     public function show(int $id) {
@@ -60,9 +44,14 @@ class UsuarioController extends Controller {
         }
 
         try {
-            $id = $this->service->create($data);
+            $id = match($data['tipo_usuario']) {
+                'aluno' => (new \Aluno\AlunoService())->create($data),
+                'funcionario' => (new \Funcionario\FuncionarioService())->create($data),
+                default => throw new \Exception("Tipo de usuário inválido.")
+            };
             $this->json(['id' => $id], 201);
         } catch (\Throwable $e) {
+            error_log('[UsuarioController::store] ' . $e->getMessage());
             $this->error("Erro ao criar usuário: " . $e->getMessage(), 500);
         }
     }
@@ -74,17 +63,28 @@ class UsuarioController extends Controller {
             $this->service->update($id, $data);
             $this->json(['message' => 'Usuário atualizado com sucesso.']);
         } catch (\Throwable $e) {
+            error_log('[UsuarioController::update] ' . $e->getMessage());
             $this->error("Erro ao atualizar usuário: " . $e->getMessage(), 500);
         }
     }
 
-    public function destroy(int $id) {
-        $this->service->deactivate($id);
-        $this->json(['message' => 'Usuário desativado com sucesso.']);
+    public function deactivate(int $id) {
+        try {
+            $this->service->deactivate($id);
+            $this->json(['message' => 'Usuário desativado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[UsuarioController::destroy] ' . $e->getMessage());
+            $this->error("Erro ao desativar usuário: " . $e->getMessage(), 500);
+        }
     }
 
     public function reactivate(int $id) {
-        $this->service->reactivate($id);
-        $this->json(['message' => 'Usuário reativado com sucesso.']);
+        try {
+            $this->service->reactivate($id);
+            $this->json(['message' => 'Usuário reativado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[UsuarioController::reactivate] ' . $e->getMessage());
+            $this->error("Erro ao reativar usuário: " . $e->getMessage(), 500);
+        }
     }
 }

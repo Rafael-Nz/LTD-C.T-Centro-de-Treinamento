@@ -2,8 +2,9 @@
 namespace Funcionario;
 
 use Core\Repository;
+use Core\DataTablesRepositoryInterface;
 
-class FuncionarioRepository extends Repository {
+class FuncionarioRepository extends Repository implements DataTablesRepositoryInterface {
 
     public function countAll(): int {
         $result = $this->fetch("
@@ -94,4 +95,48 @@ class FuncionarioRepository extends Repository {
             WHERE u.id = ?
         ", [$id]);
     }
+
+    public function create(array $data): int {
+        try {
+            // FUNCIONÁRIO
+            $this->execute("
+                INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
+                VALUES (?, ?, ?, ?)
+            ", [
+                $data['usuario_id'],
+                $data['cargo_id'],
+                $data['registro_profissional'] ?? null,
+                $data['observacoes'] ?? null
+            ]);
+
+            return (int) $data['usuario_id'];
+
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function update(int $id, array $data): void {
+        try {
+            // FUNCIONÁRIO
+            $this->execute("
+                UPDATE funcionario f
+                INNER JOIN usuario u ON u.id = f.usuario_id
+                SET 
+                    f.cargo_id = ?,
+                    f.registro_profissional = ?,
+                    f.observacoes = ?
+                WHERE u.id = ?
+            ", [
+                $data['cargo_id'],
+                $data['registro_profissional'] ?? null,
+                $data['observacoes'] ?? null,
+                $id
+            ]);
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    
 }

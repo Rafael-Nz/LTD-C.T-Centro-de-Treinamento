@@ -2,12 +2,16 @@
 namespace Funcionario;
 
 use Core\Controller;
+use Core\DataTablesResponseTrait;
 
 class FuncionarioController extends Controller {
+    use DataTablesResponseTrait;
     private FuncionarioRepository $repo;
+    private FuncionarioService $service;
 
     public function __construct() {
         $this->repo = new FuncionarioRepository();
+        $this->service = new FuncionarioService();
     }
 
     public function index() {
@@ -15,28 +19,10 @@ class FuncionarioController extends Controller {
         $start  = (int)($_GET['start']  ?? 0);
         $length = (int)($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
-
-        if ($length === -1) {
-            $length = 10;
-        }
-
-        $filters = [
-            'status' => $_GET['status'] ?? ''
-        ];
-
-        $data = $this->repo->findPaginated($start, $length, $search, $filters);
-        $total = $this->repo->countAll();
-        $hasActiveFilters = !empty($search) || !empty(array_filter($filters));
-        $totalFiltered = $hasActiveFilters 
-            ? $this->repo->countFiltered($search, $filters)
-            : $total;
-            
-        $this->json([
-            "draw" => $draw,
-            "recordsTotal" => $total,
-            "recordsFiltered" => $totalFiltered,
-            "data" => $data
-        ]);
+        
+        $filters = ['status' => $_GET['status'] ?? ''];
+        
+        $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }
 
     public function show(int $id) {
@@ -50,17 +36,42 @@ class FuncionarioController extends Controller {
 
     public function store() {
         $data = $this->body();
-        // TODO: Implementar lógica de criação
-        $this->json(['message' => 'Não implementado ainda'], 501);
+        try {
+            $id = $this->service->create($data);
+            $this->json(['id' => $id, 'message' =>  'Funcionário criado com sucesso.' ], 201);
+        } catch (\Throwable $e) {
+            error_log('[FuncionarioController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro interno ao processar requisição.", 500);
+        }
     }
 
     public function update(int $id) {
-        // TODO: Implementar lógica de atualização
-        $this->json(['message' => 'Não implementado ainda'], 501);
+        try {
+            $this->service->update($id, $this->body());
+            $this->json(['message' => 'Funcionário atualizado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[FuncionarioController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro ao atualizar funcionário.", 500);
+        }
     }
 
-    public function destroy(int $id) {
-        // TODO: Implementar lógica de exclusão
-        $this->json(['message' => 'Não implementado ainda'], 501);
+    public function deactivate(int $id) {
+        try {
+            $this->service->deactivate($id);
+            $this->json(['message' => 'Funcionário desativado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[FuncionarioController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro ao desativar funcionário.", 500);
+        }
+    }
+
+    public function reactivate(int $id) {
+        try {
+            $this->service->reactivate($id);
+            $this->json(['message' => 'Funcionário reativado com sucesso.']);
+        } catch (\Throwable $e) {
+            error_log('[FuncionarioController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error("Erro ao reativar funcionário.", 500);
+        }
     }
 }

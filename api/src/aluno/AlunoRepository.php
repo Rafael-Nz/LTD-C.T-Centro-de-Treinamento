@@ -2,8 +2,9 @@
 namespace Aluno;
 
 use Core\Repository;
+use Core\DataTablesRepositoryInterface;
 
-class AlunoRepository extends Repository {
+class AlunoRepository extends Repository implements DataTablesRepositoryInterface {
 
     public function countAll(): int {
         $result = $this->fetch("
@@ -52,11 +53,6 @@ class AlunoRepository extends Repository {
             foreach ($statusArray as $s) {
                 $params[] = $s;
             }
-        }
-
-        if (!empty($filters['cidade'])) {
-            $where[] = "e.cidade = ?";
-            $params[] = $filters['cidade'];
         }
 
         // aplica WHERE
@@ -146,34 +142,26 @@ class AlunoRepository extends Repository {
     }
 
     public function create(array $data): int {
-        $db = \Core\Database::getConnection();
-        $db->beginTransaction();
-
         try {
             // ALUNO
             $this->execute("
-                INSERT INTO aluno (usuario_id, data_matricula, codigo_matricula, cadastrado_por)
+                INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
                 VALUES (?, ?, ?, ?)
             ", [
                 $data['usuario_id'],
                 $data['data_matricula'],
-                $data['codigo_matricula'],
-                $data['cadastrado_por']
+                $data['cadastrado_por'],
+                $data['codigo_matricula']
             ]);
 
-            $db->commit();
             return (int) $data['usuario_id'];
 
         } catch (\Throwable $e) {
-            $db->rollBack();
             throw $e;
         }
     }
 
     public function update(int $id, array $data): void {
-        $db = \Core\Database::getConnection();
-        $db->beginTransaction();
-
         try {
             $this->execute("
                 UPDATE aluno SET
@@ -184,20 +172,9 @@ class AlunoRepository extends Repository {
                 $id
             ]);
 
-            $db->commit();
-
         } catch (\Throwable $e) {
-            $db->rollBack();
             throw $e;
         }
-    }
-
-    public function deactivate(int $id): void {
-        $this->execute("UPDATE usuario SET ativo = 0 WHERE id = ?", [$id]);
-    }
-
-    public function reactivate(int $id): void {
-        $this->execute("UPDATE usuario SET ativo = 1 WHERE id = ?", [$id]);
     }
 
     public function countByMonth(string $prefixo): int {

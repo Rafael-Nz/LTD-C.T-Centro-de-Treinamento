@@ -34,7 +34,7 @@ trait DataTablesResponseTrait {
             : $total;
         
         // Retornar resposta padronizada
-        $this->json([
+        $this->datatable([
             "draw" => $draw,
             "recordsTotal" => $total,
             "recordsFiltered" => $totalFiltered,
@@ -71,7 +71,7 @@ trait DataTablesResponseTrait {
             ? $repository->countFiltered($search, $filters)
             : $total;
         
-        $this->json([
+        $this->datatable([
             "draw" => $draw,
             "recordsTotal" => $total,
             "recordsFiltered" => $totalFiltered,

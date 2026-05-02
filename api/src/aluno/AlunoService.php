@@ -3,56 +3,58 @@ namespace Aluno;
 
 use Core\Service;
 use Usuario\UsuarioService;
-use Core\Database;
-
+use Aluno\DTO\AlunoDTO;
 
 class AlunoService extends Service {
     private AlunoRepository $alunoRepo;
     private UsuarioService $usuarioService;
+    private SequenciaMatriculaRepository $seqRepo;
 
     public function __construct() {
         $this->alunoRepo = new AlunoRepository();
         $this->usuarioService = new UsuarioService();
+        $this->seqRepo = new SequenciaMatriculaRepository();
     }
 
-    public function create(array $data): int {
-        return $this->transaction(function() use ($data) {
-            // 1. Gerar matrícula
-            $codigoMatricula = $this->gerarMatricula();
+    public function create(AlunoDTO $dto): int {
+        return $this->transaction(function() use ($dto) {
+            if (empty($dto->codigo_matricula)) {
+                $dto->codigo_matricula = $this->gerarMatricula();
+            }
 
-            // 2. Montar estrutura para usuário
-            $usuarioData = [
-                'nome' => $data['nome'] ?? null,
-                'sobrenome' => $data['sobrenome'] ?? null,
-                'cpf' => $data['cpf'] ?? null,
-                'email' => $data['email'] ?? null,
-                'data_nascimento' => $data['data_nascimento'] ?? null,
-                'genero' => $data['genero'] ?? 'O',
-                'senha' => $data['senha'] ?? null,
-                'tipo_usuario' => 'aluno',
-                'endereco' => $data['endereco'] ?? null,
-                'contatos' => $data['contatos'] ?? null
-            ];
+            $dto->tipo_usuario = 'aluno';
 
-            // 3. Criar a base do usuário
-            $usuarioId = $this->usuarioService->create($usuarioData);
+            $usuarioId = $this->usuarioService->create($dto);
 
             // 4. Criar o registro na tabela 'aluno'
-            $this->alunoRepo->create([
-                'usuario_id' => $usuarioId,
-                'data_matricula' => $data['data_matricula'] ?? date('Y-m-d'),
-                'codigo_matricula' => $codigoMatricula,
-                'cadastrado_por' => $data['cadastrado_por'] ?? 1
-            ]);
+            $this->alunoRepo->create($dto, $usuarioId);
 
             return $usuarioId;
         });
     }
 
-    public function update(int $id, array $data): void {
-        $this->transaction(function() use ($id, $data) {
-            $this->alunoRepo->update($id, $data);
+    public function update(int $id, AlunoDTO $dto): void {
+        $this->transaction(function() use ($id, $dto) {
+            $this->usuarioService->update($id, $dto);
+
+            $this->alunoRepo->update($id, $dto);
         });
+    }
+
+    public function findById(int $id): ?array {
+        $usuario = $this->usuarioService->findById($id);
+        if (!$usuario) return null;
+
+        $aluno = $this->alunoRepo->findAlunoData($id);
+        if (!$aluno) return null;
+
+        return array_merge(
+            $usuario,
+            [
+                'data_matricula' => $aluno['data_matricula'],
+                'codigo_matricula' => $aluno['codigo_matricula']
+            ]
+        );
     }
 
     // DELETE (soft)
@@ -64,16 +66,11 @@ class AlunoService extends Service {
         $this->usuarioService->reactivate($id);
     }
 
-    // REGRA DE NEGÓCIO
     private function gerarMatricula(): string {
-        // AAAAMM000001
-        $prefixo = date('Ym');
+        return $this->formatarMatricula($this->seqRepo->next());
+    }
 
-        // conta quantos alunos existem no mês
-        $total = $this->alunoRepo->countByMonth($prefixo);
-
-        $sequencial = str_pad($total + 1, 6, '0', STR_PAD_LEFT);
-
-        return $prefixo . $sequencial;
+    private function formatarMatricula(int $id): string {
+        return date('Ym') . str_pad($id, 6, '0', STR_PAD_LEFT);
     }
 }

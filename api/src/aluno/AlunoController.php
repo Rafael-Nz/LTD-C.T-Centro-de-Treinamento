@@ -3,6 +3,7 @@ namespace Aluno;
 
 use Core\Controller;
 use Core\DataTablesResponseTrait;
+use Aluno\DTO\AlunoDTO;
 
 class AlunoController extends Controller {
     use DataTablesResponseTrait;
@@ -27,7 +28,7 @@ class AlunoController extends Controller {
     }
 
     public function show(int $id) {
-        $aluno = $this->repo->findById($id);
+        $aluno = $this->service->findById($id);
         if (!$aluno) {
             $this->error("Aluno não encontrado.", 404);
             return;
@@ -36,9 +37,10 @@ class AlunoController extends Controller {
     }
 
     public function store() {
-        $data = $this->body();
+        $dto = AlunoDTO::fromArray($this->body());
+
         try {
-            $id = $this->service->create($data);
+            $id = $this->service->create($dto);
             $this->json(['id' => $id, 'message' =>  'Aluno criado com sucesso.' ], 201);
         } catch (\Throwable $e) {
             error_log('[AlunoController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
@@ -47,8 +49,9 @@ class AlunoController extends Controller {
     }
 
     public function update(int $id) {
+        $dto = AlunoDTO::fromArray($this->body());
         try {
-            $this->service->update($id, $this->body());
+            $this->service->update($id, $dto);
             $this->json(['message' => 'Aluno atualizado com sucesso.']);
         } catch (\Throwable $e) {
             error_log('[AlunoController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());

@@ -3,6 +3,7 @@ namespace Usuario;
 
 use Core\Repository;
 use Core\DataTablesRepositoryInterface;
+use Usuario\DTO\UsuarioDTO;
 
 class UsuarioRepository extends Repository implements DataTablesRepositoryInterface {
 
@@ -106,21 +107,21 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return $usuario;
     }
 
-    public function create(array $data): int {
+    public function create(UsuarioDTO $dto, ?int $enderecoId = null): int {
         $sql = "INSERT INTO usuario 
                 (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 
         $this->execute($sql, [
-            $data['nome'],
-            $data['sobrenome'],
-            $data['cpf'],
-            $data['email'],
-            password_hash($data['senha'] ?? $data['cpf'], PASSWORD_ARGON2ID),
-            $data['data_nascimento'],
-            $data['genero'] ?? 'O',
-            $data['endereco_id'] ?? null, // ID já criado pelo Service
-            $data['tipo_usuario']
+            $dto->nome,
+            $dto->sobrenome,
+            $dto->cpf,
+            $dto->email,
+            password_hash($dto->senha ?? $dto->cpf, PASSWORD_ARGON2ID), // Gera senha a partir do CPF se não for fornecida
+            $dto->data_nascimento,
+            $dto->genero,
+            $enderecoId,
+            $dto->tipo_usuario
         ]);
 
         return (int) $this->lastInsertId();
@@ -131,7 +132,14 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         $params = [];
 
         // Lista de campos permitidos para update na tabela usuario
-        $allowed = ['nome', 'sobrenome', 'email', 'cpf', 'genero', 'ativo', 'tipo_usuario'];
+        $allowed = [
+            'nome',
+            'sobrenome',
+            'email',
+            'cpf',
+            'genero',
+            'endereco_id'
+        ];
         foreach ($allowed as $field) {
             if (isset($data[$field])) {
                 $fields[] = "$field = ?";
@@ -151,5 +159,15 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
 
     public function reactivate(int $id): void {
         $this->execute("UPDATE usuario SET ativo = 1 WHERE id = ?", [$id]);
+    }
+
+    public function getEnderecoId(int $usuarioId): ?int {
+        $result = $this->fetch("
+            SELECT endereco_id
+            FROM usuario
+            WHERE id = ?
+        ", [$usuarioId]);
+
+        return $result['endereco_id'] ?? null;
     }
 }

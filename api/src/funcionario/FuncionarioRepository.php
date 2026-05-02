@@ -3,7 +3,7 @@ namespace Funcionario;
 
 use Core\Repository;
 use Core\DataTablesRepositoryInterface;
-
+use Funcionario\DTO\FuncionarioDTO;
 class FuncionarioRepository extends Repository implements DataTablesRepositoryInterface {
 
     public function countAll(): int {
@@ -86,57 +86,68 @@ class FuncionarioRepository extends Repository implements DataTablesRepositoryIn
         return $this->fetch("
             SELECT 
                 u.*,
+                e.*,
                 c.nome as cargo_nome,
                 f.cargo_id,
                 f.registro_profissional
             FROM funcionario f
             INNER JOIN usuario u ON u.id = f.usuario_id
             LEFT JOIN cargo c ON c.id = f.cargo_id
+            LEFT JOIN endereco e ON e.id = u.endereco_id
             WHERE u.id = ?
         ", [$id]);
     }
-
-    public function create(array $data): int {
-        try {
-            // FUNCIONÁRIO
-            $this->execute("
-                INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-                VALUES (?, ?, ?, ?)
-            ", [
-                $data['usuario_id'],
-                $data['cargo_id'],
-                $data['registro_profissional'] ?? null,
-                $data['observacoes'] ?? null
-            ]);
-
-            return (int) $data['usuario_id'];
-
-        } catch (\Throwable $e) {
-            throw $e;
-        }
+    public function findFuncionarioData(int $id): ?array {
+        return $this->fetch("
+            SELECT 
+                cargo_id,
+                registro_profissional,
+                observacoes
+            FROM funcionario
+            WHERE usuario_id = ?
+        ", [$id]);
     }
 
-    public function update(int $id, array $data): void {
-        try {
-            // FUNCIONÁRIO
-            $this->execute("
-                UPDATE funcionario f
-                INNER JOIN usuario u ON u.id = f.usuario_id
-                SET 
-                    f.cargo_id = ?,
-                    f.registro_profissional = ?,
-                    f.observacoes = ?
-                WHERE u.id = ?
-            ", [
-                $data['cargo_id'],
-                $data['registro_profissional'] ?? null,
-                $data['observacoes'] ?? null,
-                $id
-            ]);
-        } catch (\Throwable $e) {
-            throw $e;
-        }
+    public function create(FuncionarioDTO $dto, int $usuarioId): int {
+        $this->execute("
+            INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
+            VALUES (?, ?, ?, ?)
+        ", [
+            $usuarioId,
+            $dto->cargo_id,
+            $dto->registro_profissional ?? null,
+            $dto->observacoes ?? null
+        ]);
+
+        return $usuarioId;
     }
 
-    
+    public function update(int $usuarioId, FuncionarioDTO $dto): void {
+        $fields = [];
+        $params = [];
+
+        if (isset($dto->cargo_id)) {
+            $fields[] = "cargo_id = ?";
+            $params[] = $dto->cargo_id;
+        }
+        if (isset($dto->registro_profissional)) {
+            $fields[] = "registro_profissional = ?";
+            $params[] = $dto->registro_profissional;
+        }
+        if (isset($dto->observacoes)) {
+            $fields[] = "observacoes = ?";
+            $params[] = $dto->observacoes;
+        }
+
+        if (empty($fields)) {
+            return;
+        }
+
+        $params[] = $usuarioId;
+
+        $this->execute("
+            UPDATE funcionario SET " . implode(', ', $fields) . "
+            WHERE usuario_id = ?
+        ", $params);
+    }
 }

@@ -3,6 +3,7 @@ namespace Funcionario;
 
 use Core\Controller;
 use Core\DataTablesResponseTrait;
+use Funcionario\DTO\FuncionarioDTO;
 
 class FuncionarioController extends Controller {
     use DataTablesResponseTrait;
@@ -26,7 +27,7 @@ class FuncionarioController extends Controller {
     }
 
     public function show(int $id) {
-        $funcionario = $this->repo->findById($id);
+        $funcionario = $this->service->findById($id);
         if (!$funcionario) {
             $this->error("Funcionário não encontrado.", 404);
             return;
@@ -35,19 +36,20 @@ class FuncionarioController extends Controller {
     }
 
     public function store() {
-        $data = $this->body();
+        $dto = FuncionarioDTO::fromArray($this->body());
         try {
-            $id = $this->service->create($data);
+            $id = $this->service->create($dto);
             $this->json(['id' => $id, 'message' =>  'Funcionário criado com sucesso.' ], 201);
         } catch (\Throwable $e) {
             error_log('[FuncionarioController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro interno ao processar requisição.", 500);
+            $this->error("Erro: " . $e->getMessage(), 500); // só para debug, depois trocar para mensagem genérica
         }
     }
 
     public function update(int $id) {
+        $dto = FuncionarioDTO::fromArray($this->body());
         try {
-            $this->service->update($id, $this->body());
+            $this->service->update($id, $dto);
             $this->json(['message' => 'Funcionário atualizado com sucesso.']);
         } catch (\Throwable $e) {
             error_log('[FuncionarioController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());

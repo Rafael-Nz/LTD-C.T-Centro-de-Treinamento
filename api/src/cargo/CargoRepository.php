@@ -1,49 +1,51 @@
 <?php
 namespace Cargo;
 
+use Core\DataTablesRepositoryInterface;
 use Core\Repository;
+use Cargo\DTO\CargoDTO;
 
-class CargoRepository extends Repository {
+class CargoRepository extends Repository implements DataTablesRepositoryInterface{
 
     public function countAll(): int {
         $result = $this->fetch("SELECT COUNT(*) as total FROM cargo");
         return (int)($result['total'] ?? 0);
     }
 
-    // Busca paginada com filtros
     public function findPaginated(int $start, int $length, string $search = '', array $filters = []): array {
         $params = [];
         $where = [];
         
-        $sql = "SELECT c.* FROM cargo c";
+        $sql = "SELECT 
+                    c.id,
+                    c.nome,
+                    c.descricao,
+                    c.salario_base,
+                    c.ativo,
+                    c.data_criacao,
+                    c.data_atualizacao
+                FROM cargo c";
 
-        // 1. Busca Global (Search Bar)
+        // Busca Global
         if (!empty($search)) {
-            $where[] = "(c.nome LIKE ? OR c.descricao LIKE ?)";
-            array_push($params, "%$search%", "%$search%");
+            $where[] = "(c.nome LIKE ?)";
+            $params[] = "%$search%";
         }
 
-        // 2. Filtros Específicos (Array de Filtros)
+        // Filtro de Status
         if (isset($filters['status']) && $filters['status'] !== '') {
-            // Transforma a string "1,0" em um array [1, 0]
-            $statusArray = explode(',', $filters['status']);
-            
-            // Cria os placeholders (?, ?) de acordo com a quantidade de itens
-            $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
-            
-            $where[] = "c.ativo IN ($placeholders)";
-            
-            // Adiciona cada valor ao array de parâmetros
-            foreach ($statusArray as $s) {
-                $params[] = $s;
-            }
+            $where[] = "c.ativo = ?";
+            $params[] = $filters['status'];
         }
 
         if (!empty($where)) {
             $sql .= " WHERE " . implode(" AND ", $where);
         }
 
-        $sql .= " GROUP BY c.id ORDER BY c.nome ASC LIMIT $length OFFSET $start";
+        $sql .= " ORDER BY c.nome ASC LIMIT ? OFFSET ?";
+        $params[] = $length;
+        $params[] = $start;
+
         return $this->fetchAll($sql, $params);
     }
 
@@ -56,19 +58,14 @@ class CargoRepository extends Repository {
         
         // Busca Global
         if (!empty($search)) {
-            $where[] = "(c.nome LIKE ? OR c.descricao LIKE ?)";
-            array_push($params, "%$search%", "%$search%");
+            $where[] = "(c.nome LIKE ?)";
+            $params[] = "%$search%";
         }
 
-        // Filtros:
-        // Status 
+        // Filtro de Status
         if (isset($filters['status']) && $filters['status'] !== '') {
-            $statusArray = explode(',', $filters['status']);
-            $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
-            $where[] = "c.ativo IN ($placeholders)";
-            foreach ($statusArray as $s) {
-                $params[] = $s;
-            }
+            $where[] = "c.ativo = ?";
+            $params[] = $filters['status'];
         }
 
         if (!empty($where)) {
@@ -106,21 +103,21 @@ class CargoRepository extends Repository {
         return $this->fetch("SELECT id FROM cargo WHERE nome = ?", [$nome]);
     }
 
-    public function insert(array $data): int {
+    public function create(CargoDTO $dto): int {
         $this->execute("
             INSERT INTO cargo (nome, descricao, salario_base, ativo)
             VALUES (:nome, :descricao, :salario_base, :ativo)
         ", [
-            ':nome'        => $data['nome'],
-            ':descricao'   => $data['descricao']   ?? null,
-            ':salario_base'=> $data['salario_base'] ?? 0,
-            ':ativo'       => $data['ativo']        ?? 1,
+            ':nome'         => $dto->nome,
+            ':descricao'    => $dto->descricao,
+            ':salario_base' => $dto->salario_base,
+            ':ativo'        => $dto->ativo ? 1 : 0,
         ]);
 
         return (int) $this->lastInsertId();
     }
 
-    public function update(int $id, array $data): bool {
+    public function update(int $id, CargoDTO $dto): bool {
         return $this->execute("
             UPDATE cargo SET
                 nome         = :nome,
@@ -129,16 +126,12 @@ class CargoRepository extends Repository {
                 ativo        = :ativo
             WHERE id = :id
         ", [
-            ':nome'        => $data['nome'],
-            ':descricao'   => $data['descricao']   ?? null,
-            ':salario_base'=> $data['salario_base'] ?? 0,
-            ':ativo'       => $data['ativo']        ?? 1,
-            ':id'          => $id,
+            ':nome'         => $dto->nome,
+            ':descricao'    => $dto->descricao,
+            ':salario_base' => $dto->salario_base,
+            ':ativo'        => $dto->ativo ? 1 : 0,
+            ':id'           => $id,
         ]);
-    }
-
-    public function toggleAtivo(int $id, int $ativo): bool {
-        return $this->execute("UPDATE cargo SET ativo = ? WHERE id = ?", [$ativo, $id]);
     }
 
     // Desativa cargo (soft delete)

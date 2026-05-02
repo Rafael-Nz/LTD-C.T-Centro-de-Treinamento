@@ -9,7 +9,7 @@ CREATE TABLE endereco (
     numero VARCHAR(10),
     cidade VARCHAR(100),
     bairro VARCHAR(100),
-    cep VARCHAR(9),
+    cep CHAR(8),
     complemento VARCHAR(100)
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     sobrenome VARCHAR(100) NOT NULL,
-    cpf VARCHAR(14) UNIQUE NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     senha VARCHAR(300) NOT NULL,
     data_nascimento DATE NOT NULL,
@@ -59,12 +59,18 @@ CREATE TABLE aluno (
     FOREIGN KEY (cadastrado_por) REFERENCES funcionario(usuario_id)
 );
 
+CREATE TABLE sequencia_matricula (
+    id INT AUTO_INCREMENT PRIMARY KEY
+);
+
 -- 3. COMUNICAÇÃO (Unificada para qualquer usuário)
 CREATE TABLE contato (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
-    tipo ENUM('telefone', 'whatsapp', 'email_secundario') NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
     valor VARCHAR(100) NOT NULL,
+    UNIQUE (usuario_id, tipo),
+    INDEX idx_contato_usuario (usuario_id),
     FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
@@ -144,6 +150,8 @@ CREATE TABLE treino_agenda (
     data_hora_inicio DATETIME NOT NULL,
     data_hora_fim DATETIME NOT NULL,
     status ENUM('agendado', 'concluido', 'cancelado') DEFAULT 'agendado',
+    INDEX idx_treino_turma (turma_id),
+    INDEX idx_treino_espaco (espaco_id),
     FOREIGN KEY (turma_id) REFERENCES turma(id),
     FOREIGN KEY (espaco_id) REFERENCES espaco_treino(id)
 );
@@ -153,6 +161,8 @@ CREATE TABLE presenca_treino (
     aluno_id INT NOT NULL,
     situacao ENUM('presente', 'ausente', 'justificado') DEFAULT 'presente',
     checkin_time DATETIME,
+    INDEX idx_presenca_aluno (aluno_id),
+    INDEX idx_presenca_treino (treino_id),
     PRIMARY KEY (treino_id, aluno_id),
     FOREIGN KEY (treino_id) REFERENCES treino_agenda(id) ON DELETE CASCADE,
     FOREIGN KEY (aluno_id) REFERENCES aluno(usuario_id) ON DELETE CASCADE
@@ -194,10 +204,10 @@ INSERT INTO cargo (nome, descricao, salario_base, ativo) VALUES
 
 -- INSERINDO O PRIMEIRO ADMIN (Exemplo de Fluxo)
 INSERT INTO endereco (logradouro, numero, cidade, bairro, cep) 
-VALUES ('Av. Central', '100', 'São Paulo', 'Centro', '01010-000');
+VALUES ('Av. Central', '100', 'São Paulo', 'Centro', '01010000');
 
 INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, tipo_usuario, endereco_id)
-VALUES ('Admin', 'Master', '111.111.111-11', 'admin@gym.com', 'hash_aqui', '1990-01-01', 'admin', 1);
+VALUES ('Admin', 'Master', '00000000000', 'admin@gym.com', 'hash_aqui', '1990-01-01', 'admin', 1);
 
 INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional)
 VALUES (1, 1, 'ADM-01');

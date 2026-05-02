@@ -3,8 +3,7 @@ namespace Funcionario;
 
 use Core\Service;
 use Usuario\UsuarioService;
-use Core\Database;
-
+use Funcionario\DTO\FuncionarioDTO;
 class FuncionarioService extends Service {
 
     private FuncionarioRepository $funcionarioRepo;
@@ -15,41 +14,46 @@ class FuncionarioService extends Service {
         $this->usuarioService = new UsuarioService();
     }
 
-    public function create(array $data): int {
-        return $this->transaction(function() use ($data) {
+    public function create(FuncionarioDTO $dto): int {
+        return $this->transaction(function() use ($dto) {
+            // Força o tipo de usuário
+            $dto->tipo_usuario = 'funcionario';
 
-            // 1. Montar estrutura para usuário
-            $usuarioData = [
-                'nome' => $data['nome'] ?? null,
-                'sobrenome' => $data['sobrenome'] ?? null,
-                'cpf' => $data['cpf'] ?? null,
-                'email' => $data['email'] ?? null,
-                'data_nascimento' => $data['data_nascimento'] ?? null,
-                'genero' => $data['genero'] ?? 'O',
-                'senha' => $data['senha'] ?? null,
-                'tipo_usuario' => 'funcionario',
-                'endereco' => $data['endereco'] ?? null,
-                'contatos' => $data['contatos'] ?? null
-            ];
+            // Cria o usuário base (DTO é subclasse de UsuarioDTO)
+            $usuarioId = $this->usuarioService->create($dto);
 
-            // 2. Criar a base do usuário
-            $usuarioId = $this->usuarioService->create($usuarioData);
-
-            // 4. Criar o registro de funcionário
-            $this->funcionarioRepo->create([
-                'usuario_id' => $usuarioId,
-                'cargo_id' => $data['cargo_id'] ?? null,
-                'registro_profissional' => $data['registro_profissional'] ?? null,
-                'observacoes' => $data['observacoes'] ?? null
-            ]);
+            // Cria o registro específico de funcionário
+            $this->funcionarioRepo->create($dto, $usuarioId);
 
             return $usuarioId;
         });
     }
 
-    // UPDATE
-    public function update(int $id, array $data): void {
-        $this->funcionarioRepo->update($id, $data);
+    public function update(int $id, FuncionarioDTO $dto): void {
+        $this->transaction(function() use ($id, $dto) {
+            // Atualiza dados do usuário (se houver campos alterados)
+            $this->usuarioService->update($id, $dto);
+
+            // Atualiza dados específicos do funcionário
+            $this->funcionarioRepo->update($id, $dto);
+        });
+    }
+
+    public function findById(int $id): ?array {
+        $usuario = $this->usuarioService->findById($id);
+        if (!$usuario) return null;
+
+        $funcionario = $this->funcionarioRepo->findFuncionarioData($id);
+        if (!$funcionario) return null;
+
+        return array_merge(
+            $usuario,
+            [
+                'cargo_id' => $funcionario['cargo_id'],
+                'registro_profissional' => $funcionario['registro_profissional'],
+                'observacoes' => $funcionario['observacoes']
+            ]
+        );
     }
 
     // DELETE (soft)

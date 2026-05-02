@@ -3,6 +3,7 @@ namespace Usuario;
 
 use Core\Controller;
 use Core\DataTablesResponseTrait;
+use Usuario\DTO\UsuarioDTO;
 
 class UsuarioController extends Controller {
     use DataTablesResponseTrait;
@@ -26,7 +27,7 @@ class UsuarioController extends Controller {
     }
 
     public function show(int $id) {
-        $usuario = $this->repo->findById($id);
+        $usuario = $this->service->findById($id);
         if (!$usuario) {
             $this->error("Usuário não encontrado.", 404);
             return;
@@ -35,18 +36,18 @@ class UsuarioController extends Controller {
     }
 
     public function store() {
-        $data = $this->body();
+        $dto = UsuarioDTO::fromArray($this->body());
 
         // Validação básica
-        if (empty($data['nome']) || empty($data['sobrenome']) || empty($data['cpf']) || empty($data['email']) || empty($data['data_nascimento'])) {
+        if (empty($dto->nome) || empty($dto->sobrenome) || empty($dto->cpf) || empty($dto->email) || empty($dto->data_nascimento)) {
             $this->error("Campos obrigatórios: nome, sobrenome, cpf, email, data_nascimento", 400);
             return;
         }
 
         try {
-            $id = match($data['tipo_usuario']) {
-                'aluno' => (new \Aluno\AlunoService())->create($data),
-                'funcionario' => (new \Funcionario\FuncionarioService())->create($data),
+            $id = match($dto->tipo_usuario) {
+                'aluno' => (new \Aluno\AlunoService())->create(\Aluno\DTO\AlunoDTO::fromArray($dto->toArray())),
+                'funcionario' => (new \Funcionario\FuncionarioService())->create(\Funcionario\DTO\FuncionarioDTO::fromArray($dto->toArray())),
                 default => throw new \Exception("Tipo de usuário inválido.")
             };
             $this->json(['id' => $id], 201);
@@ -57,10 +58,10 @@ class UsuarioController extends Controller {
     }
 
     public function update(int $id) {
-        $data = $this->body();
+        $dto = UsuarioDTO::fromArray($this->body());
 
         try {
-            $this->service->update($id, $data);
+            $this->service->update($id, $dto);
             $this->json(['message' => 'Usuário atualizado com sucesso.']);
         } catch (\Throwable $e) {
             error_log('[UsuarioController::update] ' . $e->getMessage());

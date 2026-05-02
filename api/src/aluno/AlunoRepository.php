@@ -3,6 +3,7 @@ namespace Aluno;
 
 use Core\Repository;
 use Core\DataTablesRepositoryInterface;
+use Aluno\DTO\AlunoDTO;
 
 class AlunoRepository extends Repository implements DataTablesRepositoryInterface {
 
@@ -127,63 +128,58 @@ class AlunoRepository extends Repository implements DataTablesRepositoryInterfac
         ");
     }
 
-    public function findById(int $id): ?array {
+    public function findAlunoData(int $id): ?array {
         return $this->fetch("
             SELECT 
-                u.*,
-                a.data_matricula,
-                a.codigo_matricula,
-                e.*
-            FROM aluno a
-            INNER JOIN usuario u ON u.id = a.usuario_id
-            LEFT JOIN endereco e ON e.id = u.endereco_id
-            WHERE u.id = ?
+                usuario_id,
+                data_matricula,
+                codigo_matricula
+            FROM aluno
+            WHERE usuario_id = ?
         ", [$id]);
     }
 
-    public function create(array $data): int {
+    public function create(AlunoDTO $dto, int $usuarioId): int {
         try {
             // ALUNO
             $this->execute("
                 INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
                 VALUES (?, ?, ?, ?)
             ", [
-                $data['usuario_id'],
-                $data['data_matricula'],
-                $data['cadastrado_por'],
-                $data['codigo_matricula']
+                $usuarioId,
+                $dto->data_matricula ?? date('Y-m-d'),
+                $dto->cadastrado_por ?? 1,
+                $dto->codigo_matricula ?? null
             ]);
 
-            return (int) $data['usuario_id'];
+            return $usuarioId;
 
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, array $data): void {
+    public function update(int $usuarioId, AlunoDTO $dto): void {
         try {
+            $fields = [];
+            $params = [];
+
+            if (isset($dto->data_matricula)) {
+                $fields[] = "data_matricula = ?";
+                $params[] = $dto->data_matricula;
+            }
+
+            if (empty($fields)) return;
+
+            $params[] = $usuarioId;
+
             $this->execute("
-                UPDATE aluno SET
-                    data_matricula = ?
+                UPDATE aluno SET " . implode(', ', $fields) . "
                 WHERE usuario_id = ?
-            ", [
-                $data['data_matricula'],
-                $id
-            ]);
+            ", $params);
 
         } catch (\Throwable $e) {
             throw $e;
         }
-    }
-
-    public function countByMonth(string $prefixo): int {
-        $result = $this->fetch("
-            SELECT COUNT(*) as total 
-            FROM aluno 
-            WHERE codigo_matricula LIKE ?
-        ", [$prefixo . '%']);
-
-        return (int) ($result['total'] ?? 0);
     }
 }

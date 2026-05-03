@@ -1,14 +1,23 @@
 <?php
 
+$acao = $_GET['acao'] ?? 'novo';
+
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
+if (!$acao && $id) {
+    $acao = 'editar';
+}
+
+$isEdit = ($acao === 'editar' && $id);
+$pageTitle = $isEdit ? 'Editar Funcionário' : 'Cadastrar Funcionário';
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross C.T | <?= $id ? 'Editar Funcionário' : 'Cadastrar Funcionário' ?></title>
+    <title>Cross C.T | <?= $pageTitle ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="/ctt/css/admin-styles.css">
     <link rel="stylesheet" href="/ctt/css/form.css">
@@ -29,7 +38,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
     
     <main class="flex-fill d-flex" id="mainContent">
       <div class="container-lg p-4 d-flex flex-column flex-fill">
-        <h1 class="h4 mb-4"><?= $id ? "Editar Funcionário" : "Cadastrar Funcionário" ?></h1>
+        <h1 class="h4 mb-4"><?= $pageTitle ?></h1>
         <div class="card shadow-sm d-flex flex-fill">
           <div class="card-body">
             <form id="formFuncionario" data-id="<?= $id ?>" action="" method="POST">
@@ -53,7 +62,14 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                              placeholder="Digite o sobrenome" required>
                     </div>
                   </div>
-                  
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-12">
+                      <label for="email" class="form-label">E-mail:</label>
+                      <input type="email" name="email" id="email" class="form-control" placeholder="email@exemplo.com" required>
+                    </div>
+                  </div>
+
                   <div class="row g-3 mb-3">
                     <div class="col-md-6">
                       <label for="cpf" class="form-label">CPF:</label>
@@ -88,21 +104,21 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                   
                   <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                      <label for="telefone1" class="form-label">Telefone 1:</label>
+                      <label for="telefone1" class="form-label">Telefone:</label>
                       <input type="tel" name="telefone1" id="telefone1" class="form-control" 
                              placeholder="(__) _____-____" maxlength="15" required>
                     </div>
                     
                     <div class="col-md-6">
-                      <label for="telefone2" class="form-label">Telefone 2 (Opcional):</label>
+                      <label for="telefone2" class="form-label">WhatsApp (Opcional):</label>
                       <input type="tel" name="telefone2" id="telefone2" class="form-control" 
-                             placeholder="(__) _____-____" maxlength="14">
+                             placeholder="(__) _____-____" maxlength="15">
                     </div>
                   </div>
                   
                   <div class="mb-3">
-                    <label for="email" class="form-label">E-mail:</label>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="email@exemplo.com" required>
+                    <label for="email2" class="form-label">E-mail Secundário:</label>
+                    <input type="email" name="email2" id="email2" class="form-control" placeholder="email@exemplo.com">
                   </div>
                 </div>
 
@@ -112,8 +128,8 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
                   
                   <div class="row g-3 mb-3">
                     <div class="col-md-8">
-                      <label for="endereco" class="form-label">Logradouro/Rua:</label>
-                      <input type="text" name="endereco" id="endereco" class="form-control" placeholder="Rua, Avenida, etc." required>
+                      <label for="logradouro" class="form-label">Logradouro/Rua:</label>
+                      <input type="text" name="logradouro" id="logradouro" class="form-control" placeholder="Rua, Avenida, etc." required>
                     </div>
                     
                     <div class="col-md-4">
@@ -181,7 +197,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
               </div>
 
               <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="funcionarios.php" class="btn btn-red">Voltar</a>
+                <a href="/ctt/admin/funcionarios" class="btn btn-red">Voltar</a>
                 <button type="submit" class="btn btn-red">
                   <?= $id ? "Salvar Alterações" : "Cadastrar Funcionário" ?>
                 </button>
@@ -197,6 +213,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://unpkg.com/imask"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
     <script defer src="/ctt/js/admin/sidebar.js"></script>

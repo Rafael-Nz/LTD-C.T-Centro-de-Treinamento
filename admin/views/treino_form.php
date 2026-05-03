@@ -97,7 +97,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
               </div>
 
               <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="treinos.php" class="btn btn-red">Voltar</a>
+                <a href="/ctt/admin/treinos" class="btn btn-red">Voltar</a>
                 <button type="submit" class="btn btn-red">
                   <?= $id ? "Salvar Alterações" : "Cadastrar Treino" ?>
                 </button>
@@ -113,6 +113,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://unpkg.com/imask"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>

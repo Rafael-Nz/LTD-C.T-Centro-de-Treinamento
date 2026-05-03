@@ -21,7 +21,10 @@ class FuncionarioController extends Controller {
         $length = (int)($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
         
-        $filters = ['status' => $_GET['status'] ?? ''];
+        $filters = [
+            'status' => $_GET['status'] ?? '',
+            'cargo_id' => $_GET['cargo_id'] ?? ''
+        ];
         
         $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }

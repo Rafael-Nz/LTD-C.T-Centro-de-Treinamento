@@ -42,6 +42,10 @@ class FuncionarioRepository extends Repository implements DataTablesRepositoryIn
             $where[] = "u.ativo = ?";
             $params[] = $filters['status'];
         }
+        if (isset($filters['cargo_id']) && $filters['cargo_id'] !== '') {
+            $where[] = "f.cargo_id = ?";
+            $params[] = $filters['cargo_id'];
+        }
 
         if (!empty($where)) {
             $sql .= " WHERE " . implode(" AND ", $where);
@@ -73,7 +77,11 @@ class FuncionarioRepository extends Repository implements DataTablesRepositoryIn
             $where[] = "u.ativo = ?";
             $params[] = $filters['status'];
         }
-
+        if (isset($filters['cargo_id']) && $filters['cargo_id'] !== '') {
+            $where[] = "f.cargo_id = ?";
+            $params[] = $filters['cargo_id'];
+        }
+        
         if (!empty($where)) {
             $sql .= " WHERE " . implode(" AND ", $where);
         }

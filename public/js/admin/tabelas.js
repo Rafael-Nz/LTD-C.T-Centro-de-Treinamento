@@ -44,7 +44,6 @@ function inicializarTabela(config) {
             },
             dataSrc: function (json) {
                 if (json.success && json.data.data) {
-                    // Ajusta os contadores manualmente para o DataTables ler da raiz
                     json.draw = json.data.draw;
                     json.recordsTotal = json.data.recordsTotal;
                     json.recordsFiltered = json.data.recordsFiltered;
@@ -101,14 +100,24 @@ function inicializarTabela(config) {
 
     /* ===================== BUSCA ===================== */
     if (searchInput) {
-        $(searchInput).on('keyup', function () {
-            tabela.search(this.value).draw();
+        $(searchInput).on('keypress', function (e) {
+            if (e.which === 13) {
+                tabela.search(this.value).draw();
+            }
         });
     }
 
     if (searchButton) {
         $(searchButton).on('click', function () {
             tabela.search($(searchInput).val()).draw();
+        });
+    }
+
+    if (searchInput) {
+        $(searchInput).on('search', function () {
+            if ($(this).val() === "") {
+                tabela.search('').draw();
+            }
         });
     }
 
@@ -185,6 +194,8 @@ function configurarToggleStatus(config) {
         botaoSeletor,
         urlAPI,
         tabelaId,
+        rotaDesativar = '/desativar',  // Nova opção: rota para desativar
+        rotaReativar = '/reativar',    // Nova opção: rota para reativar
         mensagens = {
             desativar: { titulo: 'Confirmar desativação', texto: 'Tem certeza que deseja desativar este registro?' },
             reativar: { titulo: 'Confirmar reativação', texto: 'Tem certeza que deseja reativar este registro?' },
@@ -194,10 +205,14 @@ function configurarToggleStatus(config) {
         onSuccess = null
     } = config;
 
-    $(document).on('click', botaoSeletor, function () {
-        const id = $(this).data('id');
-
-        const ativo = parseInt($(this).attr('data-ativo'), 10);
+    $(document).on('click', botaoSeletor, function (e) {
+        e.preventDefault(); // Prevenir comportamento padrão
+        
+        const $btn = $(this);
+        const id = $btn.data('id');
+        
+        // IMPORTANTE: data-ativo pode ser string, converter corretamente
+        const ativo = parseInt($btn.data('ativo'), 10);
         const isDesativando = (ativo === 1);
 
         const acao = isDesativando ? 'desativar' : 'reativar';
@@ -214,21 +229,26 @@ function configurarToggleStatus(config) {
         }).then(res => {
             if (!res.isConfirmed) return;
 
-            const metodo = isDesativando ? 'DELETE' : 'PUT';
-
-            const finalUrl = isDesativando 
-                ? `${urlAPI}/${id}` 
-                : `${urlAPI}/${id}/reativar`;
+            // URLs usando PUT para ambas as ações
+            let url, method;
+            
+            if (isDesativando) {
+                url = `${urlAPI}/${id}${rotaDesativar}`;
+                method = 'PUT';
+            } else {
+                url = `${urlAPI}/${id}${rotaReativar}`;
+                method = 'PUT';
+            }
 
             $.ajax({
-                url: finalUrl,
-                method: metodo,
-
-                data: null,
-
+                url: url,
+                method: method,
                 contentType: 'application/json; charset=UTF-8',
                 dataType: 'json',
-
+                
+                // Adicionar headers para evitar cache
+                cache: false,
+                
                 success: (response) => {
                     Swal.fire({
                         title: 'Sucesso!',
@@ -248,8 +268,20 @@ function configurarToggleStatus(config) {
                 },
 
                 error: (xhr) => {
-                    const errorMsg = xhr.responseJSON?.error || mensagens.erro;
+                    let errorMsg = mensagens.erro;
+                    
+                    if (xhr.responseJSON?.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON?.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    } else if (xhr.status === 404) {
+                        errorMsg = 'Rota não encontrada. Verifique a URL.';
+                    } else if (xhr.status === 500) {
+                        errorMsg = 'Erro interno do servidor.';
+                    }
+                    
                     Swal.fire('Erro!', errorMsg, 'error');
+                    console.error('Erro detalhado:', xhr);
                 }
             });
         });

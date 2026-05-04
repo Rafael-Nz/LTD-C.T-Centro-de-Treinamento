@@ -148,7 +148,7 @@ class AlunoRepository extends Repository implements DataTablesRepositoryInterfac
             ", [
                 $usuarioId,
                 $dto->data_matricula ?? date('Y-m-d'),
-                $dto->cadastrado_por ?? 1,
+                $dto->cadastrado_por,
                 $dto->codigo_matricula ?? null
             ]);
 

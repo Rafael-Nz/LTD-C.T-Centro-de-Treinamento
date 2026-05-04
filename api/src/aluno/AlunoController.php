@@ -1,6 +1,7 @@
 <?php
 namespace Aluno;
 
+use Core\Auth;
 use Core\Controller;
 use Core\DataTablesResponseTrait;
 use Aluno\DTO\AlunoDTO;
@@ -38,6 +39,8 @@ class AlunoController extends Controller {
 
     public function store() {
         $dto = AlunoDTO::fromArray($this->body());
+
+        $dto->cadastrado_por = Auth::user('id');
 
         try {
             $id = $this->service->create($dto);

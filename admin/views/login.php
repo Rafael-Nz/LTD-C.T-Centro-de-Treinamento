@@ -26,8 +26,8 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     <?php endif; ?>
-
-    <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+    <div id="error-container"></div>
+    <form id="formLogin">
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
         <input type="email" class="form-control form-control-dark" id="email" name="email" required autofocus placeholder="admin@centrotreinamento.com">
@@ -63,22 +63,7 @@
   
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const togglePassword = document.getElementById("togglePassword");
-        const passwordInput = document.getElementById("senha");
-        const eyeIcon = document.getElementById("eyeIcon");
-
-        togglePassword.addEventListener("click", () => {
-            const isPassword = passwordInput.type === "password";
-            passwordInput.type = isPassword ? "text" : "password";
-
-            // Alterna o ícone
-            eyeIcon.classList.toggle("ph-eye");
-            eyeIcon.classList.toggle("ph-eye-slash");
-        });
-    });
-  </script>
+  <script src="/ctt/js/admin/login.js"></script>
 </body>
 
 </html>

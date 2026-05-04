@@ -12,44 +12,44 @@ class AdminRouter {
      * Adiciona uma rota amigável
      * Exemplo: $router->add('alunos/editar/{id}', 'aluno_form.php', ['acao' => 'editar']);
      */
-    public function add(string $pattern, string $view, array $defaultParams = []): void {
+    public function add(string $pattern, string $view, array $defaultParams = [], array $middlewares = []): void {
         // Converte padrão para regex
         $regex = preg_replace('/\{([a-z_]+)\}/', '(?P<$1>[^/]+)', $pattern);
         $regex = '#^' . $regex . '$#';
         
         $this->routes[$regex] = [
             'view' => $view,
-            'defaultParams' => $defaultParams
+            'defaultParams' => $defaultParams,
+            'middlewares' => $middlewares
         ];
     }
-    
-    /**
-     * Adiciona múltiplas rotas de uma vez
-     */
-    public function addRoutes(array $routes): void {
-        foreach ($routes as $pattern => $config) {
-            if (is_string($config)) {
-                $this->add($pattern, $config);
-            } else {
-                $this->add($pattern, $config['view'], $config['params'] ?? []);
-            }
-        }
-    }
-    
+
     /**
      * Processa a URL atual
      */
     public function dispatch(string $url): void {
         $url = trim($url, '/');
-        
+
+        if (!defined('BASE_URL')) define('BASE_URL', '/ctt/admin/');
+        if (!defined('API_BASE_URL')) define('API_BASE_URL', '/ctt/api/');
+
         foreach ($this->routes as $regex => $route) {
             if (preg_match($regex, $url, $matches)) {
+
+                foreach ($route['middlewares'] as $middleware) {
+                    if (is_callable($middleware)) {
+                        $middleware(); 
+                    }
+                }
+
+                if (empty($route['view'])) {
+                    return; 
+                }
+
                 // Extrai parâmetros da URL
                 $params = [];
                 foreach ($matches as $key => $value) {
-                    if (!is_numeric($key)) {
-                        $params[$key] = $value;
-                    }
+                    if (!is_numeric($key)) $params[$key] = $value;
                 }
                 
                 // Adiciona parâmetros padrão
@@ -58,8 +58,6 @@ class AdminRouter {
                 // Carrega a view
                 $viewFile = $this->baseDir . $route['view'];
                 if (file_exists($viewFile)) {
-                    define('BASE_URL', '/ctt/admin/');
-                    define('API_BASE_URL', '/ctt/api/');
                     include $viewFile;
                     return;
                 }
@@ -78,7 +76,7 @@ class AdminRouter {
         foreach ($this->routes as $regex => $config) {
             // Busca a rota que corresponde ao padrão
             $cleanPattern = str_replace(['#^', '$#'], '', $regex);
-            $cleanPattern = str_replace(['(?P<', '>[^/]+)'], ['{', '}', $cleanPattern]);
+            $cleanPattern = str_replace(['(?P<', '>[^/]+)'], ['{', '}'], $cleanPattern);
             
             if ($cleanPattern === $route || strpos($cleanPattern, $route) !== false) {
                 $url = $route;

@@ -19,7 +19,7 @@
       <!-- Nome do usuário + logout -->
       <ul class="navbar-nav flex-row align-items-center">
         <li class="nav-item">
-          <a class="nav-link text-white" href="logout" title="Sair">
+          <a class="nav-link text-white" href="/ctt/admin/logout" title="Sair">
             <i class="ph ph-sign-out icon"></i>
           </a>
         </li>

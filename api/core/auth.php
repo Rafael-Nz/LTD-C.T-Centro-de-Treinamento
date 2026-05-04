@@ -2,48 +2,68 @@
 namespace Core;
 
 class Auth {
-
     private static function start(): void {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
     }
 
-    public static function check(): void {
+    /**
+     * Recupera um dado do usuário logado na sessão
+     */
+    public static function user(?string $key = null) {
         self::start();
 
-        if (empty($_SESSION['user'])) {
+        $user = $_SESSION['user'] ?? null;
+
+        if (!$user) {
+            return null;
+        }
+
+        // Se pedir uma chave específica (ex: 'id'), retorna só ela
+        if ($key) {
+            return $user[$key] ?? null;
+        }
+
+        return $user;
+    }
+    
+    /**
+     * Bloqueia o acesso se não houver sessão
+     */
+    public static function check(): void {
+        self::start();
+        if (empty($_SESSION['user_id'])) {
             http_response_code(401);
             header('Content-Type: application/json; charset=utf-8');
-            echo json_encode([
-                'success' => false,
-                'message' => 'Não autenticado'
-            ]);
+            echo json_encode(['success' => false, 'message' => 'Sessão expirada ou não encontrada.']);
             exit;
         }
     }
 
-    public static function user(): ?array {
-        self::start();
-        return $_SESSION['user'] ?? null;
-    }
-
-    public static function id(): ?int {
-        return $_SESSION['user']['id'] ?? null;
-    }
-
-    public static function can(string $permission): bool {
-        self::start();
-        return in_array($permission, $_SESSION['user']['permissoes'] ?? []);
-    }
-
-    public static function login(array $user): void {
-        self::start();
-        $_SESSION['user'] = $user;
+    public static function login($usuario): void {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (is_array($usuario)) {
+            $_SESSION['user_id'] = $usuario['id'];
+            $_SESSION['user_nome'] = $usuario['nome'];
+            $_SESSION['user_tipo'] = $usuario['tipo'];
+            $_SESSION['user'] = $usuario;
+        } else {
+            $_SESSION['user_id'] = $usuario;
+        }
     }
 
     public static function logout(): void {
         self::start();
+        session_unset();
         session_destroy();
     }
+
+    public static function id(): ?int {
+        self::start();
+        return $_SESSION['user_id'] ?? null;
+    }
+    
 }

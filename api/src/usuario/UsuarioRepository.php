@@ -170,4 +170,12 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
 
         return $result['endereco_id'] ?? null;
     }
+
+    public function findByLogin(string $login): ?array {
+        return $this->fetch("
+            SELECT id, nome, email, senha, ativo, tipo_usuario 
+            FROM usuario 
+            WHERE email = ? OR cpf = ?
+        ", [$login, $login]);
+    }
 }

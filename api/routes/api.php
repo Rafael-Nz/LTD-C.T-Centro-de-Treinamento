@@ -15,6 +15,7 @@ use Usuario\UsuarioController;
 use Anamnese\AnamneseController;
 use Local\LocalController;
 use Treino\TreinoController;
+use Turma\TurmaController;
 
 // Atalho para o middleware de proteção
 $auth = [AuthMiddleware::class];
@@ -61,6 +62,14 @@ Router::post('/funcionarios', [FuncionarioController::class, 'store'], $auth);
 Router::put('/funcionarios/{id}', [FuncionarioController::class, 'update'], $auth);
 Router::put('/funcionarios/{id}/desativar', [FuncionarioController::class, 'deactivate'], $auth);
 Router::put('/funcionarios/{id}/reativar', [FuncionarioController::class, 'reactivate'], $auth);
+
+// ROTAS DE TURMAS
+Router::get('/turmas', [TurmaController::class, 'index'], $auth);
+Router::get('/turmas/{id}', [TurmaController::class, 'show'], $auth);
+Router::post('/turmas', [TurmaController::class, 'store'], $auth);
+Router::put('/turmas/{id}', [TurmaController::class, 'update'], $auth);
+Router::delete('/turmas/{id}', [TurmaController::class, 'deactivate'], $auth);
+Router::put('/turmas/{id}/reativar', [TurmaController::class, 'reactivate'], $auth);
 
 // ROTAS DE LOCAL DE TREINO -- caio
 Router::get('/local', [LocalController::class, 'index'], $auth);

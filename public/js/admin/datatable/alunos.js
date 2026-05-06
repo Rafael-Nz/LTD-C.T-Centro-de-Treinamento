@@ -2,7 +2,7 @@ $(document).ready(function () {
 // 1. Inicializar a tabela
     const configAlunos = {
         tableId: 'tabelaAlunos',
-        ajaxUrl: '/ctt/api/v1/aluno/',
+        ajaxUrl: '/ctt/api/alunos',
         getFilters: function() {
             // Criamos um array para armazenar os status selecionados
             let statusSelecionados = [];
@@ -48,7 +48,7 @@ $(document).ready(function () {
 
                     return `
                         <div class=\"d-flex gap-2 justify-content-center\">
-                            <a href=\"aluno_form.php?id=${data.id}\" class=\"btn btn-sm btn-primary\">
+                            <a href=\"/ctt/admin/alunos/editar/${data.id}\" class=\"btn btn-sm btn-primary\">
                                 <i class=\"ph ph-pencil\"></i>
                             </a>
                             ${btnStatus}
@@ -77,7 +77,21 @@ $(document).ready(function () {
 
     configurarToggleStatus({
         botaoSeletor: '.btn-toggle-status',
-        urlAPI: '/api/v1/alunos',
-        tabelaId: 'tabelaAlunos'
+        urlAPI: '/ctt/api/alunos',
+        tabelaId: 'tabelaAlunos',
+        rotaDesativar: '/desativar',  // Usa a nova rota PUT
+        rotaReativar: '/reativar',    // Usa a rota PUT existente
+        mensagens: {
+            desativar: { 
+                titulo: 'Confirmar desativação', 
+                texto: 'Este funcionário será desativado e não poderá mais acessar o sistema.' 
+            },
+            reativar: { 
+                titulo: 'Confirmar reativação', 
+                texto: 'O funcionário será reativado normalmente.' 
+            },
+            sucesso: 'Status do funcionário alterado com sucesso!',
+            erro: 'Erro ao alterar o status do funcionário.'
+        }
     });
 });

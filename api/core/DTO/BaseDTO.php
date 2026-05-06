@@ -20,30 +20,22 @@ abstract class BaseDTO
             if ($propertyType === 'array' && is_array($value)) {
                 $dtoClass = $this->getArrayItemDtoClass($key);
                 
-
-                if (!is_string($dtoClass) || !class_exists($dtoClass) || !is_subclass_of($dtoClass, self::class)) {
+                if ($dtoClass && is_subclass_of($dtoClass, self::class)) {
+                    $this->$key = array_map(function ($item) use ($dtoClass) {
+                        return is_array($item) ? $dtoClass::fromArray($item) : $item;
+                    }, $value);
                     continue;
                 }
-
-                /** @var class-string<BaseDTO> $dtoClass */
-                $cls = $dtoClass;
-
-                $this->$key = array_map(
-                    function ($item) use ($cls) {
-                        return $cls::fromArray($item);
-                    },
-                    $value
-                );
-
-                continue;
             }
 
             $this->$key = $value;
         }
     }
 
-    public static function fromArray(array $data): static
-    {
+    /**
+     * @return static
+     */
+    public static function fromArray(array $data): static {
         return new static($data);
     }
 

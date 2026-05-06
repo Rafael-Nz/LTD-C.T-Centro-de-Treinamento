@@ -2,7 +2,6 @@ DROP DATABASE IF EXISTS db_centro_treinamento;
 CREATE DATABASE db_centro_treinamento CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE db_centro_treinamento;
 
--- 1. INFRAESTRUTURA BÁSICA
 CREATE TABLE endereco (
     id INT AUTO_INCREMENT PRIMARY KEY,
     logradouro VARCHAR(200),
@@ -23,7 +22,6 @@ CREATE TABLE cargo (
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 2. CORE DE USUÁRIOS (Herança/Especialização)
 CREATE TABLE usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -63,7 +61,6 @@ CREATE TABLE sequencia_matricula (
     id INT AUTO_INCREMENT PRIMARY KEY
 );
 
--- 3. COMUNICAÇÃO (Unificada para qualquer usuário)
 CREATE TABLE contato (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
@@ -74,7 +71,6 @@ CREATE TABLE contato (
     FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
--- 4. GESTÃO DE TREINOS E ESPAÇOS
 CREATE TABLE modalidade (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL UNIQUE,
@@ -99,7 +95,7 @@ CREATE TABLE turma (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     modalidade_id INT NOT NULL,
-    instrutor_id INT NOT NULL,
+    instrutor_id INT ,
     turno ENUM('manha', 'tarde', 'noite') NOT NULL,
     capacidade_minima INT NOT NULL,
     capacidade_maxima INT NOT NULL,
@@ -110,22 +106,45 @@ CREATE TABLE turma (
     FOREIGN KEY (instrutor_id) REFERENCES funcionario(usuario_id)
 );
 
--- 5. INFORMÇÕES DE SAÚDE E AVALIAÇÃO (Normalizado)
+CREATE TABLE anamnese_formulario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    descricao TEXT,
+    versao INT DEFAULT 1,
+    ativo BOOLEAN DEFAULT TRUE,
+    criado_por INT,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_ativo (ativo),
+    FOREIGN KEY (criado_por) REFERENCES usuario(id) ON DELETE SET NULL
+);
+
 CREATE TABLE anamnese_pergunta (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    slug VARCHAR(50) UNIQUE NOT NULL,
+    formulario_id INT,
+    slug VARCHAR(50) NOT NULL,
     pergunta TEXT NOT NULL,
     categoria VARCHAR(50),
-    tipo_resposta ENUM(
-        'boolean',
+    tipo_input ENUM(
         'text',
-        'boolean_with_text',
-        'multi_select'
-    ) DEFAULT 'boolean',
+        'textarea',
+        'number',
+        'date',
+        'boolean',
+        'select',
+        'radio',
+        'checkbox'
+    ) NOT NULL,
     obrigatoria BOOLEAN DEFAULT FALSE,
     ordem INT DEFAULT 0,
     versao INT DEFAULT 1,
-    ativo BOOLEAN DEFAULT TRUE
+    ativo BOOLEAN DEFAULT TRUE,
+    config JSON NULL,
+    regra_exibicao JSON NULL,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pergunta_formulario (formulario_id, ordem),
+    FOREIGN KEY (formulario_id) REFERENCES anamnese_formulario(id) ON DELETE CASCADE,
     UNIQUE (slug, versao)
 );
 
@@ -134,9 +153,9 @@ CREATE TABLE anamnese_opcao (
     pergunta_id INT NOT NULL,
     label VARCHAR(100) NOT NULL,
     valor VARCHAR(50) NOT NULL,
-    possui_observacao BOOLEAN DEFAULT FALSE,
     ordem INT DEFAULT 0,
-    FOREIGN KEY (pergunta_id) REFERENCES anamnese_pergunta(id) ON DELETE CASCADE
+    config JSON NULL, -- ex: possui_observacao, cor, etc
+    FOREIGN KEY (pergunta_id) REFERENCES anamnese_pergunta(id) ON DELETE CASCADE,
     UNIQUE (pergunta_id, valor)
 );
 
@@ -144,15 +163,12 @@ CREATE TABLE anamnese_resposta (
     id INT AUTO_INCREMENT PRIMARY KEY,
     aluno_id INT NOT NULL,
     pergunta_id INT NOT NULL,
-    resposta_boolean BOOLEAN,
-    resposta_texto TEXT,
-    resposta_data DATE,
-    opcao_id INT,
-    observacao TEXT,
+    valor JSON NOT NULL,
+    observacao TEXT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (aluno_id) REFERENCES aluno(usuario_id) ON DELETE CASCADE,
     FOREIGN KEY (pergunta_id) REFERENCES anamnese_pergunta(id),
-    FOREIGN KEY (opcao_id) REFERENCES anamnese_opcao(id)
-    UNIQUE (aluno_id, pergunta_id, opcao_id)
+    UNIQUE (aluno_id, pergunta_id)
 );
 
 CREATE TABLE avaliacao_fisica (
@@ -170,7 +186,6 @@ CREATE TABLE avaliacao_fisica (
     FOREIGN KEY (avaliador_id) REFERENCES funcionario(usuario_id)
 );
 
--- 6. AGENDAMENTOS E FREQUÊNCIA
 CREATE TABLE treino_agenda (
     id INT AUTO_INCREMENT PRIMARY KEY,
     turma_id INT NOT NULL,
@@ -229,47 +244,12 @@ INSERT INTO cargo (nome, descricao, salario_base, ativo) VALUES
 ('Gerente', 'Gerencia operações e equipes', 0.00, TRUE),
 ('Atendente', 'Atendimento ao cliente e secretaria', 0.00, TRUE);
 
-INSERT INTO anamnese_pergunta (slug, pergunta, categoria, tipo_resposta, ordem) VALUES
-('problema_cardiaco', 'Algum médico já lhe diagnosticou com problema cardíaco?', 'cardio', 'boolean_with_text', 1),
-('dor_peito', 'Você tem dores no peito com frequência?', 'cardio', 'boolean', 2),
-('desmaio_tontura', 'Você desmaia ou tem tontura/vertigem?', 'cardio', 'boolean', 3),
-('pressao_alta', 'Diagnóstico de pressão arterial alta?', 'cardio', 'boolean', 4),
-('problema_osseo', 'Problemas ósseos ou articulares?', 'ortopedico', 'boolean_with_text', 5),
-('outro_problema', 'Outro motivo que impeça exercícios?', 'geral', 'boolean_with_text', 6),
-('medicamentos', 'Está tomando medicação?', 'historico', 'boolean_with_text', 7),
-('cirurgia', 'Já fez alguma cirurgia?', 'historico', 'boolean_with_text', 8),
-('gravida', 'Está grávida?', 'condicoes', 'boolean_with_text', 9),
-('fumante', 'Você fuma?', 'habitos', 'boolean', 10),
-('alcool', 'Consome álcool?', 'habitos', 'boolean', 11),
-('historico_familiar', 'Parente teve ataque cardíaco antes dos 50?', 'familia', 'boolean', 12),
-('atividade_fisica', 'Realiza atividade física?', 'habitos', 'boolean_with_text', 13),
-('sintomas', 'Sintomas apresentados', 'saude', 'multi_select', 14),
-('objetivos', 'Objetivos do aluno', 'objetivos', 'multi_select', 15),
-('observacoes_medicas', 'Observações médicas', 'geral', 'text', 16);
-
-INSERT INTO anamnese_opcao (pergunta_id, label, valor, possui_observacao, ordem) VALUES
-(14, 'Dor nas costas', 'dor_costas', FALSE, 1),
-(14, 'Dor articular/muscular', 'dor_articular', FALSE, 2),
-(14, 'Doença pulmonar (asma, enfisema, outra...)', 'doenca_pulmonar', TRUE, 3),
-(14, 'Nenhum', 'nenhum', FALSE, 4);
-
-INSERT INTO anamnese_opcao (pergunta_id, label, valor, possui_observacao, ordem) VALUES
-(15, 'Perder peso', 'perder_peso', FALSE, 1),
-(15, 'Ganhar massa muscular', 'ganhar_massa', FALSE, 2),
-(15, 'Condicionamento', 'condicionamento', FALSE, 3),
-(15, 'Cardiovascular', 'cardiovascular', FALSE, 4),
-(15, 'Definição muscular', 'definicao', FALSE, 5),
-(15, 'Reabilitação', 'reabilitacao', FALSE, 6),
-(15, 'Redução de estresse', 'reducao_estresse', FALSE, 7),
-(15, 'Qualidade de vida', 'qualidade_vida', FALSE, 8),
-(15, 'Outros', 'outros', TRUE, 9);
-
 -- INSERINDO O PRIMEIRO ADMIN (Exemplo de Fluxo)
 INSERT INTO endereco (logradouro, numero, cidade, bairro, cep) 
 VALUES ('Av. Central', '100', 'São Paulo', 'Centro', '01010000');
 
 INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, tipo_usuario, endereco_id)
-VALUES ('Admin', 'Master', '00000000000', 'admin@gym.com', 'hash_aqui', '1990-01-01', 'admin', 1);
+VALUES ('Admin', 'Master', '00000000000', 'admin@centrotreinamento.com', '$argon2id$v=19$m=65536,t=4,p=1$enBzQTh6a3NuRTAwWVFFNg$D1fBTREiUz8MPOsv4hl6WI7EgKRbK4+9nl7wf6+U1Sw', '1990-01-01', 'admin', 1);
 
 INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional)
 VALUES (1, 1, 'ADM-01');

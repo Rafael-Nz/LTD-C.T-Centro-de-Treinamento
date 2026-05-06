@@ -1,15 +1,17 @@
-# Habilita o módulo de reescrita de URLs
+# raiz/.htaccess
 RewriteEngine On
-
 RewriteBase /ctt/
 
 # 1. Ignorar a pasta de administração
 RewriteRule ^admin($|/) - [L]
-# 2. Ignorar a pasta de API 
 RewriteRule ^api($|/) - [L]
 
-# 2. Não reescrever arquivos e pastas reais
+# Servir arquivos estáticos de public/
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|pdf|mp4|webm)$ [NC]
+RewriteCond %{REQUEST_URI} !^/ctt/public/ [NC]
+RewriteRule ^(.+)$ public/$1 [L]
+
+# 2. Regra da API principal (Site/APP)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

@@ -8,15 +8,74 @@ CREATE TABLE endereco (
     numero VARCHAR(10),
     cidade VARCHAR(100),
     bairro VARCHAR(100),
-    cep VARCHAR(9),
+    cep CHAR(8),
     complemento VARCHAR(100)
+);
+
+CREATE TABLE cargo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    descricao VARCHAR(255),
+    salario_base DECIMAL(10,2) DEFAULT 0.00,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    sobrenome VARCHAR(100) NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    senha VARCHAR(300) NOT NULL,
+    data_nascimento DATE NOT NULL,
+    genero ENUM('M', 'F', 'O') DEFAULT 'O',
+    endereco_id INT,
+    tipo_usuario ENUM('admin', 'funcionario', 'aluno') NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
+);
+
+CREATE TABLE funcionario (
+    usuario_id INT PRIMARY KEY,
+    cargo_id INT NOT NULL,
+    registro_profissional VARCHAR(50),
+    observacoes TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    FOREIGN KEY (cargo_id) REFERENCES cargo(id)
+);
+
+CREATE TABLE aluno (
+    usuario_id INT PRIMARY KEY,
+    data_matricula DATE NOT NULL,
+    cadastrado_por INT,
+    codigo_matricula VARCHAR(20) UNIQUE NOT NULL, -- AAAAMM000001
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    FOREIGN KEY (cadastrado_por) REFERENCES funcionario(usuario_id)
+);
+
+CREATE TABLE sequencia_matricula (
+    id INT AUTO_INCREMENT PRIMARY KEY
+);
+
+CREATE TABLE contato (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    valor VARCHAR(100) NOT NULL,
+    UNIQUE (usuario_id, tipo),
+    INDEX idx_contato_usuario (usuario_id),
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
 CREATE TABLE modalidade (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL UNIQUE,
     descricao TEXT,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    ativo BOOLEAN DEFAULT TRUE,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -24,23 +83,159 @@ CREATE TABLE modalidade (
 CREATE TABLE espaco_treino (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL,
-    capacidade_maxima INT NOT NULL,
     capacidade_minima INT NOT NULL,
+    capacidade_maxima INT NOT NULL,
     equipamentos TEXT,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE cargo (
+CREATE TABLE turma (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    modalidade_id INT NOT NULL,
+    instrutor_id INT ,
+    turno ENUM('manha', 'tarde', 'noite') NOT NULL,
+    capacidade_minima INT NOT NULL,
+    capacidade_maxima INT NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (modalidade_id) REFERENCES modalidade(id),
+    FOREIGN KEY (instrutor_id) REFERENCES funcionario(usuario_id)
+);
+
+CREATE TABLE anamnese_formulario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL UNIQUE,
-    descricao VARCHAR(255),
-    salario_base DECIMAL(10,2),
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    descricao TEXT,
+    versao INT DEFAULT 1,
+    ativo BOOLEAN DEFAULT TRUE,
+    criado_por INT,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_ativo (ativo),
+    FOREIGN KEY (criado_por) REFERENCES usuario(id) ON DELETE SET NULL
 );
+
+CREATE TABLE anamnese_pergunta (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    formulario_id INT,
+    slug VARCHAR(50) NOT NULL,
+    pergunta TEXT NOT NULL,
+    categoria VARCHAR(50),
+    tipo_input ENUM(
+        'text',
+        'textarea',
+        'number',
+        'date',
+        'boolean',
+        'select',
+        'radio',
+        'checkbox'
+    ) NOT NULL,
+    obrigatoria BOOLEAN DEFAULT FALSE,
+    ordem INT DEFAULT 0,
+    versao INT DEFAULT 1,
+    ativo BOOLEAN DEFAULT TRUE,
+    config JSON NULL,
+    regra_exibicao JSON NULL,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pergunta_formulario (formulario_id, ordem),
+    FOREIGN KEY (formulario_id) REFERENCES anamnese_formulario(id) ON DELETE CASCADE,
+    UNIQUE (slug, versao)
+);
+
+CREATE TABLE anamnese_opcao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pergunta_id INT NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    valor VARCHAR(50) NOT NULL,
+    ordem INT DEFAULT 0,
+    config JSON NULL, -- ex: possui_observacao, cor, etc
+    FOREIGN KEY (pergunta_id) REFERENCES anamnese_pergunta(id) ON DELETE CASCADE,
+    UNIQUE (pergunta_id, valor)
+);
+
+CREATE TABLE anamnese_resposta (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    aluno_id INT NOT NULL,
+    pergunta_id INT NOT NULL,
+    valor JSON NOT NULL,
+    observacao TEXT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (aluno_id) REFERENCES aluno(usuario_id) ON DELETE CASCADE,
+    FOREIGN KEY (pergunta_id) REFERENCES anamnese_pergunta(id),
+    UNIQUE (aluno_id, pergunta_id)
+);
+
+CREATE TABLE avaliacao_fisica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    aluno_id INT NOT NULL,
+    avaliador_id INT NOT NULL,
+    data_avaliacao DATE NOT NULL,
+    peso DECIMAL(5,2),
+    altura DECIMAL(3,2),
+    -- O IMC não precisa estar aqui, ele pode ser calculado via VIEW ou App...
+    percentual_gordura DECIMAL(4,2),
+    percentual_musculo DECIMAL(4,2),
+    observacoes TEXT,
+    FOREIGN KEY (aluno_id) REFERENCES aluno(usuario_id) ON DELETE CASCADE,
+    FOREIGN KEY (avaliador_id) REFERENCES funcionario(usuario_id)
+);
+
+CREATE TABLE treino_agenda (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    turma_id INT NOT NULL,
+    espaco_id INT NOT NULL,
+    data_hora_inicio DATETIME NOT NULL,
+    data_hora_fim DATETIME NOT NULL,
+    status ENUM('agendado', 'concluido', 'cancelado') DEFAULT 'agendado',
+    INDEX idx_treino_turma (turma_id),
+    INDEX idx_treino_espaco (espaco_id),
+    FOREIGN KEY (turma_id) REFERENCES turma(id),
+    FOREIGN KEY (espaco_id) REFERENCES espaco_treino(id)
+);
+
+CREATE TABLE presenca_treino (
+    treino_id INT NOT NULL,
+    aluno_id INT NOT NULL,
+    situacao ENUM('presente', 'ausente', 'justificado') DEFAULT 'presente',
+    checkin_time DATETIME,
+    INDEX idx_presenca_aluno (aluno_id),
+    INDEX idx_presenca_treino (treino_id),
+    PRIMARY KEY (treino_id, aluno_id),
+    FOREIGN KEY (treino_id) REFERENCES treino_agenda(id) ON DELETE CASCADE,
+    FOREIGN KEY (aluno_id) REFERENCES aluno(usuario_id) ON DELETE CASCADE
+);
+
+-- 7. SEGURANÇA E LOGS
+CREATE TABLE permissao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(50) UNIQUE NOT NULL, -- ex: 'relatorios.financeiro'
+    descricao VARCHAR(255)
+);
+
+CREATE TABLE cargo_permissao (
+    cargo_id INT NOT NULL,
+    permissao_id INT NOT NULL,
+    PRIMARY KEY (cargo_id, permissao_id),
+    FOREIGN KEY (cargo_id) REFERENCES cargo(id) ON DELETE CASCADE,
+    FOREIGN KEY (permissao_id) REFERENCES permissao(id) ON DELETE CASCADE
+);
+
+CREATE TABLE sistema_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    acao TEXT NOT NULL,
+    ip_origem VARCHAR(45),
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE SET NULL
+);
+
+-- POPULANDO DADOS MESTRES --
 
 INSERT INTO cargo (nome, descricao, salario_base, ativo) VALUES
 ('Administrador', 'Responsável pela gestão completa do sistema', 0.00, TRUE),
@@ -49,338 +244,14 @@ INSERT INTO cargo (nome, descricao, salario_base, ativo) VALUES
 ('Gerente', 'Gerencia operações e equipes', 0.00, TRUE),
 ('Atendente', 'Atendimento ao cliente e secretaria', 0.00, TRUE);
 
-CREATE TABLE funcionario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    sobrenome VARCHAR(100) NOT NULL,
-    cpf VARCHAR(14) UNIQUE NOT NULL,
-    data_nascimento DATE NOT NULL,
-    genero ENUM('M', 'F', 'O') DEFAULT 'O',
-    email VARCHAR(150),
-    senha VARCHAR(300),
-    cargo_id INT NOT NULL,
-    registro_profissional VARCHAR(50),
-    observacoes TEXT,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    endereco_id INT NOT NULL,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+-- INSERINDO O PRIMEIRO ADMIN (Exemplo de Fluxo)
+INSERT INTO endereco (logradouro, numero, cidade, bairro, cep) 
+VALUES ('Av. Central', '100', 'São Paulo', 'Centro', '01010000');
 
-    FOREIGN KEY (cargo_id) REFERENCES cargo(id),
-    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
-);
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, tipo_usuario, endereco_id)
+VALUES ('Admin', 'Master', '00000000000', 'admin@centrotreinamento.com', '$argon2id$v=19$m=65536,t=4,p=1$enBzQTh6a3NuRTAwWVFFNg$D1fBTREiUz8MPOsv4hl6WI7EgKRbK4+9nl7wf6+U1Sw', '1990-01-01', 'admin', 1);
 
-CREATE TABLE funcionario_contato (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    funcionario_id INT NOT NULL,
-    tipo_contato ENUM('telefone', 'email') NOT NULL,
-    valor VARCHAR(100) NOT NULL,
-    observacao VARCHAR(100),
-    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (funcionario_id) REFERENCES funcionario(id) ON DELETE CASCADE,
-    UNIQUE (funcionario_id, tipo_contato, valor)
-);
-
-CREATE TABLE aluno (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    sobrenome VARCHAR(100) NOT NULL,
-    cpf VARCHAR(14) UNIQUE,
-    genero ENUM('M', 'F', 'O'),
-    email VARCHAR(150),
-    senha VARCHAR(300),
-    data_nascimento DATE NOT NULL,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    endereco_id INT NOT NULL,
-    data_matricula DATE NOT NULL,
-    cadastrado_por INT NOT NULL,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (endereco_id) REFERENCES endereco(id),
-    FOREIGN KEY (cadastrado_por) REFERENCES funcionario(id)
-);
-
-CREATE TABLE turma (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    descricao TEXT,
-
-    turno ENUM('manha', 'tarde', 'noite') NOT NULL,
-
-    capacidade_minima INT NOT NULL,
-    capacidade_maxima INT NOT NULL,
-
-    instrutor_id INT NOT NULL,
-    espaco_treino_id INT NOT NULL,
-
-    ativo BOOLEAN DEFAULT TRUE,
-
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (instrutor_id) REFERENCES funcionario(id),
-    FOREIGN KEY (espaco_treino_id) REFERENCES espaco_treino(id)
-);
-
-CREATE TABLE aluno_contato (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    aluno_id INT NOT NULL,
-    tipo_contato ENUM('telefone', 'email') NOT NULL,
-    valor VARCHAR(100) NOT NULL,
-    observacao VARCHAR(100),
-    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE,
-    UNIQUE (aluno_id, tipo_contato, valor)
-);
-
-CREATE TABLE aluno_questionario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    aluno_id INT NOT NULL UNIQUE,
-
-    problema_cardiaco BOOLEAN,
-    problema_cardiaco_descricao TEXT,
-    dor_peito BOOLEAN,
-    desmaia_frequencia BOOLEAN,
-    pressao_alta BOOLEAN,
-
-    dor_costa BOOLEAN,
-    dor_musculo BOOLEAN,
-    doenca_pulmonar BOOLEAN,
-    doenca_pulmonar_descricao TEXT,
-    nenhum_sintoma BOOLEAN,
-
-    osseo_articular BOOLEAN,
-    osseo_articular_descricao TEXT,
-
-    limitacao_fisica BOOLEAN,
-    limitacao_descricao TEXT,
-
-    medicamento_continuo BOOLEAN,
-    medicamento_descricao TEXT,
-
-    cirurgia_anterior BOOLEAN,
-    cirurgia_descricao TEXT,
-    cirurgia_data VARCHAR(50),
-
-    gravida BOOLEAN,
-    gravida_tempo VARCHAR(50),
-
-    pratica_exercicios BOOLEAN,
-    tipo_exercicios TEXT,
-    fumante BOOLEAN,
-    consumo_alcool BOOLEAN,
-
-    problema_saude_familia BOOLEAN,
-    problema_saude_familia_descricao TEXT,
-
-    outros_objetivos TEXT,
-    observacoes_medicas TEXT,
-
-    data_preenchimento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE
-);
-
-CREATE TABLE objetivo (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL UNIQUE
-);
-
-CREATE TABLE aluno_objetivo (
-    aluno_id INT NOT NULL,
-    objetivo_id INT NOT NULL,
-
-    PRIMARY KEY (aluno_id, objetivo_id),
-
-    FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE,
-    FOREIGN KEY (objetivo_id) REFERENCES objetivo(id) ON DELETE CASCADE
-);
-
-INSERT INTO objetivo (nome) VALUES
-('Perder peso'),
-('Ganhar massa muscular'),
-('Melhorar condicionamento'),
-('Melhorar preparo cardiovascular'),
-('Definição muscular/condicionamento'),
-('Fins de reabilitação'),
-('Redução de estresse'),
-('Melhora na qualidade de vida');
-
-CREATE TABLE avaliacao_fisica (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    aluno_id INT NOT NULL,
-    data_avaliacao DATE NOT NULL,
-    avaliado_por INT NOT NULL,
-
-    peso DECIMAL(5,2),
-    cintura DECIMAL(5,2),
-    braco_direito_contraido DECIMAL(5,2),
-    braco_esquerdo_contraido DECIMAL(5,2),
-    braco_direito DECIMAL(5,2),
-    braco_esquerdo DECIMAL(5,2),
-    coxa_direita DECIMAL(5,2),
-    coxa_esquerda DECIMAL(5,2),
-    panturrilha_direita DECIMAL(5,2),
-    panturrilha_esquerda DECIMAL(5,2),
-
-    imc DECIMAL(4,2),
-    percentual_musculo DECIMAL(4,2),
-    percentual_gordura DECIMAL(4,2),
-    metabolismo_repouso INT,
-    idade_biologica INT,
-    gordura_visceral DECIMAL(3,1),
-
-    observacoes TEXT,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE,
-    FOREIGN KEY (avaliado_por) REFERENCES funcionario(id)
-);
-
-CREATE TABLE treino (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    turma_id INT NOT NULL,
-    data_horario_inicio DATETIME NOT NULL,
-    data_horario_termino DATETIME NOT NULL,
-    status_treino ENUM('agendado', 'em_andamento', 'concluido', 'cancelado') DEFAULT 'agendado',
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (turma_id) REFERENCES turma(id)
-);
-
-CREATE TABLE treino_modalidade (
-    treino_id INT NOT NULL,
-    modalidade_id INT NOT NULL,
-    PRIMARY KEY (treino_id, modalidade_id),
-    FOREIGN KEY (treino_id) REFERENCES treino(id) ON DELETE CASCADE,
-    FOREIGN KEY (modalidade_id) REFERENCES modalidade(id) ON DELETE CASCADE
-);
-
-CREATE TABLE aluno_treino (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    aluno_id INT NOT NULL,
-    treino_id INT NOT NULL,
-    cadastrado_por INT,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    situacao ENUM('matriculado', 'cancelado', 'presente', 'ausente', 'justificado') DEFAULT 'matriculado',
-    checkin_time DATETIME,
-    checkout_time DATETIME,
-    observacoes TEXT,
-
-    FOREIGN KEY (aluno_id) REFERENCES aluno(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (treino_id) REFERENCES treino(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (cadastrado_por) REFERENCES funcionario(id) ON DELETE SET NULL ON UPDATE CASCADE,
-
-    UNIQUE KEY uq_aluno_treino (aluno_id, treino_id)
-);
-
-CREATE TABLE configuracoes (
-    chave VARCHAR(100) PRIMARY KEY,
-    valor TEXT NOT NULL,
-    descricao TEXT,
-    categoria VARCHAR(50) DEFAULT 'geral',
-    tipo ENUM('texto', 'numero', 'booleano', 'json') DEFAULT 'texto',
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-CREATE TABLE perfil (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL UNIQUE,
-    descricao VARCHAR(255),
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-INSERT INTO perfil (nome, descricao, ativo) VALUES
-('Administrador', 'Acesso total ao sistema', TRUE),
-('Gerente', 'Acesso gerencial', TRUE),
-('Instrutor', 'Acesso às funcionalidades de instrutor', TRUE),
-('Atendente', 'Acesso limitado ao atendimento', TRUE);
-
-CREATE TABLE permissao (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL UNIQUE,
-    descricao VARCHAR(250),
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-CREATE TABLE perfil_permissao (
-    perfil_id INT NOT NULL,
-    permissao_id INT NOT NULL,
-    PRIMARY KEY (perfil_id, permissao_id),
-    FOREIGN KEY (perfil_id) REFERENCES perfil(id),
-    FOREIGN KEY (permissao_id) REFERENCES permissao(id)
-);
-
-CREATE TABLE funcionario_perfil (
-    funcionario_id INT NOT NULL,
-    perfil_id INT NOT NULL,
-    PRIMARY KEY (funcionario_id, perfil_id),
-    FOREIGN KEY (funcionario_id) REFERENCES funcionario(id),
-    FOREIGN KEY (perfil_id) REFERENCES perfil(id)
-);
-
-CREATE TABLE cargo_perfil (
-    cargo_id INT NOT NULL,
-    perfil_id INT NOT NULL,
-    PRIMARY KEY (cargo_id, perfil_id),
-    FOREIGN KEY (cargo_id) REFERENCES cargo(id),
-    FOREIGN KEY (perfil_id) REFERENCES perfil(id)
-);
-
-CREATE TABLE sistema_log (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT,
-    tipo ENUM('login', 'logout', 'criacao', 'edicao', 'exclusao', 'erro', 'acesso'),
-    modulo VARCHAR(50),
-    acao TEXT,
-    ip VARCHAR(45),
-    user_agent TEXT,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional)
+VALUES (1, 1, 'ADM-01');
 
 
--- Populando dados iniciais --
-
--- 1. Criar um endereço para o admin
-INSERT INTO endereco (logradouro, numero, cidade, bairro, cep, complemento)
-VALUES ('Rua Admin', '100', 'São Luís', 'Centro', '65000-000', 'Sistema');
-
--- 2. Inserir o funcionário admin
-INSERT INTO funcionario (
-    nome,
-    sobrenome,
-    cpf,
-    data_nascimento,
-    genero,
-    email,
-    senha,
-    cargo_id,
-    registro_profissional,
-    observacoes,
-    ativo,
-    endereco_id
-) VALUES (
-    'Admin',
-    'Sistema',
-    '000.000.000-00',
-    '1990-01-01',
-    'O',
-    'admin@admin.com',
-    '$2y$10$exemploHashAqui', -- coloque uma senha hash (bcrypt)
-    (SELECT id FROM cargo WHERE nome = 'Administrador'),
-    'ADM001',
-    'Usuário administrador padrão',
-    TRUE,
-    1
-);

@@ -63,29 +63,7 @@ class Database {
             $e->getLine()
         ));
 
-        $code = $e->getCode();
-        $message = "Erro ao conectar com o banco de dados. ";
-
-        switch ($code) {
-            case 1045:
-                $message .= "Credenciais inválidas.";
-                break;
-            case 1049:
-                $message .= "Banco de dados não encontrado.";
-                break;
-            case 2002:
-                $message .= "Servidor indisponível.";
-                break;
-            default:
-                $message .= $e->getMessage();
-        }
-
-        http_response_code(500);
-        echo json_encode([
-            'success' => false,
-            'message' => $message
-        ]);
-        exit;
+        throw $e;
     }
     public static function now(): string {
         $stmt = self::getConnection()->query("SELECT NOW()");

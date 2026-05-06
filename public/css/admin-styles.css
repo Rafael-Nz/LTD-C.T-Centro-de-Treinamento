@@ -159,6 +159,7 @@ nav.main-header {
 .form-select:focus {
     border-color: var(--primary-red);
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 /* Switch Bootstrap (index.css) */

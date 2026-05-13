@@ -1,26 +1,19 @@
 <?php
-namespace Core;
+namespace Core\Services;
 
-use Core\Database;
+use Core\Database\Database;
+use Core\Validation\Validator;
+use Core\Validation\ValidatorInterface;
 use Throwable;
 
-abstract class Service
-{
-    /**
-     * Executa uma lógica dentro de uma transação segura,
-     * suportando transações aninhadas via savepoints.
-     *
-     * @param callable $callback Função contendo a lógica de negócio
-     * @return mixed O retorno da função callback
-     * @throws Throwable Reassocia qualquer erro encontrado
-     */
-    protected function transaction(callable $callback)
-    {
+abstract class Service {
+    private ?ValidatorInterface $validator = null;
+
+    protected function transaction(callable $callback) {
         $db = Database::getConnection();
         $inTransaction = $db->inTransaction();
         $savepoint = null;
 
-        // Se já estiver em uma transação, cria um savepoint
         if ($inTransaction) {
             $rawId = uniqid('', true);
             $savepoint = 'sp_' . str_replace('.', '_', $rawId);
@@ -47,5 +40,17 @@ abstract class Service
             }
             throw $e;
         }
+    }
+
+    protected function validateData(array|object $data, array $rules, array $messages = [], array $attributes = []): array {
+        return $this->validator()->validate($data, $rules, $messages, $attributes);
+    }
+
+    protected function validator(): ValidatorInterface {
+        if ($this->validator === null) {
+            $this->validator = new Validator();
+        }
+
+        return $this->validator;
     }
 }

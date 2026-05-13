@@ -1,7 +1,7 @@
 <?php
 namespace Anamnese;
 
-use Core\Repository;
+use Core\Database\Repository;
 use Anamnese\DTO\PerguntaDTO;
 use Anamnese\DTO\FormularioDTO;
 use Anamnese\DTO\OpcaoDTO;
@@ -10,7 +10,7 @@ use Anamnese\DTO\RegraExibicaoDTO;
 class AnamneseRepository extends Repository {
 
     public function getFormularioDTO(int $formularioId): ?FormularioDTO {
-        $formulario = $this->fetchOne(
+        $formulario = $this->fetch(
             "SELECT * FROM anamnese_formulario WHERE id = ? AND ativo = 1",
             [$formularioId]
         );
@@ -84,6 +84,10 @@ class AnamneseRepository extends Repository {
     }
 
     public function getFormulario(int $formularioId = 1): array {
+        if ($formularioId <= 0) {
+            return [];
+        }
+
         return $this->fetchPerguntasComOpcoes($formularioId);
     }
 

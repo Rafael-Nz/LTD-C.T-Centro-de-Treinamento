@@ -1,7 +1,7 @@
 <?php
 namespace Anamnese;
 
-use Core\Controller;
+use Core\Http\Controller;
 use Anamnese\AnamneseService;
 use Anamnese\DTO\EnvioAnamneseDTO;
 
@@ -42,11 +42,17 @@ class AnamneseController extends Controller {
      * GET /api/anamnese/formularios/{id}/perguntas
      * Retorna array de perguntas — consumido pelo AnamneseEngine no frontend
      */
-    public function index() {
+    public function index(int $id) {
         $this->auth();
-        $formularioId = (int) ($_GET['formulario_id'] ?? 1);
-        $data = $this->service->getFormulario($formularioId);
-        $this->json($data);
+
+        try {
+            $data = $this->service->getFormulario($id);
+            $this->json($data);
+        } catch (\InvalidArgumentException $e) {
+            $this->error($e->getMessage(), 400);
+        } catch (\Throwable $e) {
+            $this->error('Erro ao carregar perguntas da anamnese', 500);
+        }
     }
 
     /**

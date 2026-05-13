@@ -174,7 +174,13 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 								<div class="row g-3 mb-3">
 									<div class="col-md-6">
 										<label for="dataMatricula" class="form-label">Data de Matrícula:</label>
-										<input type="date" name="dataMatricula" id="dataMatricula" class="form-control" required>
+										<input type="date" name="dataMatricula" id="dataMatricula" class="form-control" readonly>
+									</div>
+									<div class="col-md-6">
+										<label for="turma" class="form-label">Turma:</label>
+										<select class="form-select" id="turma" name="turma" required>
+										<option value="" selected disabled>Selecione uma turma</option>
+										</select>
 									</div>
 								</div>
 							</div>
@@ -201,7 +207,7 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
 	<script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
 	<script defer src="/ctt/js/admin/sidebar.js"></script>
+	<script src="/ctt/js/admin/form/anamnese.js"></script>
 	<script src="/ctt/js/admin/form/aluno_form.js"></script>
-  <script src="/ctt/js/admin/form/anamnese.js"></script>
 </body>
 </html>

@@ -31,7 +31,7 @@
     <div class="container-lg p-4 d-flex flex-column flex-fill">
       <h1 class="h4 mb-4">Alunos</h1>
       <div class="card border-0 p-2 shadow-sm mb-4">
-        <div class="card-header bg-body border-0 d-flex gap-2 flex-wrap">
+        <div class="card-header bg-body border-0 d-flex gap-2 flex-wrap ">
           <div class="d-flex gap-2 align-items-center">
             <div class="d-flex" role="search">
               <div class="input-group">
@@ -84,7 +84,7 @@
             <thead>
               <tr>
                 <th scope="col" class="text-start">Nome</th>
-                <th scope="col" class="text-start">Matrícula</th>
+                <th scope="col" class="text-center">Matrícula</th>
                 <th scope="col" class="text-center">Data Matrícula</th>
                 <th scope="col" class="text-center">Status</th>
                 <th scope="col" class="text-center">Ações</th>

@@ -1,7 +1,7 @@
 <?php
 namespace Aluno;
 
-use Core\Repository;
+use Core\Database\Repository;
 
 class SequenciaMatriculaRepository extends Repository {
 

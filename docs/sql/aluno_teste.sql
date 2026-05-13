@@ -6,7 +6,7 @@ VALUES ('Rua das Palmeiras', '123', 'São Luís', 'Cohama', '65000000', 'Apto 10
 INSERT INTO usuario (
     nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario
 ) VALUES (
-    'João', 'Silva', '12345678901', 'joao.silva@email.com',
+    'João', 'Silva', '12345678901', 'aluno.teste@email.com',
     '$argon2id$v=19$m=65536,t=4,p=1$enBzQTh6a3NuRTAwWVFFNg$D1fBTREiUz8MPOsv4hl6WI7EgKRbK4+9nl7wf6+U1Sw',
     '2000-05-10', 'M', 2, 'aluno'
 );
@@ -21,4 +21,4 @@ INSERT INTO aluno (
 -- 4. Inserir contatos
 INSERT INTO contato (usuario_id, tipo, valor) VALUES
 (2, 'telefone', '98999999999'),
-(2, 'email_secundario', 'joao.alt@email.com');
+(2, 'email_secundario', 'aluno.alt@email.com');

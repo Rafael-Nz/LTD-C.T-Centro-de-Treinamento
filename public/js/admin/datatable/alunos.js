@@ -24,7 +24,10 @@ $(document).ready(function () {
                 data: null,
                 render: data => `${data.nome} ${data.sobrenome}`
             },
-            { data: 'email' },
+            { 
+                data: 'codigo_matricula',
+                className: 'text-center',
+            },
             { 
                 data: 'data_matricula',
                 className: 'text-center',

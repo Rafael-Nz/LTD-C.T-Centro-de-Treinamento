@@ -1,9 +1,9 @@
 <?php
 namespace Aluno;
 
-use Core\Service;
-use Usuario\UsuarioService;
 use Aluno\DTO\AlunoDTO;
+use Core\Services\Service;
+use Usuario\UsuarioService;
 
 class AlunoService extends Service {
     private AlunoRepository $alunoRepo;
@@ -17,7 +17,9 @@ class AlunoService extends Service {
     }
 
     public function create(AlunoDTO $dto): int {
-        return $this->transaction(function() use ($dto) {
+        return $this->transaction(function () use ($dto) {
+            $this->validateTurmas($dto->turma_ids);
+
             if (empty($dto->codigo_matricula)) {
                 $dto->codigo_matricula = $this->gerarMatricula();
             }
@@ -25,8 +27,6 @@ class AlunoService extends Service {
             $dto->tipo_usuario = 'aluno';
 
             $usuarioId = $this->usuarioService->create($dto);
-
-            // 4. Criar o registro na tabela 'aluno'
             $this->alunoRepo->create($dto, $usuarioId);
 
             return $usuarioId;
@@ -34,30 +34,32 @@ class AlunoService extends Service {
     }
 
     public function update(int $id, AlunoDTO $dto): void {
-        $this->transaction(function() use ($id, $dto) {
-            $this->usuarioService->update($id, $dto);
+        $this->transaction(function () use ($id, $dto) {
+            $this->validateTurmas($dto->turma_ids);
 
+            $this->usuarioService->update($id, $dto);
             $this->alunoRepo->update($id, $dto);
         });
     }
 
     public function findById(int $id): ?array {
         $usuario = $this->usuarioService->findById($id);
-        if (!$usuario) return null;
+        if (!$usuario) {
+            return null;
+        }
 
         $aluno = $this->alunoRepo->findAlunoData($id);
-        if (!$aluno) return null;
+        if (!$aluno) {
+            return null;
+        }
 
-        return array_merge(
-            $usuario,
-            [
-                'data_matricula' => $aluno['data_matricula'],
-                'codigo_matricula' => $aluno['codigo_matricula']
-            ]
-        );
+        return array_merge($usuario, [
+            'data_matricula' => $aluno['data_matricula'],
+            'codigo_matricula' => $aluno['codigo_matricula'],
+            'turmas' => $aluno['turmas'] ?? [],
+        ]);
     }
 
-    // DELETE (soft)
     public function deactivate(int $id): void {
         $this->usuarioService->deactivate($id);
     }
@@ -72,5 +74,18 @@ class AlunoService extends Service {
 
     private function formatarMatricula(int $id): string {
         return date('Ym') . str_pad($id, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function validateTurmas(?array $turmaIds): void {
+        if ($turmaIds === null) {
+            return;
+        }
+
+        $turmaIds = array_values(array_unique(array_map('intval', $turmaIds)));
+        $turmaIds = array_filter($turmaIds, fn (int $id) => $id > 0);
+
+        if (count($turmaIds) !== count($this->alunoRepo->findExistingTurmaIds($turmaIds))) {
+            throw new \InvalidArgumentException("Uma ou mais turmas informadas nao existem.");
+        }
     }
 }

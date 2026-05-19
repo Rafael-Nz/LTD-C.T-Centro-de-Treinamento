@@ -5,10 +5,12 @@ use Core\DTO\BaseDTO;
 
 class TreinoDTO extends BaseDTO
 {
-    public ?int    $id               = null;
-    public int     $turma_id;
-    public int     $espaco_id; 
-    public string  $data_hora_inicio;
-    public string  $data_hora_fim;
-    public string  $status           = 'agendado';
+    public ?int $id = null;
+    public ?string $nome = null;
+    public ?int $modalidade_id = null;
+    public ?string $descricao = null;
+    public bool $ativo = true;
+    public ?string $data_criacao = null;
+    public ?string $data_atualizacao = null;
+    public ?string $modalidade_nome = null;
 }

@@ -1,0 +1,15 @@
+ALTER TABLE avaliacao_fisica
+    ADD COLUMN imc DECIMAL(5,2) NULL AFTER altura,
+    ADD COLUMN cintura DECIMAL(5,2) NULL AFTER imc,
+    ADD COLUMN torax DECIMAL(5,2) NULL AFTER cintura,
+    ADD COLUMN braco_dc DECIMAL(5,2) NULL AFTER torax,
+    ADD COLUMN braco_d DECIMAL(5,2) NULL AFTER braco_dc,
+    ADD COLUMN braco_ec DECIMAL(5,2) NULL AFTER braco_d,
+    ADD COLUMN braco_e DECIMAL(5,2) NULL AFTER braco_ec,
+    ADD COLUMN coxa_d DECIMAL(5,2) NULL AFTER braco_e,
+    ADD COLUMN coxa_e DECIMAL(5,2) NULL AFTER coxa_d,
+    ADD COLUMN panturrilha_d DECIMAL(5,2) NULL AFTER coxa_e,
+    ADD COLUMN panturrilha_e DECIMAL(5,2) NULL AFTER panturrilha_d,
+    ADD COLUMN metabolismo_repouso INT NULL AFTER percentual_musculo,
+    ADD COLUMN idade_biologica INT NULL AFTER metabolismo_repouso,
+    ADD COLUMN gordura_visceral DECIMAL(5,2) NULL AFTER idade_biologica;

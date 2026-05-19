@@ -51,6 +51,9 @@ $(document).ready(function () {
 
                     return `
                         <div class=\"d-flex gap-2 justify-content-center\">
+                            <a href=\"/ctt/admin/alunos/visualizar/${data.id}\" class=\"btn btn-sm btn-secondary\">
+                                <i class=\"ph ph-eye\"></i>
+                            </a>
                             <a href=\"/ctt/admin/alunos/editar/${data.id}\" class=\"btn btn-sm btn-primary\">
                                 <i class=\"ph ph-pencil\"></i>
                             </a>

@@ -17,6 +17,7 @@ use Local\LocalController;
 use Modalidade\ModalidadeController;
 use Treino\TreinoController;
 use Turma\TurmaController;
+use Avaliacao\AvaliacaoFisicaController;
 
 $auth = [AuthMiddleware::class];
 
@@ -33,10 +34,15 @@ Router::put('/usuarios/{id}/reativar', [UsuarioController::class, 'reactivate'],
 
 Router::get('/alunos', [AlunoController::class, 'index'], $auth);
 Router::get('/alunos/{id}', [AlunoController::class, 'show'], $auth);
+Router::get('/alunos/{id}/avaliacoes', [AvaliacaoFisicaController::class, 'indexByAluno'], $auth);
+Router::post('/alunos/{id}/avaliacoes', [AvaliacaoFisicaController::class, 'storeByAluno'], $auth);
 Router::post('/alunos', [AlunoController::class, 'store'], $auth);
 Router::put('/alunos/{id}', [AlunoController::class, 'update'], $auth);
 Router::put('/alunos/{id}/desativar', [AlunoController::class, 'deactivate'], $auth);
 Router::put('/alunos/{id}/reativar', [AlunoController::class, 'reactivate'], $auth);
+
+Router::get('/avaliacoes/{id}', [AvaliacaoFisicaController::class, 'show'], $auth);
+Router::put('/avaliacoes/{id}', [AvaliacaoFisicaController::class, 'update'], $auth);
 
 Router::get('/anamnese/formularios', [AnamneseController::class, 'listar'], $auth);
 Router::get('/anamnese/formularios/{id}', [AnamneseController::class, 'obterFormulario'], $auth);
@@ -68,8 +74,8 @@ Router::put('/funcionarios/{id}/reativar', [FuncionarioController::class, 'react
 Router::get('/turmas', [TurmaController::class, 'index'], $auth);
 Router::get('/turmas/{id}/gerenciar', [TurmaController::class, 'manage'], $auth);
 Router::post('/turmas/{id}/treinos', [TurmaController::class, 'confirmTreino'], $auth);
-Router::put('/turmas/{id}/treinos/{treino_id}/presencas', [TurmaController::class, 'savePresencas'], $auth);
 Router::put('/turmas/{id}/treinos/{treino_id}/cancelar', [TurmaController::class, 'cancelTreino'], $auth);
+Router::put('/turmas/{id}/treinos/{treino_id}/presencas', [TurmaController::class, 'savePresencas'], $auth);
 Router::get('/turmas/{id}', [TurmaController::class, 'show'], $auth);
 Router::post('/turmas', [TurmaController::class, 'store'], $auth);
 Router::put('/turmas/{id}', [TurmaController::class, 'update'], $auth);

@@ -46,13 +46,14 @@ return function($router) use ($auth, $guest, $logoutAction) {
     $router->add('alunos/cadastrar', 'aluno_form.php', ['acao' => 'cadastrar'], [$auth]);
     $router->add('alunos/editar/{id}', 'aluno_form.php', ['acao' => 'editar'], [$auth]);
     $router->add('alunos/visualizar/{id}', 'aluno_detalhe.php', [], [$auth]);
+    $router->add('alunos/{aluno_id}/avaliacoes/cadastrar', 'avaliacao_form.php', ['acao' => 'cadastrar'], [$auth]);
+    $router->add('alunos/{aluno_id}/avaliacoes/editar/{id}', 'avaliacao_form.php', ['acao' => 'editar'], [$auth]);
     $router->add('alunos/{id}/treinos', 'aluno_treinos.php', [], [$auth]);
 
     // Turmas
     $router->add('turmas', 'turmas.php', [], [$auth]);
     $router->add('turmas/cadastrar', 'turma_form.php', ['acao' => 'cadastrar'], [$auth]);
     $router->add('turmas/editar/{id}', 'turma_form.php', ['acao' => 'editar'], [$auth]);
-    $router->add('turmas/{id}/alunos', 'turma_alunos.php', [], [$auth]);
     $router->add('turmas/{id}/gerenciar', 'gerenciar_turma.php', [], [$auth]);
 
     // Treinos

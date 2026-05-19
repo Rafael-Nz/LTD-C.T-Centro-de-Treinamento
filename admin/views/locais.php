@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cross C.T | Salas</title>
+  <title>Cross C.T | Locais de Treino</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="/ctt/css/admin-styles.css">
   <link rel="stylesheet" href="/ctt/css/sidebar.css">
@@ -19,176 +18,87 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css" />
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.7/css/responsive.bootstrap5.min.css" />
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 </head>
 
 <body class="d-flex flex-column min-vh-100">
-  <?php include __DIR__ . '../partials/sidebar.php'; ?>
-  <?php include __DIR__ . '../partials/header.php'; ?>
+  <?php include __DIR__ . '/partials/sidebar.php'; ?>
+  <?php include __DIR__ . '/partials/header.php'; ?>
 
   <main class="flex-fill d-flex" id="mainContent">
     <div class="container-lg p-4 d-flex flex-column flex-fill">
-      <h1 class="h4 mb-4">Locais</h1>
+      <h1 class="h4 mb-4">Locais de Treino</h1>
       <div class="card border-0 p-2 shadow-sm mb-4">
-        <div class="card-header bg-body border-0 d-flex gap-2 flex-wrap">
-          <div class="d-flex gap-2 align-items-center">
+        <div class="card-header bg-body border-0 d-flex gap-2 flex-wrap ">
+          <div class="d-flex gap-2 align-items-center flex-wrap">
             <div class="d-flex" role="search">
               <div class="input-group">
-                <input id="campoBusca" class="form-control" type="search" placeholder="Buscar sala..."
-                  aria-label="Buscar">
+                <input id="campoBusca" class="form-control" type="search" placeholder="Buscar local..." aria-label="Buscar">
                 <button class="btn border border-start-0" type="button" id="botaoBuscar">
                   <i class="ph ph-magnifying-glass"></i>
                 </button>
               </div>
             </div>
+
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle color border border-white" type="button"
-                data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Salas">
+              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar Locais">
                 <i class="ph ph-funnel me-1"></i>
               </button>
-              <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton"
-                style="min-width: 250px;">
+              <ul class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px;">
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
                 <li>
                   <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="Disponível"
-                      id="salaDisponivel">
-                    <label class="form-check-label" style="font-size: 0.975rem" for="salaDisponivel">Disponível</label>
+                    <input class="form-check-input filtro-status" type="checkbox" value="1" id="localAtivo">
+                    <label class="form-check-label" for="localAtivo">Ativo</label>
                   </div>
                 </li>
                 <li>
                   <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="Ocupada" id="salaOcupada">
-                    <label class="form-check-label" style="font-size: 0.975rem" for="salaOcupada">Ocupada</label>
+                    <input class="form-check-input filtro-status" type="checkbox" value="0" id="localInativo">
+                    <label class="form-check-label" for="localInativo">Inativo</label>
                   </div>
                 </li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+                <li><hr class="dropdown-divider"></li>
                 <li class="d-grid">
-                  <button id="aplicarFiltrosSalas" class="btn btn-sm btn-red color">Aplicar Filtros</button>
+                  <button id="aplicarFiltrosLocais" class="btn btn-sm btn-red">Aplicar Filtros</button>
                 </li>
               </ul>
             </div>
           </div>
-          <a href="locais/cadastrar" class="btn btn-red d-flex align-items-center color border border-white"
-            title="Adicionar Nova Sala">
-            <i class="ph ph-plus me-1"></i> Novo Local
+
+          <a href="/ctt/admin/locais/cadastrar" class="btn btn-red d-flex align-items-center color border border-white">
+            <i class="ph ph-plus me-1"></i>Novo Local
           </a>
         </div>
+
         <div class="card-body">
-          <table id="tabelaSala" class="table table-hover align-middle w-100" aria-label="Lista de Salas">
+          <table id="tabelaLocais" class="table table-hover align-middle w-100 mb-0" aria-label="Lista de Locais">
             <thead>
               <tr>
                 <th scope="col" class="text-start">Nome</th>
-                <th scope="col" class="text-start">Capacidade</th>
+                <th scope="col" class="text-center">Capacidade</th>
                 <th scope="col" class="text-center">Status</th>
-                <th scope="col" class="text-center">Ações</th>
+                <th scope="col" class="text-center">Acoes</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- Exemplo de sala 1 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Sala de CrossFit Principal
-                </td>
-                <td class="text-start">20 pessoas</td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Disponível</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="local_form.php?id=1" title="Ver/Editar">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-warning ms-2" title="Reservar">
-                    <i class="ph ph-calendar-check"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger ms-2" title="Remover">
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Exemplo de sala 2 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Sala de Musculação
-                </td>
-                <td class="text-start">15 pessoas</td>
-                <td class="text-center">
-                  <span class="badge bg-danger-subtle text-danger-emphasis">Ocupada</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="local_form.php?id=2" title="Ver/Editar">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-secondary ms-2" title="Liberar Local">
-                    <i class="ph ph-lock"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger ms-2" title="Remover">
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Exemplo de sala 3 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Sala de Alongamento
-                </td>
-                <td class="text-start">10 pessoas</td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Disponível</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="local_form.php?id=3" title="Ver/Editar">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-warning ms-2" title="Reservar">
-                    <i class="ph ph-calendar-check"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger ms-2" title="Remover">
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Exemplo de sala 4 -->
-              <tr>
-                <td class="text-start text-truncate" style="max-width: 150px;">
-                  Sala de Spinning
-                </td>
-                <td class="text-start">12 pessoas</td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success-emphasis">Disponível</span>
-                </td>
-                <td class="text-center text-nowrap">
-                  <a class="btn btn-sm btn-info text-white" href="local_form.php?id=4" title="Ver/Editar">
-                    <i class="ph ph-pencil-simple"></i>
-                  </a>
-                  <button class="btn btn-sm btn-warning ms-2" title="Reservar">
-                    <i class="ph ph-calendar-check"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger ms-2" title="Remover">
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
     </div>
   </main>
 
-  <?php include __DIR__ . '../partials/footer.php'; ?>
+  <?php include __DIR__ . '/partials/footer.php'; ?>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/2.3.8/js/dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/2.3.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.8/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.8/js/responsive.bootstrap5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
   <script defer src="/ctt/js/admin/sidebar.js"></script>
+  <script src="/ctt/js/admin/tabelas.js"></script>
+  <script src="/ctt/js/admin/datatable/locais.js"></script>
 </body>
-
 </html>

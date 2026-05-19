@@ -1,8 +1,8 @@
 <?php
 namespace Local;
 
-use Core\Controller;
-use Core\DataTablesResponseTrait;
+use Core\DataTables\DataTablesResponseTrait;
+use Core\Http\Controller;
 use Local\DTO\LocalDTO;    
 class LocalController extends Controller
 {
@@ -19,6 +19,12 @@ class LocalController extends Controller
 
     public function index(): void
     {
+        if (isset($_GET['simple']) && $_GET['simple'] === 'true') {
+            $somenteAtivos = !isset($_GET['ativos']) || $_GET['ativos'] !== 'false';
+            $this->json($this->repo->findSimple($somenteAtivos));
+            return;
+        }
+
         $draw   = (int) ($_GET['draw']          ?? 1);
         $start  = (int) ($_GET['start']         ?? 0);
         $length = (int) ($_GET['length']        ?? 10);

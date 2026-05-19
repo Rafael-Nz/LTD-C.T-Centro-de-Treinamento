@@ -1,8 +1,8 @@
 <?php
 namespace Local;
 
-use Core\Repository;
-use Core\DataTablesRepositoryInterface;
+use Core\DataTables\DataTablesRepositoryInterface;
+use Core\Database\Repository;
 use Local\DTO\LocalDTO;   
 
 class LocalRepository extends Repository implements DataTablesRepositoryInterface {
@@ -33,8 +33,12 @@ class LocalRepository extends Repository implements DataTablesRepositoryInterfac
         }
 
         if (isset($filters['status']) && $filters['status'] !== '') {
-            $where[] = "ativo = ?";
-            $params[] = $filters['status'];
+            $statusArray = explode(',', $filters['status']);
+            $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
+            $where[] = "ativo IN ($placeholders)";
+            foreach ($statusArray as $status) {
+                $params[] = $status;
+            }
         }
 
         if (!empty($where)) {
@@ -60,8 +64,12 @@ class LocalRepository extends Repository implements DataTablesRepositoryInterfac
         }
 
         if (isset($filters['status']) && $filters['status'] !== '') {
-            $where[] = "ativo = ?";
-            $params[] = $filters['status'];
+            $statusArray = explode(',', $filters['status']);
+            $placeholders = implode(',', array_fill(0, count($statusArray), '?'));
+            $where[] = "ativo IN ($placeholders)";
+            foreach ($statusArray as $status) {
+                $params[] = $status;
+            }
         }
 
         if (!empty($where)) {
@@ -78,6 +86,21 @@ class LocalRepository extends Repository implements DataTablesRepositoryInterfac
             FROM espaco_treino
             ORDER BY nome
         ");
+    }
+
+    public function findSimple(bool $somenteAtivos = true): array {
+        $sql = "
+            SELECT id, nome, capacidade_minima, capacidade_maxima, ativo
+            FROM espaco_treino
+        ";
+
+        $params = [];
+        if ($somenteAtivos) {
+            $sql .= " WHERE ativo = 1";
+        }
+
+        $sql .= " ORDER BY nome";
+        return $this->fetchAll($sql, $params);
     }
 
     public function findById(int $id): ?array {
@@ -117,15 +140,13 @@ class LocalRepository extends Repository implements DataTablesRepositoryInterfac
                 nome              = ?,
                 capacidade_minima = ?,
                 capacidade_maxima = ?,
-                equipamentos      = ?,
-                ativo             = ?
+                equipamentos      = ?
             WHERE id = ?
         ", [
             $dto->nome,
             $dto->capacidade_minima,
             $dto->capacidade_maxima,
             $dto->equipamentos,
-            $dto->ativo ? 1 : 0,
             $id,
         ]);
     }

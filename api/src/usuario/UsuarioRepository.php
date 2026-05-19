@@ -1,8 +1,8 @@
 <?php
 namespace Usuario;
 
-use Core\Repository;
-use Core\DataTablesRepositoryInterface;
+use Core\DataTables\DataTablesRepositoryInterface;
+use Core\Database\Repository;
 use Usuario\DTO\UsuarioDTO;
 
 class UsuarioRepository extends Repository implements DataTablesRepositoryInterface {

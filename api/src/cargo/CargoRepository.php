@@ -1,8 +1,8 @@
 <?php
 namespace Cargo;
 
-use Core\DataTablesRepositoryInterface;
-use Core\Repository;
+use Core\DataTables\DataTablesRepositoryInterface;
+use Core\Database\Repository;
 use Cargo\DTO\CargoDTO;
 
 class CargoRepository extends Repository implements DataTablesRepositoryInterface{

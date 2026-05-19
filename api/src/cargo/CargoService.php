@@ -1,24 +1,22 @@
 <?php
 namespace Cargo;
 
-use Core\Service;
 use Cargo\DTO\CargoDTO;
- 
-class CargoService extends Service {
+use Core\Services\Service;
 
+class CargoService extends Service {
     private CargoRepository $cargoRepo;
-    
+
     public function __construct() {
         $this->cargoRepo = new CargoRepository();
     }
 
     public function create(CargoDTO $dto): int {
-        $this->validate($dto);
-        
-        return $this->transaction(function() use ($dto) {
-            // Verifica se já existe cargo com mesmo nome
+        $this->validateData($dto, $this->rulesForSave(), $this->messages(), $this->attributes());
+
+        return $this->transaction(function () use ($dto) {
             if ($this->cargoRepo->findByNome($dto->nome)) {
-                throw new \RuntimeException("Já existe um cargo com este nome.");
+                throw new \RuntimeException("Ja existe um cargo com este nome.");
             }
 
             return $this->cargoRepo->create($dto);
@@ -26,19 +24,17 @@ class CargoService extends Service {
     }
 
     public function update(int $id, CargoDTO $dto): void {
-        $this->validate($dto);
-        
-        $this->transaction(function() use ($id, $dto) {
-            // Verifica se o cargo existe
+        $this->validateData($dto, $this->rulesForSave(), $this->messages(), $this->attributes());
+
+        $this->transaction(function () use ($id, $dto) {
             $existing = $this->cargoRepo->findById($id);
             if (!$existing) {
-                throw new \RuntimeException("Cargo não encontrado.");
+                throw new \RuntimeException("Cargo nao encontrado.");
             }
 
-            // Verifica se o novo nome já existe em outro cargo
             $cargoWithSameName = $this->cargoRepo->findByNome($dto->nome);
             if ($cargoWithSameName && $cargoWithSameName['id'] != $id) {
-                throw new \RuntimeException("Já existe outro cargo com este nome.");
+                throw new \RuntimeException("Ja existe outro cargo com este nome.");
             }
 
             $this->cargoRepo->update($id, $dto);
@@ -53,13 +49,22 @@ class CargoService extends Service {
         $this->cargoRepo->reactivate($id);
     }
 
-    private function validate(array $data): void {
-        if (empty($data['nome']) || trim($data['nome']) === '') {
-            throw new \InvalidArgumentException("Nome do cargo é obrigatório.");
-        }
-        
-        if (strlen($data['nome']) > 100) {
-            throw new \InvalidArgumentException("Nome do cargo não pode exceder 100 caracteres.");
-        }
+    private function rulesForSave(): array {
+        return [
+            'nome' => ['required', 'string', 'max_length:100'],
+        ];
+    }
+
+    private function messages(): array {
+        return [
+            'nome.required' => 'Nome do cargo e obrigatorio.',
+            'nome.max_length' => 'Nome do cargo nao pode exceder 100 caracteres.',
+        ];
+    }
+
+    private function attributes(): array {
+        return [
+            'nome' => 'Nome do cargo',
+        ];
     }
 }

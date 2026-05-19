@@ -1,7 +1,7 @@
 <?php
 namespace Usuario;
 
-use Core\Repository;
+use Core\Database\Repository;
 use Usuario\DTO\EnderecoDTO;
 
 class EnderecoRepository extends Repository {

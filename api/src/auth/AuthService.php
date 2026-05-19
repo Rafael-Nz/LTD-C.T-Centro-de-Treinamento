@@ -1,8 +1,8 @@
 <?php
 namespace Auth;
 
-use Core\Service;
-use Core\Auth as CoreAuth;
+use Core\Auth\Auth as CoreAuth;
+use Core\Services\Service;
 use Usuario\UsuarioRepository;
 use Auth\DTO\LoginDTO;
 use Exception;

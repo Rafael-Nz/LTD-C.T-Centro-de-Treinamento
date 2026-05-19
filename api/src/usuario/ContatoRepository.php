@@ -1,7 +1,7 @@
 <?php
 namespace Usuario;
 
-use Core\Repository;
+use Core\Database\Repository;
 use Usuario\DTO\ContatoDTO;
 
 class ContatoRepository extends Repository {

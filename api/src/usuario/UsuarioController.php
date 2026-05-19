@@ -1,8 +1,8 @@
 <?php
 namespace Usuario;
 
-use Core\Controller;
-use Core\DataTablesResponseTrait;
+use Core\DataTables\DataTablesResponseTrait;
+use Core\Http\Controller;
 use Usuario\DTO\UsuarioDTO;
 
 class UsuarioController extends Controller {

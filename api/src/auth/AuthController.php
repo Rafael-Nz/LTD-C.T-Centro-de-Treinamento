@@ -1,7 +1,7 @@
 <?php
 namespace Auth;
 
-use Core\Controller;
+use Core\Http\Controller;
 use Auth\DTO\LoginDTO;
 use Throwable;
 

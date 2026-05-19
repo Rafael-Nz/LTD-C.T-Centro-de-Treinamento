@@ -1,8 +1,8 @@
 <?php
 namespace Cargo;
 
-use Core\Controller;
-use Core\DataTablesResponseTrait;
+use Core\DataTables\DataTablesResponseTrait;
+use Core\Http\Controller;
 use Cargo\DTO\CargoDTO;
 
 class CargoController extends Controller {

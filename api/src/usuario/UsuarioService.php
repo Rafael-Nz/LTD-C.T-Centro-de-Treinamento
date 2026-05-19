@@ -1,7 +1,7 @@
 <?php
 namespace Usuario;
 
-use Core\Service;
+use Core\Services\Service;
 use Usuario\DTO\UsuarioDTO;
 
 class UsuarioService extends Service {

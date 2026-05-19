@@ -80,6 +80,18 @@ CREATE TABLE modalidade (
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE treino (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    modalidade_id INT NOT NULL,
+    descricao TEXT,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (modalidade_id) REFERENCES modalidade(id),
+    UNIQUE (nome, modalidade_id)
+);
+
 CREATE TABLE espaco_treino (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL,
@@ -94,16 +106,28 @@ CREATE TABLE espaco_treino (
 CREATE TABLE turma (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    modalidade_id INT NOT NULL,
-    instrutor_id INT ,
-    turno ENUM('manha', 'tarde', 'noite') NOT NULL,
+    instrutor_id INT NULL,
     capacidade_minima INT NOT NULL,
     capacidade_maxima INT NOT NULL,
     ativo BOOLEAN DEFAULT TRUE,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (modalidade_id) REFERENCES modalidade(id),
     FOREIGN KEY (instrutor_id) REFERENCES funcionario(usuario_id)
+);
+
+CREATE TABLE aluno_turma (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    aluno_id INT NOT NULL,
+    turma_id INT NOT NULL,
+    data_inscricao DATE NOT NULL DEFAULT CURDATE(),
+    ativo BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE (aluno_id, turma_id),
+    INDEX idx_aluno (aluno_id),
+    INDEX idx_turma (turma_id),
+    FOREIGN KEY (aluno_id) REFERENCES aluno(usuario_id) ON DELETE CASCADE,
+    FOREIGN KEY (turma_id) REFERENCES turma(id) ON DELETE CASCADE
 );
 
 CREATE TABLE anamnese_formulario (
@@ -178,7 +202,6 @@ CREATE TABLE avaliacao_fisica (
     data_avaliacao DATE NOT NULL,
     peso DECIMAL(5,2),
     altura DECIMAL(3,2),
-    -- O IMC não precisa estar aqui, ele pode ser calculado via VIEW ou App...
     percentual_gordura DECIMAL(4,2),
     percentual_musculo DECIMAL(4,2),
     observacoes TEXT,
@@ -186,17 +209,37 @@ CREATE TABLE avaliacao_fisica (
     FOREIGN KEY (avaliador_id) REFERENCES funcionario(usuario_id)
 );
 
+CREATE TABLE turma_config_horario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    turma_id INT,
+    dia_semana ENUM('segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'),
+    hora_inicio TIME,
+    hora_fim TIME,
+    UNIQUE (turma_id, dia_semana),
+    FOREIGN KEY (turma_id) REFERENCES turma(id)
+);
+
 CREATE TABLE treino_agenda (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    turma_id INT NOT NULL,
+    treino_id INT NOT NULL,
+    turma_id INT,
     espaco_id INT NOT NULL,
+    instrutor_id INT,
     data_hora_inicio DATETIME NOT NULL,
     data_hora_fim DATETIME NOT NULL,
     status ENUM('agendado', 'concluido', 'cancelado') DEFAULT 'agendado',
-    INDEX idx_treino_turma (turma_id),
-    INDEX idx_treino_espaco (espaco_id),
-    FOREIGN KEY (turma_id) REFERENCES turma(id),
-    FOREIGN KEY (espaco_id) REFERENCES espaco_treino(id)
+    observacoes TEXT,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_treino_agenda_treino (treino_id),
+    INDEX idx_treino_agenda_turma (turma_id),
+    INDEX idx_treino_agenda_espaco (espaco_id),
+    INDEX idx_treino_agenda_instrutor (instrutor_id),
+    INDEX idx_treino_agenda_status (status),
+    FOREIGN KEY (treino_id) REFERENCES treino(id),
+    FOREIGN KEY (turma_id) REFERENCES turma(id) ON DELETE SET NULL,
+    FOREIGN KEY (espaco_id) REFERENCES espaco_treino(id),
+    FOREIGN KEY (instrutor_id) REFERENCES funcionario(usuario_id) ON DELETE SET NULL
 );
 
 CREATE TABLE presenca_treino (
@@ -204,6 +247,7 @@ CREATE TABLE presenca_treino (
     aluno_id INT NOT NULL,
     situacao ENUM('presente', 'ausente', 'justificado') DEFAULT 'presente',
     checkin_time DATETIME,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_presenca_aluno (aluno_id),
     INDEX idx_presenca_treino (treino_id),
     PRIMARY KEY (treino_id, aluno_id),

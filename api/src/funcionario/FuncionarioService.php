@@ -1,7 +1,7 @@
 <?php
 namespace Funcionario;
 
-use Core\Service;
+use Core\Services\Service;
 use Usuario\UsuarioService;
 use Funcionario\DTO\FuncionarioDTO;
 class FuncionarioService extends Service {

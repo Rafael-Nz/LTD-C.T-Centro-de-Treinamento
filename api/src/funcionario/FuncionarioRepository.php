@@ -1,8 +1,8 @@
 <?php
 namespace Funcionario;
 
-use Core\Repository;
-use Core\DataTablesRepositoryInterface;
+use Core\DataTables\DataTablesRepositoryInterface;
+use Core\Database\Repository;
 use Funcionario\DTO\FuncionarioDTO;
 class FuncionarioRepository extends Repository implements DataTablesRepositoryInterface {
 
@@ -114,6 +114,36 @@ class FuncionarioRepository extends Repository implements DataTablesRepositoryIn
             FROM funcionario
             WHERE usuario_id = ?
         ", [$id]);
+    }
+
+    public function findSimple(array $filters = []): array {
+        $params = [];
+        $where = ["u.ativo = 1"]; // Busca-se apenas funcionarios ativos
+
+        $sql = "SELECT u.id, u.nome, u.sobrenome, c.nome as cargo_nome 
+                FROM funcionario f
+                INNER JOIN usuario u ON u.id = f.usuario_id
+                LEFT JOIN cargo c ON c.id = f.cargo_id";
+
+        // Filtro para múltiplos cargos (ex: Instrutor ID 2 e Estagiário ID 3)
+        if (!empty($filters['cargos'])) {
+            $placeholders = implode(',', array_fill(0, count($filters['cargos']), '?'));
+            $where[] = "f.cargo_id IN ($placeholders)";
+            $params = array_merge($params, $filters['cargos']);
+        }
+
+        // Filtro para cargo individual
+        if (!empty($filters['cargo_id'])) {
+            $where[] = "f.cargo_id = ?";
+            $params[] = $filters['cargo_id'];
+        }
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+
+        $sql .= " ORDER BY u.nome ASC";
+        return $this->fetchAll($sql, $params);
     }
 
     public function create(FuncionarioDTO $dto, int $usuarioId): int {

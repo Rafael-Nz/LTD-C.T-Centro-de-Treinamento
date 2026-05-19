@@ -1,11 +1,13 @@
-/* =====================================================
-   REGISTRO GLOBAL DAS TABELAS
-===================================================== */
 const tabelas = {};
 
-/* =====================================================
-   FUNÇÃO GENÉRICA DE DATATABLE (Padrão Configurações)
-===================================================== */
+function extrairListaApi(payload) {
+    if (!payload) return [];
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload.data)) return payload.data;
+    if (payload.data && Array.isArray(payload.data.data)) return payload.data.data;
+    return [];
+}
+
 function inicializarTabela(config) {
     const {
         tableId,
@@ -18,13 +20,11 @@ function inicializarTabela(config) {
         customFilter
     } = config;
 
-    // Destruir tabela existente
     if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
         $(`#${tableId}`).DataTable().destroy();
-        $(`#${tableId} tbody`).empty(); 
+        $(`#${tableId} tbody`).empty();
     }
 
-    // Inicializar DataTable
     const tabela = new DataTable(`#${tableId}`, {
         responsive: true,
         ordering: false,
@@ -37,53 +37,50 @@ function inicializarTabela(config) {
             type: 'GET',
             data: function (d) {
                 if (typeof config.getFilters === 'function') {
-                    const filtrosExtras = config.getFilters();
-                    return $.extend({}, d, filtrosExtras);
+                    return $.extend({}, d, config.getFilters());
                 }
                 return d;
             },
             dataSrc: function (json) {
-                if (json.success && json.data.data) {
-                    json.draw = json.data.draw;
-                    json.recordsTotal = json.data.recordsTotal;
-                    json.recordsFiltered = json.data.recordsFiltered;
+                if (Array.isArray(json?.data)) {
+                    return json.data;
+                }
+
+                if (json && Array.isArray(json.data?.data)) {
+                    json.draw = json.data.draw ?? json.draw;
+                    json.recordsTotal = json.data.recordsTotal ?? json.recordsTotal;
+                    json.recordsFiltered = json.data.recordsFiltered ?? json.recordsFiltered;
                     return json.data.data;
                 }
-                return json.data || json;
+
+                if (Array.isArray(json)) {
+                    return json;
+                }
+
+                return [];
             },
             error: function (xhr) {
-                console.error("Erro ao carregar dados:", xhr);
-                Swal.fire('Erro!', 'Não foi possível carregar os dados da tabela.', 'error');
+                console.error('Erro ao carregar dados:', xhr);
+                Swal.fire('Erro!', 'Nao foi possivel carregar os dados da tabela.', 'error');
             }
-        },
-
-        "drawCallback": function(settings) {
-            // log para debug
-            //console.log('Dados recebidos:', settings.json);
-        },
-        "recordsTotal": function(json) {
-            return json.data.recordsTotal;
-        },
-        "recordsFiltered": function(json) {
-            return json.data.recordsFiltered;
         },
 
         columns,
 
         language: {
             emptyTable: emptyMessage,
-            info: "Mostrando _START_ até _END_ de _TOTAL_ registros",
-            infoEmpty: "Mostrando 0 até 0 de 0 registros",
-            infoFiltered: "(filtrado de _MAX_ registros)",
-            lengthMenu: "Mostrar _MENU_ registros",
-            loadingRecords: "Carregando...",
-            processing: "Processando...",
-            zeroRecords: "Nenhum registro encontrado",
+            info: 'Mostrando _START_ ate _END_ de _TOTAL_ registros',
+            infoEmpty: 'Mostrando 0 ate 0 de 0 registros',
+            infoFiltered: '(filtrado de _MAX_ registros)',
+            lengthMenu: 'Mostrar _MENU_ registros',
+            loadingRecords: 'Carregando...',
+            processing: 'Processando...',
+            zeroRecords: 'Nenhum registro encontrado',
             paginate: {
-                first: "«",
-                last: "»",
-                next: "›",
-                previous: "‹"
+                first: '«',
+                last: '»',
+                next: '›',
+                previous: '‹'
             }
         },
 
@@ -95,14 +92,18 @@ function inicializarTabela(config) {
         }
     });
 
-    // Registrar tabela globalmente
     tabelas[tableId] = tabela;
 
-    /* ===================== BUSCA ===================== */
     if (searchInput) {
         $(searchInput).on('keypress', function (e) {
             if (e.which === 13) {
                 tabela.search(this.value).draw();
+            }
+        });
+
+        $(searchInput).on('search', function () {
+            if ($(this).val() === '') {
+                tabela.search('').draw();
             }
         });
     }
@@ -113,21 +114,11 @@ function inicializarTabela(config) {
         });
     }
 
-    if (searchInput) {
-        $(searchInput).on('search', function () {
-            if ($(this).val() === "") {
-                tabela.search('').draw();
-            }
-        });
-    }
-
-    /* ===================== FILTRO PERSONALIZADO ===================== */
     if (customFilter) {
-        $.fn.dataTable.ext.search.pop(); // Remove filtro anterior, se existir
+        $.fn.dataTable.ext.search.pop();
         $.fn.dataTable.ext.search.push(customFilter);
     }
 
-    /* ===================== EDITAR ===================== */
     if (editUrl) {
         $(`#${tableId}`).on('click', '.btn-editar', function () {
             const id = $(this).data('id');
@@ -135,7 +126,6 @@ function inicializarTabela(config) {
         });
     }
 
-    // Re-inicializar tooltips após carregar dados
     tabela.on('draw', function () {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
@@ -144,9 +134,6 @@ function inicializarTabela(config) {
     return tabela;
 }
 
-/* =====================================================
-   FUNÇÕES AUXILIARES
-===================================================== */
 function formatarData(dataString) {
     if (!dataString) return '—';
     const data = new Date(dataString);
@@ -161,7 +148,7 @@ function formatarMoeda(valor) {
 }
 
 function formatarStatus(ativo) {
-    const isAtivo = (ativo == 1 || ativo === true || ativo === '1');
+    const isAtivo = ativo == 1 || ativo === true || ativo === '1';
     return isAtivo
         ? '<span class="badge bg-success-subtle text-success-emphasis">Ativo</span>'
         : '<span class="badge bg-danger-subtle text-danger-emphasis">Inativo</span>';
@@ -169,20 +156,17 @@ function formatarStatus(ativo) {
 
 function formatarPeriodicidade(periodicidade) {
     const periodicidades = {
-        'semanal': 'Semanal',
-        'quinzenal': 'Quinzenal',
-        'mensal': 'Mensal',
-        'bimestral': 'Bimestral',
-        'trimestral': 'Trimestral',
-        'semestral': 'Semestral',
-        'anual': 'Anual'
+        semanal: 'Semanal',
+        quinzenal: 'Quinzenal',
+        mensal: 'Mensal',
+        bimestral: 'Bimestral',
+        trimestral: 'Trimestral',
+        semestral: 'Semestral',
+        anual: 'Anual'
     };
     return periodicidades[periodicidade] || periodicidade.charAt(0).toUpperCase() + periodicidade.slice(1);
 }
 
-/* =====================================================
-   RECARREGAR TABELA
-===================================================== */
 function recarregarTabela(tableId) {
     if (tabelas[tableId]) {
         tabelas[tableId].ajax.reload(null, false);
@@ -194,11 +178,13 @@ function configurarToggleStatus(config) {
         botaoSeletor,
         urlAPI,
         tabelaId,
-        rotaDesativar = '/desativar',  // Nova opção: rota para desativar
-        rotaReativar = '/reativar',    // Nova opção: rota para reativar
+        rotaDesativar = '/desativar',
+        rotaReativar = '/reativar',
+        metodoDesativar = 'PUT',
+        metodoReativar = 'PUT',
         mensagens = {
-            desativar: { titulo: 'Confirmar desativação', texto: 'Tem certeza que deseja desativar este registro?' },
-            reativar: { titulo: 'Confirmar reativação', texto: 'Tem certeza que deseja reativar este registro?' },
+            desativar: { titulo: 'Confirmar desativacao', texto: 'Tem certeza que deseja desativar este registro?' },
+            reativar: { titulo: 'Confirmar reativacao', texto: 'Tem certeza que deseja reativar este registro?' },
             sucesso: 'Status alterado com sucesso!',
             erro: 'Erro ao alterar status do registro.'
         },
@@ -206,15 +192,12 @@ function configurarToggleStatus(config) {
     } = config;
 
     $(document).on('click', botaoSeletor, function (e) {
-        e.preventDefault(); // Prevenir comportamento padrão
-        
+        e.preventDefault();
+
         const $btn = $(this);
         const id = $btn.data('id');
-        
-        // IMPORTANTE: data-ativo pode ser string, converter corretamente
         const ativo = parseInt($btn.data('ativo'), 10);
-        const isDesativando = (ativo === 1);
-
+        const isDesativando = ativo === 1;
         const acao = isDesativando ? 'desativar' : 'reativar';
         const mensagem = isDesativando ? mensagens.desativar : mensagens.reativar;
 
@@ -229,26 +212,17 @@ function configurarToggleStatus(config) {
         }).then(res => {
             if (!res.isConfirmed) return;
 
-            // URLs usando PUT para ambas as ações
-            let url, method;
-            
-            if (isDesativando) {
-                url = `${urlAPI}/${id}${rotaDesativar}`;
-                method = 'PUT';
-            } else {
-                url = `${urlAPI}/${id}${rotaReativar}`;
-                method = 'PUT';
-            }
+            const url = isDesativando
+                ? `${urlAPI}/${id}${rotaDesativar}`
+                : `${urlAPI}/${id}${rotaReativar}`;
+            const method = isDesativando ? metodoDesativar : metodoReativar;
 
             $.ajax({
-                url: url,
-                method: method,
+                url,
+                method,
                 contentType: 'application/json; charset=UTF-8',
                 dataType: 'json',
-                
-                // Adicionar headers para evitar cache
                 cache: false,
-                
                 success: (response) => {
                     Swal.fire({
                         title: 'Sucesso!',
@@ -266,20 +240,19 @@ function configurarToggleStatus(config) {
                         onSuccess(response);
                     }
                 },
-
                 error: (xhr) => {
                     let errorMsg = mensagens.erro;
-                    
+
                     if (xhr.responseJSON?.message) {
                         errorMsg = xhr.responseJSON.message;
                     } else if (xhr.responseJSON?.error) {
                         errorMsg = xhr.responseJSON.error;
                     } else if (xhr.status === 404) {
-                        errorMsg = 'Rota não encontrada. Verifique a URL.';
+                        errorMsg = 'Rota nao encontrada. Verifique a URL.';
                     } else if (xhr.status === 500) {
                         errorMsg = 'Erro interno do servidor.';
                     }
-                    
+
                     Swal.fire('Erro!', errorMsg, 'error');
                     console.error('Erro detalhado:', xhr);
                 }
@@ -287,4 +260,3 @@ function configurarToggleStatus(config) {
         });
     });
 }
-

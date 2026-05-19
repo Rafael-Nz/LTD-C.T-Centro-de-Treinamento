@@ -2,6 +2,8 @@
   --color-primary-pink: #E91E63;
   --color-primary-pink-dark: #d61a59;
   --color-background-carousel: #f8f9fa;
+  --td-active-bg: #dc3545;
+  --td-active-color: #fff;
 }
 
 /* ================= BOTÕES ================= */
@@ -247,4 +249,18 @@
     padding: 0.5rem 0.75rem;
 }
 
+/* Ajuste do TimePicker */
+.tempus-dominus-widget {
+    border: 1px solid #dee2e6 !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+}
 
+.tempus-dominus-widget .toolbar button {
+    color: #dc3545 !important;
+}
+
+.horario-row {
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}

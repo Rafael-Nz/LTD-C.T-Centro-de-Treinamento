@@ -5,23 +5,25 @@ use Core\DTO\BaseDTO;
 
 /**
  * DTO para Turma
- * Encapsula os dados de uma turma com type safety
+ * Encapsula os dados de uma turma com tipagem segura
  */
-class TurmaDTO extends BaseDTO
-{
+class TurmaDTO extends BaseDTO {
     // ID (apenas para retorno/update)
     public ?int $id = null;
 
-    // Campos obrigatórios
-    public string $nome;
-    public string $turno;        // 'manha', 'tarde', 'noite'
-    public int $capacidade_minima;
-    public int $capacidade_maxima;
-    public int $instrutor_id;
-    public int $modalidade_id;   // FK real da tabela turma
+    // Campos obrigatorios
+    public ?string $nome = null;
+    public ?int $capacidade_minima = null;
+    public ?int $capacidade_maxima = null;
+    public ?int $instrutor_id = null;
 
     // Campos opcionais
     public bool $ativo = true;
+
+    /**
+     * @var \Turma\DTO\TurmaConfigHorarioDTO[]|null
+     */
+    public ?array $config_horarios = null;
 
     // Timestamps (apenas para retorno)
     public ?string $data_criacao = null;
@@ -32,7 +34,7 @@ class TurmaDTO extends BaseDTO
     public ?string $instrutor_email = null;
     public ?string $instrutor_registro_profissional = null;
 
-    // Dados relacionados - Modalidade (apenas para retorno)
-    public ?string $modalidade_nome = null;
-    public ?string $modalidade_descricao = null;
+    // Dados relacionados - Alunos (apenas para retorno)
+    public ?int $total_alunos = null;
+    public ?array $alunos = null;
 }

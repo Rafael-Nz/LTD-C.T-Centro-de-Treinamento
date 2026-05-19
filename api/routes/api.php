@@ -69,6 +69,7 @@ Router::get('/turmas', [TurmaController::class, 'index'], $auth);
 Router::get('/turmas/{id}/gerenciar', [TurmaController::class, 'manage'], $auth);
 Router::post('/turmas/{id}/treinos', [TurmaController::class, 'confirmTreino'], $auth);
 Router::put('/turmas/{id}/treinos/{treino_id}/presencas', [TurmaController::class, 'savePresencas'], $auth);
+Router::put('/turmas/{id}/treinos/{treino_id}/cancelar', [TurmaController::class, 'cancelTreino'], $auth);
 Router::get('/turmas/{id}', [TurmaController::class, 'show'], $auth);
 Router::post('/turmas', [TurmaController::class, 'store'], $auth);
 Router::put('/turmas/{id}', [TurmaController::class, 'update'], $auth);

@@ -1,8 +1,8 @@
 <?php
 namespace Funcionario;
 
-use Core\Controller;
-use Core\DataTablesResponseTrait;
+use Core\DataTables\DataTablesResponseTrait;
+use Core\Http\Controller;
 use Funcionario\DTO\FuncionarioDTO;
 
 class FuncionarioController extends Controller {
@@ -16,15 +16,21 @@ class FuncionarioController extends Controller {
     }
 
     public function index() {
+        $filters = [
+            'status' => $_GET['status'] ?? '',
+            'cargo_id' => $_GET['cargo_id'] ?? '',
+            'cargos'   => isset($_GET['cargos']) ? explode(',', $_GET['cargos']) : null,
+        ];
+
+        if (isset($_GET['simple']) && $_GET['simple'] == 'true') {
+            $data = $this->repo->findSimple($filters);
+            return $this->json(['success' => true, 'data' => $data]);
+        }
+        
         $draw   = (int)($_GET['draw']   ?? 1);
         $start  = (int)($_GET['start']  ?? 0);
         $length = (int)($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
-        
-        $filters = [
-            'status' => $_GET['status'] ?? '',
-            'cargo_id' => $_GET['cargo_id'] ?? ''
-        ];
         
         $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }

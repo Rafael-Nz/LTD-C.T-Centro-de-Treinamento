@@ -1,9 +1,3 @@
-document.documentElement.classList.add('preload');
-
-window.addEventListener('load', () => {
-    document.documentElement.classList.remove('preload');
-});
-
 document.addEventListener('DOMContentLoaded', function() {
     const body = document.body;
     const sidebar = document.getElementById('sidebar');
@@ -13,6 +7,71 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const SUBMENU_STORAGE_KEY = 'sidebarSubmenuState';
     const SIDEBAR_STATE_KEY = 'sidebarLayoutState';
+    const PROFILE_SUMMARY_KEY = 'sidebarProfileSummary';
+
+    function getInitials(name) {
+        const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return 'US';
+        const first = parts[0][0] || '';
+        const last = parts.length > 1 ? parts[parts.length - 1][0] || '' : '';
+        return `${first}${last}`.toUpperCase();
+    }
+
+    function setProfileSummary(name, initials) {
+        const profileName = document.getElementById('sidebarProfileName');
+        const profileAvatar = document.getElementById('sidebarProfileAvatar');
+        if (!profileName || !profileAvatar) return;
+
+        profileName.textContent = name;
+        profileName.title = name;
+        profileAvatar.textContent = initials;
+    }
+
+    function restoreProfileSummary() {
+        try {
+            const cachedProfile = JSON.parse(sessionStorage.getItem(PROFILE_SUMMARY_KEY));
+            if (cachedProfile?.name && cachedProfile?.initials) {
+                setProfileSummary(cachedProfile.name, cachedProfile.initials);
+            }
+        } catch (error) {
+            sessionStorage.removeItem(PROFILE_SUMMARY_KEY);
+        }
+    }
+
+    async function loadProfileSummary() {
+        const profileName = document.getElementById('sidebarProfileName');
+        const profileAvatar = document.getElementById('sidebarProfileAvatar');
+        if (!profileName || !profileAvatar) return;
+
+        try {
+            const response = await fetch('/ctt/api/usuarios/me', {
+                credentials: 'same-origin'
+            });
+            const payload = await response.json();
+            const usuario = payload?.data ?? payload;
+            const nomeCompleto = `${usuario?.nome || ''} ${usuario?.sobrenome || ''}`.trim() || 'Usuario';
+
+            if (!response.ok || payload?.success === false) {
+                throw new Error(payload?.message || 'Nao foi possivel carregar o usuario.');
+            }
+
+            const initials = getInitials(nomeCompleto);
+            setProfileSummary(nomeCompleto, initials);
+            sessionStorage.setItem(PROFILE_SUMMARY_KEY, JSON.stringify({
+                name: nomeCompleto,
+                initials
+            }));
+        } catch (error) {
+            console.error('[sidebar] erro ao carregar usuario', error);
+        }
+    }
+
+    restoreProfileSummary();
+    loadProfileSummary();
+
+    document.querySelector('a[href="/ctt/admin/logout"]')?.addEventListener('click', () => {
+        sessionStorage.removeItem(PROFILE_SUMMARY_KEY);
+    });
 
     // OverlayScrollbars
     const sidebarScrollContainer = document.querySelector('.sidebar-scrollable-content');
@@ -131,4 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    requestAnimationFrame(() => body.classList.remove('sidebar-initializing'));
 });

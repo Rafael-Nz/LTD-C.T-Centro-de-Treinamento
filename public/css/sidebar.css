@@ -1,11 +1,3 @@
-.preload #sidebar, 
-.preload #mainContent, 
-.preload header, 
-.preload footer,
-.preload .collapse {
-  transition: none !important; 
-}
-
 #sidebar {
   width: 260px;
   height: 100vh;
@@ -18,6 +10,11 @@
   flex-direction: column;
   transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
   overflow: hidden;
+}
+
+.sidebar-initializing #submenuUsuarios,
+.sidebar-initializing #submenuUsuarios.collapsing {
+  transition: none !important;
 }
 
 .header-size {
@@ -44,6 +41,19 @@
   height: 32px;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.sidebar-header .profile-avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 25%;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  background-color: #dc3545;
+  flex-shrink: 0;
 }
 
 .nav-link-text {

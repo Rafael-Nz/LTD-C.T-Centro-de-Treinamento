@@ -2,6 +2,7 @@
 namespace Usuario;
 
 use Core\Services\Service;
+use Funcionario\FuncionarioRepository;
 use Usuario\DTO\UsuarioDTO;
 
 class UsuarioService extends Service {
@@ -9,11 +10,13 @@ class UsuarioService extends Service {
     private UsuarioRepository $repo;
     private EnderecoRepository $enderecoRepo;
     private ContatoRepository $contatoRepo;
+    private FuncionarioRepository $funcionarioRepo;
 
     public function __construct() {
         $this->repo = new UsuarioRepository();
         $this->enderecoRepo = new EnderecoRepository();
         $this->contatoRepo = new ContatoRepository();
+        $this->funcionarioRepo = new FuncionarioRepository();
     }
 
     public function create(UsuarioDTO $dto): int {
@@ -88,6 +91,13 @@ class UsuarioService extends Service {
     public function findById(int $id): ?array {
         $usuario = $this->repo->findById($id);
         if (!$usuario) return null;
+
+        $funcionario = $this->funcionarioRepo->findById($id);
+        if ($funcionario) {
+            $usuario['cargo_nome'] = $funcionario['cargo_nome'] ?? null;
+            $usuario['cargo_id'] = $funcionario['cargo_id'] ?? null;
+            $usuario['registro_profissional'] = $funcionario['registro_profissional'] ?? null;
+        }
 
         return $usuario;
     }

@@ -27,6 +27,7 @@ Router::post('/auth/recuperar-senha', [AuthController::class, 'requestPasswordRe
 Router::post('/auth/redefinir-senha', [AuthController::class, 'resetPassword']);
 
 Router::get('/usuarios', [UsuarioController::class, 'index'], $auth);
+Router::get('/usuarios/me', [UsuarioController::class, 'me'], $auth);
 Router::get('/usuarios/{id}', [UsuarioController::class, 'show'], $auth);
 Router::put('/usuarios/{id}', [UsuarioController::class, 'update'], $auth);
 Router::put('/usuarios/{id}/desativar', [UsuarioController::class, 'deactivate'], $auth);

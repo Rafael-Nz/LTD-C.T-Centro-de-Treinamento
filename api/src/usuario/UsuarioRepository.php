@@ -27,7 +27,8 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
                 email,
                 cpf,
                 ativo,
-                tipo_usuario
+                tipo_usuario,
+                data_criacao
             FROM usuario
         ";
 

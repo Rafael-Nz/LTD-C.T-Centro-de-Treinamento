@@ -42,6 +42,18 @@ function navHref($path): string {
 ?>
 
 <?php $isUserOpen = routeIs(['alunos.*', 'funcionarios.*']); ?>
+<script>
+  (function () {
+    document.body.classList.add('sidebar-initializing');
+
+    const isDesktop = window.innerWidth > 768;
+    const isClosed = localStorage.getItem('sidebarLayoutState') === 'closed';
+
+    if (isDesktop && isClosed) {
+      document.body.classList.add('sidebar-closed');
+    }
+  }());
+</script>
 <div id="sidebarOverlay"></div>
 
 <nav id="sidebar" class="sidebar">
@@ -59,10 +71,10 @@ function navHref($path): string {
     <!-- Perfil -->
     <div class="sidebar-header border-bottom border-secondary d-flex align-items-center">
       <span class="nav-icon-wrapper">
-        <img src="" alt="Foto do perfil" class="rounded-circle" width="30" height="30" style="object-fit: cover;">
+        <div class="profile-avatar" id="sidebarProfileAvatar">--</div>
       </span>
-      <p class="nav-link-text fw-normal mb-0 text-white text-truncate" title="Nickname do usuário">
-        Nickname
+      <p class="nav-link-text fw-normal mb-0 text-white text-truncate" id="sidebarProfileName" title="Nome do usuário">
+        Carregando...
       </p>
     </div>
 

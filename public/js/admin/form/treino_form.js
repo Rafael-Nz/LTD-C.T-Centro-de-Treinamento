@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const field = document.getElementById('modalidade_id');
         if (!field) return;
 
-        const response = await fetch('/ctt/api/modalidades');
+        const response = await fetch('/ctt/api/modalidades?simple=true');
         const payload = await response.json();
         const items = parseApiList(payload);
 

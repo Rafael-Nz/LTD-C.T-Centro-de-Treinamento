@@ -31,7 +31,7 @@
 
   <main class="flex-fill d-flex" id="mainContent">
     <div class="container-lg p-4 d-flex flex-column flex-fill">
-      <h1 class="h4 mb-4">Relatórios do Centro de Treinamento</h1>
+      <h1 class="h4 mb-4">Relatórios</h1>
 
       <div class="row g-3 mb-4">
         <!-- FILTROS -->
@@ -268,26 +268,28 @@
 
     function carregarFiltros() {
       $.ajax({
-        url: '/ctt/api/modalidades',
+        url: '/ctt/api/modalidades?simple=true',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
+          const items = data.data || data || [];
           const select = $('#modalidade');
           select.empty();
           select.append('<option value="">Todas as modalidades</option>');
-          data.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
+          items.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
         }
       });
 
       $.ajax({
-        url: '/ctt/api/turmas',
+        url: '/ctt/api/turmas?simple=true',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
+          const items = data.data || data || [];
           const select = $('#turma');
           select.empty();
           select.append('<option value="">Todas as turmas</option>');
-          data.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
+          items.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
         }
       });
     }

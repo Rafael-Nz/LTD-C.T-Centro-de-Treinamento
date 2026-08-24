@@ -1041,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 week: 'Semana',
                 list: 'Lista'
             },
+            noEventsContent: 'Nenhum treino agendado para este periodo.',
             datesSet(info) {
                 const start = info.startStr.slice(0, 19).replace('T', ' ');
                 const end = info.endStr.slice(0, 19).replace('T', ' ');

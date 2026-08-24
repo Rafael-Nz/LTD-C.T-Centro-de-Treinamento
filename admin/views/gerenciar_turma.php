@@ -245,7 +245,7 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
   </div>
 
   <div class="modal fade" id="presencasModal" tabindex="-1" aria-labelledby="presencasModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
           <div>

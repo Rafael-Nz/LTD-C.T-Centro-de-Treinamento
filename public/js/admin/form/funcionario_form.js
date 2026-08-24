@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cargoSelect = document.getElementById('cargo');
         if (!cargoSelect) return;
         try {
-            const response = await fetch('/ctt/api/cargos');
+            const response = await fetch('/ctt/api/cargos?simple=true');
             const result = await response.json();
             const listaCargos = result.data || [];
             cargoSelect.innerHTML = '<option value="">Selecione</option>';

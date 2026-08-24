@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const alunoId = Number(mainContent?.dataset.alunoId || 0);
     const errorAlert = document.getElementById('alunoDetalheError');
     const alunoDadosGrid = document.getElementById('alunoDadosGrid');
-    const avaliacoesList = document.getElementById('avaliacoesList');
     const anamneseList = document.getElementById('anamneseList');
+    let tabelaAvaliacoes = null;
 
     function parseApiData(payload) {
         if (!payload) return null;
@@ -47,6 +47,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function maskCpf(value) {
+        const digits = String(value ?? '').replace(/\D/g, '');
+        if (!digits) return '--';
+        return `*******${digits.slice(-4).padStart(4, '0')}`;
+    }
+
     function ageFromBirthDate(value) {
         if (!value) return '--';
         const birthDate = new Date(value);
@@ -82,15 +88,15 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderAluno(aluno) {
         setText('alunoNome', `${aluno.nome || ''} ${aluno.sobrenome || ''}`.trim() || 'Perfil do Aluno');
         setText('alunoMeta', `Matricula ${aluno.codigo_matricula || '--'} • ${aluno.email || 'sem email'}`);
-        setText('cardMatricula', aluno.codigo_matricula || '--');
-        setText('cardIdade', ageFromBirthDate(aluno.data_nascimento));
-        setText('cardSexo', genderLabel(aluno.genero));
-        setText('cardTurmaAtual', aluno.turmas?.[0]?.nome || 'Sem turma');
 
         if (!alunoDadosGrid) return;
 
         const fields = [
-            ['CPF', aluno.cpf || '--'],
+            ['Matricula', aluno.codigo_matricula || '--'],
+            ['Idade', ageFromBirthDate(aluno.data_nascimento)],
+            ['Sexo', genderLabel(aluno.genero)],
+            ['Turma atual', aluno.turmas?.[0]?.nome || 'Sem turma'],
+            ['CPF', maskCpf(aluno.cpf)],
             ['Nascimento', formatDate(aluno.data_nascimento)],
             ['E-mail', aluno.email || '--'],
             ['Data da matricula', formatDate(aluno.data_matricula)],
@@ -109,55 +115,104 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderAvaliacoes(avaliacoes) {
-        setText('avaliacoesCount', `${avaliacoes.length} registro(s)`);
+        const tableElement = document.getElementById('tabelaAvaliacoes');
+        if (!tableElement || typeof DataTable === 'undefined') return;
 
-        if (!avaliacoesList) return;
-
-        if (avaliacoes.length === 0) {
-            avaliacoesList.innerHTML = `
-                <div class="empty-panel">
-                    <i class="ph ph-clipboard-text fs-2 mb-2"></i>
-                    <p class="mb-0">Nenhuma avaliacao fisica cadastrada para este aluno.</p>
-                </div>
-            `;
-            return;
+        if (tabelaAvaliacoes) {
+            tabelaAvaliacoes.destroy();
+            $('#tabelaAvaliacoes tbody').empty();
         }
 
-        avaliacoesList.innerHTML = avaliacoes.map((avaliacao) => `
-            <div class="card avaliacao-card shadow-none">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                        <div>
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <span class="badge text-bg-light border">${escapeHtml(formatDate(avaliacao.data_avaliacao))}</span>
-                                <span class="text-muted small">${escapeHtml(avaliacao.avaliador?.nome || '--')}</span>
-                            </div>
-                            <h6 class="mb-2">Resultados principais</h6>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <span class="metric-chip">IMC ${escapeHtml(formatNumber(avaliacao.imc, 2))}</span>
-                                <span class="metric-chip">% Gordura ${escapeHtml(formatNumber(avaliacao.percentual_gordura, 1))}</span>
-                                <span class="metric-chip">% Musculo ${escapeHtml(formatNumber(avaliacao.percentual_musculo, 1))}</span>
-                                <span class="metric-chip">Visceral ${escapeHtml(formatNumber(avaliacao.gordura_visceral, 1))}</span>
-                            </div>
-                        </div>
-                        <a href="/ctt/admin/alunos/${alunoId}/avaliacoes/editar/${avaliacao.id}" class="btn btn-sm btn-primary">
-                            <i class="ph ph-pencil-simple me-1"></i>Editar
+        tabelaAvaliacoes = new DataTable('#tabelaAvaliacoes', {
+            data: avaliacoes,
+            responsive: true,
+            ordering: false,
+            pageLength: 10,
+            language: {
+                emptyTable: 'Nenhuma avaliacao fisica cadastrada para este aluno.',
+                info: 'Mostrando _START_ ate _END_ de _TOTAL_ registros',
+                infoEmpty: 'Mostrando 0 ate 0 de 0 registros',
+                infoFiltered: '(filtrado de _MAX_ registros)',
+                lengthMenu: 'Mostrar _MENU_ registros',
+                loadingRecords: 'Carregando...',
+                processing: 'Processando...',
+                zeroRecords: 'Nenhum registro encontrado',
+                paginate: {
+                    first: '«',
+                    last: '»',
+                    next: '›',
+                    previous: '‹'
+                }
+            },
+            layout: {
+                topStart: null,
+                topEnd: null,
+                bottomStart: 'info',
+                bottomEnd: 'paging'
+            },
+            columns: [
+                {
+                    data: 'data_avaliacao',
+                    render: (_, __, row) => `
+                        <div class="fw-semibold">${escapeHtml(formatDate(row.data_avaliacao))}</div>
+                        <small class="text-muted">${escapeHtml(row.classificacoes?.imc?.label || '--')}</small>
+                    `
+                },
+                {
+                    data: null,
+                    render: row => escapeHtml(row.avaliador?.nome || '--')
+                },
+                {
+                    data: 'imc',
+                    className: 'text-center',
+                    render: data => escapeHtml(formatNumber(data, 2))
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: row => `
+                        ${escapeHtml(formatNumber(row.percentual_gordura, 1))}%
+                        <small class="d-block text-muted">${escapeHtml(row.classificacoes?.percentual_gordura?.label || '--')}</small>
+                    `
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: row => `
+                        ${escapeHtml(formatNumber(row.percentual_musculo, 1))}%
+                        <small class="d-block text-muted">${escapeHtml(row.classificacoes?.percentual_musculo?.label || '--')}</small>
+                    `
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: row => `
+                        ${escapeHtml(formatNumber(row.gordura_visceral, 1))}
+                        <small class="d-block text-muted">${escapeHtml(row.classificacoes?.gordura_visceral?.label || '--')}</small>
+                    `
+                },
+                {
+                    data: 'peso',
+                    className: 'text-center',
+                    render: data => `${escapeHtml(formatNumber(data, 1))} kg`
+                },
+                {
+                    data: 'altura',
+                    className: 'text-center',
+                    render: data => `${escapeHtml(formatNumber(data, 2))} m`
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    orderable: false,
+                    render: row => `
+                        <a href="/ctt/admin/alunos/${alunoId}/avaliacoes/editar/${row.id}" class="btn btn-sm btn-primary" title="Editar Avaliacao">
+                            <i class="ph ph-pencil"></i>
                         </a>
-                    </div>
-                    <hr>
-                    <div class="row g-3">
-                        <div class="col-md-3"><strong>Classificacao IMC:</strong> ${escapeHtml(avaliacao.classificacoes?.imc?.label || '--')}</div>
-                        <div class="col-md-3"><strong>Body Fat:</strong> ${escapeHtml(avaliacao.classificacoes?.percentual_gordura?.label || '--')}</div>
-                        <div class="col-md-3"><strong>Muscle:</strong> ${escapeHtml(avaliacao.classificacoes?.percentual_musculo?.label || '--')}</div>
-                        <div class="col-md-3"><strong>Visceral:</strong> ${escapeHtml(avaliacao.classificacoes?.gordura_visceral?.label || '--')}</div>
-                        <div class="col-md-3"><strong>Peso:</strong> ${escapeHtml(formatNumber(avaliacao.peso, 1))} kg</div>
-                        <div class="col-md-3"><strong>Altura:</strong> ${escapeHtml(formatNumber(avaliacao.altura, 2))} m</div>
-                        <div class="col-md-3"><strong>Cintura:</strong> ${escapeHtml(formatNumber(avaliacao.cintura, 1))} cm</div>
-                        <div class="col-md-3"><strong>Torax:</strong> ${escapeHtml(formatNumber(avaliacao.torax, 1))} cm</div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+                    `
+                }
+            ]
+        });
     }
 
     function formatAnamneseValue(value) {

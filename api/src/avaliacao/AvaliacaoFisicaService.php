@@ -42,6 +42,7 @@ class AvaliacaoFisicaService extends Service {
             throw new \InvalidArgumentException('O usuario autenticado nao pode ser registrado como avaliador.');
         }
 
+        $this->repo->assertWriteSchemaIsReady();
         $this->validateDto($dto);
         $dto->imc = $this->calculateImc($dto->peso, $dto->altura);
 
@@ -56,6 +57,7 @@ class AvaliacaoFisicaService extends Service {
             throw new \RuntimeException('Avaliacao nao encontrada.');
         }
 
+        $this->repo->assertWriteSchemaIsReady();
         $this->validateDto($dto);
         $dto->imc = $this->calculateImc($dto->peso, $dto->altura);
 

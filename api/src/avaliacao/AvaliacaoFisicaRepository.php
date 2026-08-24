@@ -5,8 +5,43 @@ use Avaliacao\DTO\AvaliacaoFisicaDTO;
 use Core\Database\Repository;
 
 class AvaliacaoFisicaRepository extends Repository {
+    private const REQUIRED_WRITE_COLUMNS = [
+        'imc',
+        'cintura',
+        'torax',
+        'braco_dc',
+        'braco_d',
+        'braco_ec',
+        'braco_e',
+        'coxa_d',
+        'coxa_e',
+        'panturrilha_d',
+        'panturrilha_e',
+        'percentual_gordura',
+        'percentual_musculo',
+        'metabolismo_repouso',
+        'idade_biologica',
+        'gordura_visceral',
+    ];
+
     public function isFuncionario(int $usuarioId): bool {
         return $this->fetch("SELECT usuario_id FROM funcionario WHERE usuario_id = ?", [$usuarioId]) !== null;
+    }
+
+    public function assertWriteSchemaIsReady(): void {
+        $columns = array_map(
+            static fn (array $column): string => (string) ($column['Field'] ?? ''),
+            $this->fetchAll("SHOW COLUMNS FROM avaliacao_fisica")
+        );
+
+        $missing = array_values(array_diff(self::REQUIRED_WRITE_COLUMNS, $columns));
+        if ($missing === []) {
+            return;
+        }
+
+        throw new \RuntimeException(
+            'A estrutura da tabela avaliacao_fisica esta desatualizada. Execute docs/sql/avaliacao_fisica_alter.sql para salvar a ficha completa.'
+        );
     }
 
     public function findById(int $id): ?array {

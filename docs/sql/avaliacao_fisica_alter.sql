@@ -10,6 +10,8 @@ ALTER TABLE avaliacao_fisica
     ADD COLUMN coxa_e DECIMAL(5,2) NULL AFTER coxa_d,
     ADD COLUMN panturrilha_d DECIMAL(5,2) NULL AFTER coxa_e,
     ADD COLUMN panturrilha_e DECIMAL(5,2) NULL AFTER panturrilha_d,
+    ADD COLUMN percentual_gordura DECIMAL(4,2) NULL AFTER panturrilha_e,
+    ADD COLUMN percentual_musculo DECIMAL(4,2) NULL AFTER percentual_gordura,
     ADD COLUMN metabolismo_repouso INT NULL AFTER percentual_musculo,
     ADD COLUMN idade_biologica INT NULL AFTER metabolismo_repouso,
     ADD COLUMN gordura_visceral DECIMAL(5,2) NULL AFTER idade_biologica;

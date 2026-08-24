@@ -161,9 +161,9 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 								</div>
 							</div>
 
-							<!-- Seção: Informações Médicas (Anamnese) -->
+							<!-- Seção: Informações Médicas -->
 							<div class="col-12">
-								<h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Informações Médicas (Anamnese)</h3>
+								<h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Informações Médicas</h3>
 								<div id="anamnese-container"></div>
 							</div>
 							

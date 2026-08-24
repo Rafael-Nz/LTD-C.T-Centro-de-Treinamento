@@ -149,7 +149,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function setValue(id, value) {
         const field = document.getElementById(id);
         if (field) {
-            field.value = value ?? '';
+            if ('value' in field) {
+                field.value = value ?? '';
+            } else {
+                field.textContent = value ?? '';
+            }
         }
     }
 
@@ -178,9 +182,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function calculateImc() {
         const peso = Number(fields.peso?.value);
-        const altura = Number(fields.altura?.value);
-        if (!peso || !altura) return null;
-        return Number((peso / (altura * altura)).toFixed(2));
+        const alturaCm = Number(fields.altura?.value);
+        if (!peso || !alturaCm) return null;
+        const alturaMetros = alturaCm / 100;
+        if (!alturaMetros) return null;
+        return Number((peso / (alturaMetros * alturaMetros)).toFixed(2));
     }
 
     function classifyImc(imc) {
@@ -245,12 +251,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const muscle = Number(fields.percentual_musculo?.value);
         const visceral = Number(fields.gordura_visceral?.value);
 
-        computedFields.imc.value = imc !== null ? formatNumber(imc, 2) : '';
-        computedFields.imcClassificacao.value = classifyImc(imc);
-        computedFields.bodyFatClassificacao.value = classifyByRange(bodyFat, getBodyFatRange(alunoContext.genero, idade));
-        computedFields.muscleClassificacao.value = classifyByRange(muscle, getMuscleRange(alunoContext.genero, idade));
-        computedFields.visceralFatClassificacao.value = classifyVisceral(visceral);
-        setValue('alunoIdade', idade !== null ? `${idade} anos` : '');
+        setValue('imc', imc !== null ? formatNumber(imc, 2) : '--');
+        setValue('imcClassificacao', classifyImc(imc) || '--');
+        setValue('bodyFatClassificacao', classifyByRange(bodyFat, getBodyFatRange(alunoContext.genero, idade)) || '--');
+        setValue('muscleClassificacao', classifyByRange(muscle, getMuscleRange(alunoContext.genero, idade)) || '--');
+        setValue('visceralFatClassificacao', classifyVisceral(visceral) || '--');
     }
 
     function buildPayload() {
@@ -258,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return {
             data_avaliacao: formatDateForApi(date),
             peso: fields.peso.value || null,
-            altura: fields.altura.value || null,
+            altura: fields.altura.value ? Number(fields.altura.value) / 100 : null,
             cintura: fields.cintura.value || null,
             torax: fields.torax.value || null,
             braco_dc: fields.braco_dc.value || null,
@@ -304,9 +309,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const aluno = result.data || result;
         alunoContext.genero = aluno.genero || 'O';
         alunoContext.dataNascimento = aluno.data_nascimento || null;
-
-        setValue('alunoNome', `${aluno.nome || ''} ${aluno.sobrenome || ''}`.trim());
-        setValue('alunoSexo', aluno.genero === 'M' ? 'Masculino' : aluno.genero === 'F' ? 'Feminino' : 'Outro');
         updateNavigationLinks();
         updateComputedFields();
     }
@@ -330,10 +332,10 @@ document.addEventListener('DOMContentLoaded', function () {
             setDateInputValue(date);
         }
 
-        setValue('avaliadorNome', avaliacao.avaliador?.nome || '');
-        setValue('alunoNome', avaliacao.aluno?.nome || '');
         fields.peso.value = formatNumber(avaliacao.peso, 2);
-        fields.altura.value = formatNumber(avaliacao.altura, 2);
+        fields.altura.value = avaliacao.altura !== null && avaliacao.altura !== undefined
+            ? formatNumber(Number(avaliacao.altura) * 100, 1)
+            : '';
         fields.cintura.value = formatNumber(avaliacao.cintura, 2);
         fields.torax.value = formatNumber(avaliacao.torax, 2);
         fields.braco_dc.value = formatNumber(avaliacao.braco_dc, 2);

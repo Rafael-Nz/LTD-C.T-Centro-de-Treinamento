@@ -48,25 +48,9 @@ $tituloPagina = $isEdit ? 'Editar Avaliacao Fisica' : 'Nova Avaliacao Fisica';
       <div class="card border-0 shadow-sm">
         <div class="card-body">
           <form id="formAvaliacao" novalidate>
+            <h2 class="h6 section-title border-bottom pb-2 mb-3">Dados basicos</h2>
             <div class="row g-3 mb-4">
               <div class="col-md-4">
-                <label class="form-label">Aluno</label>
-                <input type="text" id="alunoNome" class="form-control" readonly>
-              </div>
-              <div class="col-md-2">
-                <label class="form-label">Idade</label>
-                <input type="text" id="alunoIdade" class="form-control" readonly>
-              </div>
-              <div class="col-md-2">
-                <label class="form-label">Sexo</label>
-                <input type="text" id="alunoSexo" class="form-control" readonly>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Professor avaliador</label>
-                <input type="text" id="avaliadorNome" class="form-control" readonly value="<?= htmlspecialchars($_SESSION['user_nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-              </div>
-
-              <div class="col-md-3">
                 <label for="dataAvaliacao" class="form-label">Data da avaliacao</label>
                 <div class="input-group" id="dataAvaliacaoPicker" data-td-target-input="nearest" data-td-target-toggle="nearest">
                   <input type="text" class="form-control" id="dataAvaliacao" data-td-target="#dataAvaliacao" autocomplete="off" required>
@@ -75,53 +59,57 @@ $tituloPagina = $isEdit ? 'Editar Avaliacao Fisica' : 'Nova Avaliacao Fisica';
                   </span>
                 </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <label for="peso" class="form-label">Peso (kg)</label>
                 <input type="number" step="0.01" class="form-control" id="peso" name="peso">
               </div>
-              <div class="col-md-3">
-                <label for="altura" class="form-label">Altura (m)</label>
-                <input type="number" step="0.01" class="form-control" id="altura" name="altura">
+              <div class="col-md-4">
+                <label for="altura" class="form-label">Altura (cm)</label>
+                <input type="number" step="0.1" class="form-control" id="altura" name="altura" placeholder="Ex.: 176">
               </div>
-              <div class="col-md-3">
+              <div class="col-md-6">
                 <label for="cintura" class="form-label">Cintura (cm)</label>
                 <input type="number" step="0.01" class="form-control" id="cintura" name="cintura">
               </div>
-            </div>
-
-            <h2 class="h6 section-title border-bottom pb-2 mb-3">Perimetros</h2>
-            <div class="row g-3 mb-4">
-              <div class="col-md-3">
+              <div class="col-md-6">
                 <label for="torax" class="form-label">Torax (cm)</label>
                 <input type="number" step="0.01" class="form-control" id="torax" name="torax">
               </div>
+            </div>
+
+            <h2 class="h6 section-title border-bottom pb-2 mb-3">Membros superiores</h2>
+            <div class="row g-3 mb-4">
               <div class="col-md-3">
                 <label for="bracoDC" class="form-label">Braco D.C (cm)</label>
                 <input type="number" step="0.01" class="form-control" id="bracoDC" name="bracoDC">
-              </div>
-              <div class="col-md-3">
-                <label for="bracoD" class="form-label">Braco D (cm)</label>
-                <input type="number" step="0.01" class="form-control" id="bracoD" name="bracoD">
-              </div>
-              <div class="col-md-3">
-                <label for="coxaD" class="form-label">Coxa D (cm)</label>
-                <input type="number" step="0.01" class="form-control" id="coxaD" name="coxaD">
-              </div>
-              <div class="col-md-3">
-                <label for="panturrilhaD" class="form-label">PT. D (cm)</label>
-                <input type="number" step="0.01" class="form-control" id="panturrilhaD" name="panturrilhaD">
               </div>
               <div class="col-md-3">
                 <label for="bracoEC" class="form-label">Braco E.C (cm)</label>
                 <input type="number" step="0.01" class="form-control" id="bracoEC" name="bracoEC">
               </div>
               <div class="col-md-3">
+                <label for="bracoD" class="form-label">Braco D (cm)</label>
+                <input type="number" step="0.01" class="form-control" id="bracoD" name="bracoD">
+              </div>
+              <div class="col-md-3">
                 <label for="bracoE" class="form-label">Braco E (cm)</label>
                 <input type="number" step="0.01" class="form-control" id="bracoE" name="bracoE">
+              </div>
+            </div>
+
+            <h2 class="h6 section-title border-bottom pb-2 mb-3">Membros inferiores</h2>
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <label for="coxaD" class="form-label">Coxa D (cm)</label>
+                <input type="number" step="0.01" class="form-control" id="coxaD" name="coxaD">
               </div>
               <div class="col-md-3">
                 <label for="coxaE" class="form-label">Coxa E (cm)</label>
                 <input type="number" step="0.01" class="form-control" id="coxaE" name="coxaE">
+              </div>
+              <div class="col-md-3">
+                <label for="panturrilhaD" class="form-label">PT. D (cm)</label>
+                <input type="number" step="0.01" class="form-control" id="panturrilhaD" name="panturrilhaD">
               </div>
               <div class="col-md-3">
                 <label for="panturrilhaE" class="form-label">PT. E (cm)</label>
@@ -129,31 +117,19 @@ $tituloPagina = $isEdit ? 'Editar Avaliacao Fisica' : 'Nova Avaliacao Fisica';
               </div>
             </div>
 
-            <h2 class="h6 section-title border-bottom pb-2 mb-3">Bioimpedancia e Classificacoes</h2>
+            <h2 class="h6 section-title border-bottom pb-2 mb-3">Bioimpedancia</h2>
             <div class="row g-3 mb-4">
-              <div class="col-md-3">
-                <label for="imc" class="form-label">IMC</label>
-                <input type="number" step="0.01" class="form-control" id="imc" readonly>
-              </div>
-              <div class="col-md-3">
-                <label for="imcClassificacao" class="form-label">Classificacao IMC</label>
-                <input type="text" class="form-control" id="imcClassificacao" readonly>
-              </div>
               <div class="col-md-3">
                 <label for="bodyFat" class="form-label">% Gordura Corporal</label>
                 <input type="number" step="0.01" class="form-control" id="bodyFat" name="bodyFat">
-              </div>
-              <div class="col-md-3">
-                <label for="bodyFatClassificacao" class="form-label">Classificacao Body Fat</label>
-                <input type="text" class="form-control" id="bodyFatClassificacao" readonly>
               </div>
               <div class="col-md-3">
                 <label for="muscle" class="form-label">% Musculo Esqueletico</label>
                 <input type="number" step="0.01" class="form-control" id="muscle" name="muscle">
               </div>
               <div class="col-md-3">
-                <label for="muscleClassificacao" class="form-label">Classificacao Muscle</label>
-                <input type="text" class="form-control" id="muscleClassificacao" readonly>
+                <label for="visceralFat" class="form-label">Gordura Visceral</label>
+                <input type="number" step="0.01" class="form-control" id="visceralFat" name="visceralFat">
               </div>
               <div class="col-md-3">
                 <label for="rm" class="form-label">Metabolismo em Repouso</label>
@@ -163,11 +139,27 @@ $tituloPagina = $isEdit ? 'Editar Avaliacao Fisica' : 'Nova Avaliacao Fisica';
                 <label for="bodyAge" class="form-label">Idade Biologica</label>
                 <input type="number" class="form-control" id="bodyAge" name="bodyAge">
               </div>
-              <div class="col-md-3">
-                <label for="visceralFat" class="form-label">Gordura Visceral</label>
-                <input type="number" step="0.01" class="form-control" id="visceralFat" name="visceralFat">
+            </div>
+
+            <h2 class="h6 section-title border-bottom pb-2 mb-3">Resumo automatico</h2>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label for="imc" class="form-label">IMC calculado</label>
+                <input type="text" class="form-control" id="imc" readonly>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-4">
+                <label for="imcClassificacao" class="form-label">Classificacao IMC</label>
+                <input type="text" class="form-control" id="imcClassificacao" readonly>
+              </div>
+              <div class="col-md-4">
+                <label for="bodyFatClassificacao" class="form-label">Classificacao Body Fat</label>
+                <input type="text" class="form-control" id="bodyFatClassificacao" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="muscleClassificacao" class="form-label">Classificacao Muscle</label>
+                <input type="text" class="form-control" id="muscleClassificacao" readonly>
+              </div>
+              <div class="col-md-6">
                 <label for="visceralFatClassificacao" class="form-label">Classificacao Visceral</label>
                 <input type="text" class="form-control" id="visceralFatClassificacao" readonly>
               </div>

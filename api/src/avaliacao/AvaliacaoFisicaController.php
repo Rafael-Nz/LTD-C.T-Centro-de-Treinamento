@@ -47,6 +47,8 @@ class AvaliacaoFisicaController extends Controller {
             $this->json(['id' => $id, 'message' => 'Avaliacao criada com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);
+        } catch (\RuntimeException $e) {
+            $this->error($e->getMessage(), 500);
         } catch (\Throwable $e) {
             error_log('[AvaliacaoFisicaController::storeByAluno] ' . $e->getMessage());
             $this->error('Erro ao salvar avaliacao.', 500);
@@ -62,7 +64,8 @@ class AvaliacaoFisicaController extends Controller {
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $status = $e->getMessage() === 'Avaliacao nao encontrada.' ? 404 : 500;
+            $this->error($e->getMessage(), $status);
         } catch (\Throwable $e) {
             error_log('[AvaliacaoFisicaController::update] ' . $e->getMessage());
             $this->error('Erro ao atualizar avaliacao.', 500);

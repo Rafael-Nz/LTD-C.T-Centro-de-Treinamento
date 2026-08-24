@@ -1,79 +1,75 @@
 <?php
 namespace Cargo;
 
+use Cargo\DTO\CargoDTO;
 use Core\DataTables\DataTablesRepositoryInterface;
 use Core\Database\Repository;
-use Cargo\DTO\CargoDTO;
 
-class CargoRepository extends Repository implements DataTablesRepositoryInterface{
-
+class CargoRepository extends Repository implements DataTablesRepositoryInterface {
     public function countAll(): int {
-        $result = $this->fetch("SELECT COUNT(*) as total FROM cargo");
-        return (int)($result['total'] ?? 0);
+        $result = $this->fetch('SELECT COUNT(*) as total FROM cargo');
+        return (int) ($result['total'] ?? 0);
     }
 
     public function findPaginated(int $start, int $length, string $search = '', array $filters = []): array {
         $params = [];
         $where = [];
-        
-        $sql = "SELECT 
-                    c.id,
-                    c.nome,
-                    c.descricao,
-                    c.salario_base,
-                    c.ativo,
-                    c.data_criacao,
-                    c.data_atualizacao
-                FROM cargo c";
 
-        // Busca Global
-        if (!empty($search)) {
-            $where[] = "(c.nome LIKE ?)";
-            $params[] = "%$search%";
+        $sql = "
+            SELECT
+                c.id,
+                c.nome,
+                c.descricao,
+                c.salario_base,
+                c.ativo,
+                c.data_criacao,
+                c.data_atualizacao
+            FROM cargo c
+        ";
+
+        if ($search !== '') {
+            $where[] = '(c.nome LIKE ?)';
+            $params[] = "%{$search}%";
         }
 
-        // Filtro de Status
         if (isset($filters['status']) && $filters['status'] !== '') {
-            $where[] = "c.ativo = ?";
+            $where[] = 'c.ativo = ?';
             $params[] = $filters['status'];
         }
 
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(" AND ", $where);
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        $sql .= " ORDER BY c.nome ASC LIMIT ? OFFSET ?";
+        $sql .= ' ORDER BY c.nome ASC LIMIT ? OFFSET ?';
         $params[] = $length;
         $params[] = $start;
 
         return $this->fetchAll($sql, $params);
     }
 
-    // Contagem de registros filtrados (para DataTables)
     public function countFiltered(string $search = '', array $filters = []): int {
         $params = [];
         $where = [];
 
-        $sql = "SELECT COUNT(*) as total FROM cargo c";
-        
-        // Busca Global
-        if (!empty($search)) {
-            $where[] = "(c.nome LIKE ?)";
-            $params[] = "%$search%";
+        $sql = 'SELECT COUNT(*) as total FROM cargo c';
+
+        if ($search !== '') {
+            $where[] = '(c.nome LIKE ?)';
+            $params[] = "%{$search}%";
         }
 
-        // Filtro de Status
         if (isset($filters['status']) && $filters['status'] !== '') {
-            $where[] = "c.ativo = ?";
+            $where[] = 'c.ativo = ?';
             $params[] = $filters['status'];
         }
 
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(" AND ", $where);
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
         $result = $this->fetch($sql, $params);
-        return (int)($result['total'] ?? 0);
+        return (int) ($result['total'] ?? 0);
     }
 
     public function findAll(): array {
@@ -91,6 +87,26 @@ class CargoRepository extends Repository implements DataTablesRepositoryInterfac
         ");
     }
 
+    public function findSimple(bool $somenteAtivos = true): array {
+        $sql = "
+            SELECT
+                c.id,
+                c.nome,
+                c.descricao,
+                c.salario_base,
+                c.ativo
+            FROM cargo c
+        ";
+
+        if ($somenteAtivos) {
+            $sql .= ' WHERE c.ativo = 1';
+        }
+
+        $sql .= ' ORDER BY c.nome';
+
+        return $this->fetchAll($sql);
+    }
+
     public function findById(int $id): ?array {
         return $this->fetch("
             SELECT c.id, c.nome, c.descricao, c.salario_base, c.ativo, c.data_criacao, c.data_atualizacao
@@ -100,7 +116,7 @@ class CargoRepository extends Repository implements DataTablesRepositoryInterfac
     }
 
     public function findByNome(string $nome): ?array {
-        return $this->fetch("SELECT id FROM cargo WHERE nome = ?", [$nome]);
+        return $this->fetch('SELECT id FROM cargo WHERE nome = ?', [$nome]);
     }
 
     public function create(CargoDTO $dto): int {
@@ -108,10 +124,10 @@ class CargoRepository extends Repository implements DataTablesRepositoryInterfac
             INSERT INTO cargo (nome, descricao, salario_base, ativo)
             VALUES (:nome, :descricao, :salario_base, :ativo)
         ", [
-            ':nome'         => $dto->nome,
-            ':descricao'    => $dto->descricao,
+            ':nome' => $dto->nome,
+            ':descricao' => $dto->descricao,
             ':salario_base' => $dto->salario_base,
-            ':ativo'        => $dto->ativo ? 1 : 0,
+            ':ativo' => $dto->ativo ? 1 : 0,
         ]);
 
         return (int) $this->lastInsertId();
@@ -120,27 +136,25 @@ class CargoRepository extends Repository implements DataTablesRepositoryInterfac
     public function update(int $id, CargoDTO $dto): bool {
         return $this->execute("
             UPDATE cargo SET
-                nome         = :nome,
-                descricao    = :descricao,
+                nome = :nome,
+                descricao = :descricao,
                 salario_base = :salario_base,
-                ativo        = :ativo
+                ativo = :ativo
             WHERE id = :id
         ", [
-            ':nome'         => $dto->nome,
-            ':descricao'    => $dto->descricao,
+            ':nome' => $dto->nome,
+            ':descricao' => $dto->descricao,
             ':salario_base' => $dto->salario_base,
-            ':ativo'        => $dto->ativo ? 1 : 0,
-            ':id'           => $id,
+            ':ativo' => $dto->ativo ? 1 : 0,
+            ':id' => $id,
         ]);
     }
 
-    // Desativa cargo (soft delete)
-
     public function deactivate(int $id): bool {
-        return $this->execute("UPDATE cargo SET ativo = 0 WHERE id = ?", [$id]);
-    }
-    public function reactivate(int $id): bool {
-        return $this->execute("UPDATE cargo SET ativo = 1 WHERE id = ?", [$id] );
+        return $this->execute('UPDATE cargo SET ativo = 0 WHERE id = ?', [$id]);
     }
 
+    public function reactivate(int $id): bool {
+        return $this->execute('UPDATE cargo SET ativo = 1 WHERE id = ?', [$id]);
+    }
 }

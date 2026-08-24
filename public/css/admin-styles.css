@@ -101,7 +101,6 @@ nav.main-header {
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     /* Linha de separação vinda de index.css */
-    border-bottom: 1px solid #e9ecef;
 }
 
 /* Cards (config.css + index.css) */
@@ -331,6 +330,48 @@ input:checked+.toggle-slider:before {
     min-width: 20px;
     margin-right: 8px;
     font-size: 1rem;
+}
+
+@media (min-width: 992px) {
+    .config-page-shell {
+        min-height: calc(100vh - 120px);
+    }
+
+    .config-layout-row {
+        display: grid;
+        grid-template-columns: minmax(260px, 280px) minmax(0, 1fr);
+        gap: 1.5rem;
+        align-items: stretch;
+        flex: 1 1 auto;
+    }
+
+    .config-layout-row > [class*="col-"] {
+        width: auto;
+        max-width: none;
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 0 !important;
+    }
+
+    .config-menu-container,
+    .config-content-container {
+        display: flex !important;
+        align-self: stretch;
+    }
+
+    .config-menu-container,
+    .config-content-container,
+    .config-content-container .tab-content,
+    .config-content-container .tab-pane.active {
+        min-height: 100%;
+    }
+
+    .config-menu-card,
+    .config-content-container .tab-content,
+    .config-content-container .tab-pane.active,
+    .config-content-container .tab-pane.active .config-card {
+        height: 100%;
+    }
 }
 
 /* Estilos específicos para a tela de perfil administrativo */

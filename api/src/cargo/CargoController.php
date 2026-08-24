@@ -1,9 +1,9 @@
 <?php
 namespace Cargo;
 
+use Cargo\DTO\CargoDTO;
 use Core\DataTables\DataTablesResponseTrait;
 use Core\Http\Controller;
-use Cargo\DTO\CargoDTO;
 
 class CargoController extends Controller {
     use DataTablesResponseTrait;
@@ -17,28 +17,35 @@ class CargoController extends Controller {
     }
 
     public function index(): void {
-        $draw   = (int)($_GET['draw']   ?? 1);
-        $start  = (int)($_GET['start']  ?? 0);
-        $length = (int)($_GET['length'] ?? 10);
+        if ((isset($_GET['simple']) && $_GET['simple'] === 'true') || !isset($_GET['draw'])) {
+            $somenteAtivos = !isset($_GET['ativos']) || $_GET['ativos'] !== 'false';
+            $this->json($this->repo->findSimple($somenteAtivos));
+            return;
+        }
+
+        $draw = (int) ($_GET['draw'] ?? 1);
+        $start = (int) ($_GET['start'] ?? 0);
+        $length = (int) ($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
-        
+
         $filters = ['status' => $_GET['status'] ?? ''];
-        
+
         $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }
 
     public function show(int $id): void {
         $cargo = $this->repo->findById($id);
         if (!$cargo) {
-            $this->error("Cargo não encontrado.", 404);
+            $this->error('Cargo nao encontrado.', 404);
             return;
         }
+
         $this->json($cargo);
     }
 
     public function store(): void {
         $dto = CargoDTO::fromArray($this->body());
-        
+
         try {
             $id = $this->service->create($dto);
             $this->json(['id' => $id, 'message' => 'Cargo cadastrado com sucesso.'], 201);
@@ -48,12 +55,13 @@ class CargoController extends Controller {
             $this->error($e->getMessage(), 409);
         } catch (\Throwable $e) {
             error_log('[CargoController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro interno ao processar requisição.", 500);
+            $this->error('Erro interno ao processar requisicao.', 500);
         }
     }
 
     public function update(int $id): void {
         $dto = CargoDTO::fromArray($this->body());
+
         try {
             $this->service->update($id, $dto);
             $this->json(['message' => 'Cargo atualizado com sucesso.']);
@@ -63,7 +71,7 @@ class CargoController extends Controller {
             $this->error($e->getMessage(), 404);
         } catch (\Throwable $e) {
             error_log('[CargoController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro ao atualizar cargo.", 500);
+            $this->error('Erro ao atualizar cargo.', 500);
         }
     }
 
@@ -74,8 +82,8 @@ class CargoController extends Controller {
         } catch (\RuntimeException $e) {
             $this->error($e->getMessage(), 404);
         } catch (\Throwable $e) {
-            error_log('[CargoController::destroy] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro ao desativar cargo.", 500);
+            error_log('[CargoController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error('Erro ao desativar cargo.', 500);
         }
     }
 
@@ -87,7 +95,7 @@ class CargoController extends Controller {
             $this->error($e->getMessage(), 404);
         } catch (\Throwable $e) {
             error_log('[CargoController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro ao reativar cargo.", 500);
+            $this->error('Erro ao reativar cargo.', 500);
         }
     }
 }

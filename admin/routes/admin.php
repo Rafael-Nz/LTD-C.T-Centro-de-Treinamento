@@ -88,9 +88,14 @@ return function($router) use ($auth, $guest, $logoutAction) {
     $router->add('relatorios/financeiro', 'relatorios.php', ['tipo' => 'financeiro'], [$auth]);
 
     // Cargos
-    $router->add('cargos', 'cargos.php', [], [$auth]);
+    $router->add('cargos', 'configuracoes.php', ['tab' => 'cargos'], [$auth]);
     $router->add('cargos/cadastrar', 'cargo_form.php', ['acao' => 'cadastrar'], [$auth]);
     $router->add('cargos/editar/{id}', 'cargo_form.php', ['acao' => 'editar'], [$auth]);
+
+    // Modalidades
+    $router->add('modalidades', 'configuracoes.php', ['tab' => 'modalidades'], [$auth]);
+    $router->add('modalidades/cadastrar', 'modalidade_form.php', ['acao' => 'cadastrar'], [$auth]);
+    $router->add('modalidades/editar/{id}', 'modalidade_form.php', ['acao' => 'editar'], [$auth]);
 
     // Avaliações
     $router->add('avaliacoes/cadastrar', 'avaliacao_form.php', ['acao' => 'cadastrar'], [$auth]);

@@ -17,53 +17,61 @@ class ModalidadeController extends Controller {
     }
 
     public function index(): void {
-        $draw   = (int)($_GET['draw']   ?? 1);
-        $start  = (int)($_GET['start']  ?? 0);
-        $length = (int)($_GET['length'] ?? 10);
+        if ((isset($_GET['simple']) && $_GET['simple'] === 'true') || !isset($_GET['draw'])) {
+            $somenteAtivos = !isset($_GET['ativos']) || $_GET['ativos'] !== 'false';
+            $this->json($this->repo->findAll($somenteAtivos));
+            return;
+        }
+
+        $draw = (int) ($_GET['draw'] ?? 1);
+        $start = (int) ($_GET['start'] ?? 0);
+        $length = (int) ($_GET['length'] ?? 10);
         $search = trim($_GET['search']['value'] ?? '');
-        
+
         $filters = ['status' => $_GET['status'] ?? ''];
-        
+
         $this->dataTablesResponse($this->repo, $draw, $start, $length, $search, $filters);
     }
 
     public function show(int $id): void {
         $modalidade = $this->repo->findById($id);
         if (!$modalidade) {
-            $this->error("Modalidade não encontrada.", 404);
+            $this->error('Modalidade nao encontrada.', 404);
             return;
         }
+
         $this->json($modalidade);
     }
 
     public function store(): void {
         $dto = ModalidadeDTO::fromArray($this->body());
-        
+
         try {
             $id = $this->service->create($dto);
-            $this->json(['id' => $id, 'message' => 'Modadalidade cadastrada com sucesso.'], 201);
+            $this->json(['id' => $id, 'message' => 'Modalidade cadastrada com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);
         } catch (\RuntimeException $e) {
             $this->error($e->getMessage(), 409);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro interno ao processar requisição.", 500);
+            $this->error('Erro interno ao processar requisicao.', 500);
         }
     }
 
     public function update(int $id): void {
         $dto = ModalidadeDTO::fromArray($this->body());
+
         try {
             $this->service->update($id, $dto);
-            $this->json(['message' => 'Modadalidade atualizada com sucesso.']);
+            $this->json(['message' => 'Modalidade atualizada com sucesso.']);
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);
         } catch (\RuntimeException $e) {
             $this->error($e->getMessage(), 404);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro ao atualizar modalidade.", 500);
+            $this->error('Erro ao atualizar modalidade.', 500);
         }
     }
 
@@ -74,8 +82,8 @@ class ModalidadeController extends Controller {
         } catch (\RuntimeException $e) {
             $this->error($e->getMessage(), 404);
         } catch (\Throwable $e) {
-            error_log('[ModalidadeController::destroy] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro ao desativar modalidade.", 500);
+            error_log('[ModalidadeController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $this->error('Erro ao desativar modalidade.', 500);
         }
     }
 
@@ -87,7 +95,7 @@ class ModalidadeController extends Controller {
             $this->error($e->getMessage(), 404);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro ao reativar modalidade.", 500);
+            $this->error('Erro ao reativar modalidade.', 500);
         }
     }
 }

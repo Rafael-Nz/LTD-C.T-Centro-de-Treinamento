@@ -1,10 +1,13 @@
+<?php
+$tabInicial = $_GET['tab'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross C.T | Configurações</title>
+    <title>Cross C.T | Configuracoes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="/ctt/css/admin-styles.css">
     <link rel="stylesheet" href="/ctt/css/sidebar.css">
@@ -26,32 +29,30 @@
     <?php include __DIR__ . '/partials/header.php'; ?>
 
     <main class="flex-fill d-flex" id="mainContent">
-        <div class="container-lg p-4 d-flex flex-column flex-fill">
+        <div class="container-lg p-4 d-flex flex-column flex-fill config-page-shell">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h4 mb-1">Configurações do Sistema</h1>
+                <h1 class="h4 mb-1">Configuracoes do Sistema</h1>
             </div>
 
-            <div class="row">
-                <!-- Menu Lateral de Configurações -->
-                <div class="col-lg-3 col-md-4 mb-4 config-menu-container">
-                    <div class="config-card border-0 config-menu-card p-3">
+            <div class="row align-items-stretch config-layout-row">
+                <div class="col-lg-3 col-md-4 mb-4 config-menu-container d-flex">
+                    <div class="config-card border-0 config-menu-card p-3 w-100 h-100">
                         <div class="nav flex-column nav-pills config-menu" id="configTabs" role="tablist">
-                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#perfis"
-                                type="button">
+                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#perfis" type="button">
                                 <i class="ph ph-users-three"></i>
-                                <span class="menu-text">Perfis de Usuário</span>
+                                <span class="menu-text">Perfis de Usuario</span>
                             </button>
                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#cargos" type="button">
                                 <i class="ph ph-briefcase"></i>
                                 <span class="menu-text">Cargos</span>
                             </button>
-                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#empresa" type="button">
-                                <i class="ph ph-buildings"></i>
-                                <span class="menu-text">Dados da Empresa</span>
-                            </button>
                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#modalidades" type="button">
                                 <i class="ph ph-barbell"></i>
                                 <span class="menu-text">Modalidades</span>
+                            </button>
+                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#empresa" type="button">
+                                <i class="ph ph-buildings"></i>
+                                <span class="menu-text">Dados da Empresa</span>
                             </button>
                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sobre" type="button">
                                 <i class="ph ph-info"></i>
@@ -59,70 +60,30 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Card de Estatísticas Rápidas -->
-                    <div class="config-card border-0 mt-4 p-3">
-                        <h6 class="section-title">Estatísticas do Sistema</h6>
-                        <div class="d-flex flex-column gap-2">
-                            <div class="d-flex justify-content-between">
-                                <span>Total de Usuários:</span>
-                                <strong id="totalUsuariosGeral"></strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Perfis Ativos:</span>
-                                <strong id="perfisAtivosGeral"></strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Cargos Cadastrados:</span>
-                                <strong id="cargosCadastradosGeral"></strong>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Conteúdo das Configurações -->
-                <div class="col-lg-9 col-md-8">
-                    <div class="tab-content" id="configContent">
-
-                        <!-- Aba: Perfis e Permissões -->
-                        <div class="tab-pane fade show active" id="perfis">
-                            <div class="config-card border-0 p-4">
-
+                <div class="col-lg-9 col-md-8 d-flex config-content-container">
+                    <div class="tab-content w-100 h-100" id="configContent">
+                        <div class="tab-pane fade show active h-100" id="perfis">
+                            <div class="config-card border-0 p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="section-title mb-0">Gestão de Perfis de Usuário</h5>
-                                    <a href="perfil_form" class="btn btn-red color btn-sm d-flex align-items-center">
-                                        <i class="ph ph-plus me-1"></i>Novo Perfil
-                                    </a>
+                                    <h5 class="section-title mb-0">Gestao de Perfis de Usuario</h5>
                                 </div>
 
-                                <!-- BUSCA + FILTROS -->
-                                <div class="row mb-4">
-                                    <div class="col-md-6 d-flex gap-2 align-items-center flex-wrap">
-
-                                        <!-- Busca -->
+                                <div class="mb-4 d-flex gap-2 flex-wrap">
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
                                         <form id="buscaPerfis" class="d-flex" role="search" onsubmit="return false;">
                                             <div class="input-group">
-                                                <input id="campoBuscaPerfis"
-                                                    class="form-control"
-                                                    type="search"
-                                                    placeholder="Buscar perfis..."
-                                                    aria-label="Buscar">
-                                                <button class="btn border border-start-0"
-                                                        type="button"
-                                                        id="botaoBuscarPerfis">
+                                                <input id="campoBuscaPerfis" class="form-control" type="search" placeholder="Buscar perfis..." aria-label="Buscar">
+                                                <button class="btn border border-start-0" type="button" id="botaoBuscarPerfis">
                                                     <i class="ph ph-magnifying-glass"></i>
                                                 </button>
                                             </div>
                                         </form>
 
-                                        <!-- Filtro -->
                                         <div class="dropdown-center">
-                                            <button class="btn color dropdown-toggle border-1 border-white"
-                                                    type="button"
-                                                    data-bs-toggle="dropdown"
-                                                    aria-expanded="false"
-                                                    title="Filtrar Status">
-                                                <i class="ph ph-funnel me-2"></i>
+                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Status">
+                                                <i class="ph ph-funnel me-1"></i>
                                             </button>
 
                                             <ul class="dropdown-menu dropdown-menu-end p-3">
@@ -130,20 +91,14 @@
 
                                                 <li>
                                                     <div class="form-check">
-                                                        <input class="form-check-input filtro-status-perfil"
-                                                            type="checkbox"
-                                                            value="1"
-                                                            id="perfilAtivo">
+                                                        <input class="form-check-input filtro-status-perfil" type="checkbox" value="1" id="perfilAtivo">
                                                         <label class="form-check-label" for="perfilAtivo">Ativo</label>
                                                     </div>
                                                 </li>
 
                                                 <li>
                                                     <div class="form-check">
-                                                        <input class="form-check-input filtro-status-perfil"
-                                                            type="checkbox"
-                                                            value="0"
-                                                            id="perfilInativo">
+                                                        <input class="form-check-input filtro-status-perfil" type="checkbox" value="0" id="perfilInativo">
                                                         <label class="form-check-label" for="perfilInativo">Inativo</label>
                                                     </div>
                                                 </li>
@@ -151,45 +106,40 @@
                                                 <li><hr class="dropdown-divider"></li>
 
                                                 <li class="d-grid">
-                                                    <button id="aplicarFiltrosPerfis"
-                                                            class="btn btn-sm btn-red color">
+                                                    <button id="aplicarFiltrosPerfis" class="btn btn-sm btn-red color">
                                                         Aplicar Filtros
                                                     </button>
                                                 </li>
                                             </ul>
                                         </div>
-
                                     </div>
+
+                                    <a href="perfil_form" class="btn btn-red color d-flex align-items-center border border-white">
+                                        <i class="ph ph-plus me-1"></i> Novo Perfil
+                                    </a>
                                 </div>
 
-                                <!-- TABELA -->
                                 <table id="tabelaPerfis" class="table table-hover align-middle w-100">
                                     <thead>
                                         <tr>
-                                            <th class="text-start">Nome</th>
+                                            <th class="text-start">Perfil</th>
                                             <th class="text-center">Status</th>
-                                            <th class="text-center">Data Criação</th>
-                                            <th class="text-center">Ações</th>
+                                            <th class="text-end">Acoes</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
                                 </table>
-
                             </div>
                         </div>
 
-                        <!-- Aba: Cargos -->
-                        <div class="tab-pane fade" id="cargos">
-                            <div class="config-card border-0 p-4">
+                        <div class="tab-pane fade h-100" id="cargos">
+                            <div class="config-card border-0 p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="section-title mb-0">Gestão de Cargos</h5>
-                                    <a href="cargo_form" class="btn btn-red color btn-sm d-flex align-items-center">
-                                        <i class="ph ph-plus me-1"></i>Novo Cargo
-                                    </a>
+                                    <h5 class="section-title mb-0">Gestao de Cargos</h5>
                                 </div>
 
-                                <div class="row mb-4">
-                                    <div class="col-md-6 d-flex gap-2 align-items-center flex-wrap">
+                                <div class="mb-4 d-flex gap-2 flex-wrap">
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
                                         <form id="buscaCargos" class="d-flex" role="search" onsubmit="return false;">
                                             <div class="input-group">
                                                 <input id="campoBuscaCargos" class="form-control" type="search" placeholder="Buscar cargos..." aria-label="Buscar">
@@ -198,100 +148,85 @@
                                                 </button>
                                             </div>
                                         </form>
+
                                         <div class="dropdown-center">
-                                            <button class="btn color dropdown-toggle border-1 border-white"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                                title="Filtrar Status">
-                                                <i class="ph ph-funnel me-2"></i>
+                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Status">
+                                                <i class="ph ph-funnel me-1"></i>
                                             </button>
-                                            <ul class="dropdown-menu dropdown-menu-end p-3"
-                                                aria-labelledby="dropdownMenuButton">
+
+                                            <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownMenuButton">
                                                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
                                                 <li>
                                                     <div class="form-check">
-                                                        <input class="form-check-input filtro-status-cargo" type="checkbox"
-                                                            value="Ativo" id="statusCargoAtivo">
+                                                        <input class="form-check-input filtro-status-cargo" type="checkbox" value="Ativo" id="statusCargoAtivo">
                                                         <label class="form-check-label" for="statusCargoAtivo">Ativo</label>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div class="form-check">
-                                                        <input class="form-check-input filtro-status-cargo" type="checkbox"
-                                                            value="Inativo" id="statusCargoInativo">
-                                                        <label class="form-check-label"
-                                                            for="statusCargoInativo">Inativo</label>
+                                                        <input class="form-check-input filtro-status-cargo" type="checkbox" value="Inativo" id="statusCargoInativo">
+                                                        <label class="form-check-label" for="statusCargoInativo">Inativo</label>
                                                     </div>
                                                 </li>
-                                                <li>
-                                                    <hr class="dropdown-divider">
-                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
                                                 <li class="d-grid">
-                                                    <button id="aplicarFiltrosCargos" class="btn btn-sm btn-red color">Aplicar
-                                                        Filtros</button>
+                                                    <button id="aplicarFiltrosCargos" class="btn btn-sm btn-red color">Aplicar Filtros</button>
                                                 </li>
                                             </ul>
                                         </div>
                                     </div>
+
+                                    <a href="/ctt/admin/cargos/cadastrar" class="btn btn-red color d-flex align-items-center border border-white">
+                                        <i class="ph ph-plus me-1"></i> Novo Cargo
+                                    </a>
                                 </div>
 
-                                <div class="">
-                                    <table id="tabelaCargos" class="table table-hover align-middle w-100">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-start">Nome</th>
-                                                <th class="text-center">Descrição</th>
-                                                <th class="text-center">Salário Base</th>
-                                                <th class="text-center">Status</th>
-                                                <th class="text-center">Ações</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                                <table id="tabelaCargos" class="table table-hover align-middle w-100">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-start">Cargo</th>
+                                            <th class="text-center">Status</th>
+                                            <th class="text-end">Acoes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- Aba: Dados da Empresa -->
-                        <div class="tab-pane fade" id="empresa">
-                            <div class="config-card border-0  p-4">
+                        <div class="tab-pane fade h-100" id="empresa">
+                            <div class="config-card border-0 p-4 h-100">
                                 <h5 class="section-title">Dados da Empresa</h5>
 
                                 <form id="formEmpresa">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Nome da Empresa</label>
-                                            <input type="text" class="form-control" id="empresa_nome"
-                                                name="empresa_nome">
+                                            <input type="text" class="form-control" id="empresa_nome" name="empresa_nome">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">CNPJ</label>
-                                            <input type="text" class="form-control" id="empresa_cnpj"
-                                                name="empresa_cnpj">
+                                            <input type="text" class="form-control" id="empresa_cnpj" name="empresa_cnpj">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Telefone</label>
-                                            <input type="text" class="form-control" id="empresa_telefone"
-                                                name="empresa_telefone">
+                                            <input type="text" class="form-control" id="empresa_telefone" name="empresa_telefone">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="empresa_email"
-                                                name="empresa_email">
+                                            <input type="email" class="form-control" id="empresa_email" name="empresa_email">
                                         </div>
                                         <div class="col-12 mb-3">
-                                            <label class="form-label">Endereço Completo</label>
-                                            <input type="text" class="form-control" id="empresa_endereco"
-                                                name="empresa_endereco">
+                                            <label class="form-label">Endereco Completo</label>
+                                            <input type="text" class="form-control" id="empresa_endereco" name="empresa_endereco">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Cidade</label>
-                                            <input type="text" class="form-control" id="empresa_cidade"
-                                                name="empresa_cidade">
+                                            <input type="text" class="form-control" id="empresa_cidade" name="empresa_cidade">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Estado</label>
-                                            <input type="text" class="form-control" id="empresa_estado"
-                                                name="empresa_estado">
+                                            <input type="text" class="form-control" id="empresa_estado" name="empresa_estado">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">CEP</label>
@@ -303,18 +238,14 @@
                             </div>
                         </div>
 
-                        <!-- Aba: Modalidades -->
-                        <div class="tab-pane fade" id="modalidades">
-                            <div class="config-card vorder-0 p-4">
+                        <div class="tab-pane fade h-100" id="modalidades">
+                            <div class="config-card border-0 p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="section-title mb-0">Gestão de Modalidades</h5>
-                                    <a href="modalidade_form" class="btn btn-red color btn-sm d-flex align-items-center">
-                                        <i class="ph ph-plus me-1"></i>Nova Modalidade
-                                    </a>
+                                    <h5 class="section-title mb-0">Gestao de Modalidades</h5>
                                 </div>
-                                
-                                <div class="row mb-4">
-                                    <div class="col-md-6 d-flex gap-2 align-items-center flex-wrap">
+
+                                <div class="mb-4 d-flex gap-2 flex-wrap">
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
                                         <form id="buscaModalidades" class="d-flex" role="search" onsubmit="return false;">
                                             <div class="input-group">
                                                 <input id="campoBuscaModalidades" class="form-control" type="search" placeholder="Buscar modalidades..." aria-label="Buscar">
@@ -323,62 +254,54 @@
                                                 </button>
                                             </div>
                                         </form>
+
                                         <div class="dropdown-center">
-                                            <button class="btn color dropdown-toggle border-1 border-white"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                                title="Filtrar Status">
-                                                <i class="ph ph-funnel me-2"></i>
+                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Status">
+                                                <i class="ph ph-funnel me-1"></i>
                                             </button>
-                                            <ul class="dropdown-menu dropdown-menu-end p-3"
-                                                aria-labelledby="dropdownMenuButton">
+
+                                            <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownMenuButton">
                                                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
                                                 <li>
                                                     <div class="form-check">
-                                                        <input class="form-check-input filtro-status-modalidade" type="checkbox"
-                                                            value="Ativo" id="statusModalidadeAtivo">
+                                                        <input class="form-check-input filtro-status-modalidade" type="checkbox" value="Ativo" id="statusModalidadeAtivo">
                                                         <label class="form-check-label" for="statusModalidadeAtivo">Ativo</label>
                                                     </div>
                                                 </li>
                                                 <li>
                                                     <div class="form-check">
-                                                        <input class="form-check-input filtro-status-modalidade" type="checkbox"
-                                                            value="Inativo" id="statusModalidadeInativo">
-                                                        <label class="form-check-label"
-                                                            for="statusModalidadeInativo">Inativo</label>
+                                                        <input class="form-check-input filtro-status-modalidade" type="checkbox" value="Inativo" id="statusModalidadeInativo">
+                                                        <label class="form-check-label" for="statusModalidadeInativo">Inativo</label>
                                                     </div>
                                                 </li>
-                                                <li>
-                                                    <hr class="dropdown-divider">
-                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
                                                 <li class="d-grid">
-                                                    <button id="aplicarFiltrosModalidades" class="btn btn-sm btn-red color">Aplicar
-                                                        Filtros</button>
+                                                    <button id="aplicarFiltrosModalidades" class="btn btn-sm btn-red color">Aplicar Filtros</button>
                                                 </li>
                                             </ul>
                                         </div>
                                     </div>
+
+                                    <a href="/ctt/admin/modalidades/cadastrar" class="btn btn-red color d-flex align-items-center border border-white">
+                                        <i class="ph ph-plus me-1"></i> Nova Modalidade
+                                    </a>
                                 </div>
 
-
-                                <div class="">
-                                    <table id="tabelaModalidades" class="table table-hover align-middle w-100">
-                                        <thead>
-                                            <tr>
-                                                <th class="text-start">Nome</th>
-                                                <th class="text-center">Descrição</th>
-                                                <th class="text-center">Status</th>
-                                                <th class="text-center">Ações</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                                <table id="tabelaModalidades" class="table table-hover align-middle w-100">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-start">Modalidade</th>
+                                            <th class="text-center">Status</th>
+                                            <th class="text-end">Acoes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- Aba: Sobre o Sistema -->
-                        <div class="tab-pane fade" id="sobre">
-                            <div class="config-card border-0  p-4">
+                        <div class="tab-pane fade h-100" id="sobre">
+                            <div class="config-card border-0 p-4 h-100">
                                 <h5 class="section-title mb-3">Sobre</h5>
                             </div>
                         </div>
@@ -390,7 +313,6 @@
 
     <?php include __DIR__ . '/partials/footer.php'; ?>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
@@ -402,6 +324,36 @@
     <script defer src="/ctt/js/admin/sidebar.js"></script>
     <script src="/ctt/js/admin/tabelas.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabInicial = <?= json_encode($tabInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+            const tabSalva = localStorage.getItem('abaConfigAtiva');
+            const tabDesejada = tabInicial || tabSalva;
+
+            if (tabDesejada) {
+                const botaoTab = document.querySelector(`#configTabs [data-bs-target="#${tabDesejada}"]`);
+                if (botaoTab) {
+                    bootstrap.Tab.getOrCreateInstance(botaoTab).show();
+                }
+            }
+
+            if (!tabInicial && tabSalva) {
+                localStorage.removeItem('abaConfigAtiva');
+            }
+
+            document.querySelectorAll('#configTabs [data-bs-toggle="pill"]').forEach((botao) => {
+                botao.addEventListener('shown.bs.tab', function (event) {
+                    const destino = event.target.getAttribute('data-bs-target');
+                    if (destino) {
+                        localStorage.setItem('abaConfigAtiva', destino.replace('#', ''));
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="/ctt/js/admin/configuracoes/perfis.js"></script>
+    <script src="/ctt/js/admin/configuracoes/cargos.js"></script>
+    <script src="/ctt/js/admin/configuracoes/modalidades.js"></script>
 </body>
 
 </html>

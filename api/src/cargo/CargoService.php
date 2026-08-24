@@ -16,7 +16,7 @@ class CargoService extends Service {
 
         return $this->transaction(function () use ($dto) {
             if ($this->cargoRepo->findByNome($dto->nome)) {
-                throw new \RuntimeException("Ja existe um cargo com este nome.");
+                throw new \RuntimeException('Ja existe um cargo com este nome.');
             }
 
             return $this->cargoRepo->create($dto);
@@ -29,12 +29,12 @@ class CargoService extends Service {
         $this->transaction(function () use ($id, $dto) {
             $existing = $this->cargoRepo->findById($id);
             if (!$existing) {
-                throw new \RuntimeException("Cargo nao encontrado.");
+                throw new \RuntimeException('Cargo nao encontrado.');
             }
 
             $cargoWithSameName = $this->cargoRepo->findByNome($dto->nome);
-            if ($cargoWithSameName && $cargoWithSameName['id'] != $id) {
-                throw new \RuntimeException("Ja existe outro cargo com este nome.");
+            if ($cargoWithSameName && (int) $cargoWithSameName['id'] !== $id) {
+                throw new \RuntimeException('Ja existe outro cargo com este nome.');
             }
 
             $this->cargoRepo->update($id, $dto);
@@ -42,16 +42,28 @@ class CargoService extends Service {
     }
 
     public function deactivate(int $id): void {
+        $existing = $this->cargoRepo->findById($id);
+        if (!$existing) {
+            throw new \RuntimeException('Cargo nao encontrado.');
+        }
+
         $this->cargoRepo->deactivate($id);
     }
 
     public function reactivate(int $id): void {
+        $existing = $this->cargoRepo->findById($id);
+        if (!$existing) {
+            throw new \RuntimeException('Cargo nao encontrado.');
+        }
+
         $this->cargoRepo->reactivate($id);
     }
 
     private function rulesForSave(): array {
         return [
             'nome' => ['required', 'string', 'max_length:100'],
+            'descricao' => ['nullable', 'string', 'max_length:255'],
+            'salario_base' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
@@ -59,12 +71,17 @@ class CargoService extends Service {
         return [
             'nome.required' => 'Nome do cargo e obrigatorio.',
             'nome.max_length' => 'Nome do cargo nao pode exceder 100 caracteres.',
+            'descricao.max_length' => 'Descricao nao pode exceder 255 caracteres.',
+            'salario_base.numeric' => 'Salario base deve ser numerico.',
+            'salario_base.min' => 'Salario base deve ser maior ou igual a zero.',
         ];
     }
 
     private function attributes(): array {
         return [
             'nome' => 'Nome do cargo',
+            'descricao' => 'Descricao',
+            'salario_base' => 'Salario base',
         ];
     }
 }

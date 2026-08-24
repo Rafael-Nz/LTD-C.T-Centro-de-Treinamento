@@ -6,7 +6,7 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cross C.T | <?= $id ? 'Editar Cargo' : 'Cadastrar Cargo' ?></title>
+  <title>Cross C.T | <?= $id ? 'Editar Modalidade' : 'Cadastrar Modalidade' ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="/ctt/css/admin-styles.css">
   <link rel="stylesheet" href="/ctt/css/form.css">
@@ -26,39 +26,32 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
   <main class="flex-fill d-flex" id="mainContent">
     <div class="container-lg p-4 flex-column flex-fill">
-      <h1 class="h4 mb-4"><?= $id ? 'Editar Cargo' : 'Cadastrar Cargo' ?></h1>
+      <h1 class="h4 mb-4"><?= $id ? 'Editar Modalidade' : 'Cadastrar Modalidade' ?></h1>
       <div class="card shadow-sm d-flex flex-fill">
         <div class="card-body">
-          <form id="formCargo" method="POST" data-id="<?= $id ?>">
+          <form id="formModalidade" method="POST" data-id="<?= $id ?>">
             <?php if ($id): ?><input type="hidden" name="id" value="<?= $id ?>"><?php endif; ?>
 
             <div class="row gy-4">
               <div class="col-12">
-                <h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Informacoes do Cargo</h3>
+                <h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Informacoes da Modalidade</h3>
 
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6">
-                    <label for="nome" class="form-label">Nome do cargo</label>
-                    <input type="text" class="form-control" id="nome" name="nome" maxlength="100" placeholder="Ex: Instrutor, Recepcionista, Coordenador" required>
-                  </div>
-
-                  <div class="col-md-6">
-                    <label for="salario_base" class="form-label">Salario base</label>
-                    <input type="number" class="form-control" id="salario_base" name="salario_base" min="0" step="0.01" placeholder="0,00">
-                  </div>
+                <div class="mb-3">
+                  <label for="nome" class="form-label">Nome da modalidade</label>
+                  <input type="text" class="form-control" id="nome" name="nome" maxlength="50" placeholder="Ex: Crossfit, Funcional, Mobilidade" required>
                 </div>
 
                 <div class="mb-3">
                   <label for="descricao" class="form-label">Descricao</label>
-                  <textarea class="form-control" id="descricao" name="descricao" rows="4" maxlength="255" placeholder="Descreva rapidamente a responsabilidade principal do cargo."></textarea>
+                  <textarea class="form-control" id="descricao" name="descricao" rows="4" placeholder="Descreva rapidamente o foco ou objetivo da modalidade."></textarea>
                 </div>
               </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-              <a href="/ctt/admin/cargos" class="btn btn-red color">Voltar</a>
+              <a href="/ctt/admin/modalidades" class="btn btn-red color">Voltar</a>
               <button type="submit" class="btn btn-red color">
-                <?= $id ? 'Salvar Alteracoes' : 'Cadastrar Cargo' ?>
+                <?= $id ? 'Salvar Alteracoes' : 'Cadastrar Modalidade' ?>
               </button>
             </div>
           </form>
@@ -74,6 +67,6 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/overlayscrollbars/browser/overlayscrollbars.browser.es6.min.js"></script>
   <script defer src="/ctt/js/admin/sidebar.js"></script>
-  <script src="/ctt/js/admin/form/cargo_form.js"></script>
+  <script src="/ctt/js/admin/form/modalidade_form.js"></script>
 </body>
 </html>

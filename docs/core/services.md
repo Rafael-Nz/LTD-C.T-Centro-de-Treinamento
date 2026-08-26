@@ -6,7 +6,7 @@ Fornecer uma base para classes de serviço de domínio com utilitários comuns (
 
 Arquivo principal
 
-- [Service.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Services/Service.php)
+- [Service.php](../../api/core/Services/Service.php)
 
 Funcionalidades
 

@@ -6,7 +6,7 @@ Gerencia as turmas do sistema, incluindo cadastros, associação de alunos, agen
 
 ## Diretório
 
-- `api/src/turma`
+- [`api/src/turma`](../../api/src/turma)
 
 ## Rotas principais
 
@@ -25,7 +25,7 @@ Gerencia as turmas do sistema, incluindo cadastros, associação de alunos, agen
 
 ### TurmaController
 
-Arquivo: `api/src/turma/TurmaController.php`
+Arquivo: [`TurmaController.php`](../../api/src/turma/TurmaController.php)
 
 Responsável por:
 
@@ -36,7 +36,7 @@ Responsável por:
 
 ### TurmaService
 
-Arquivo: `api/src/turma/TurmaService.php`
+Arquivo: [`TurmaService.php`](../../api/src/turma/TurmaService.php)
 
 Responsável por:
 
@@ -47,7 +47,7 @@ Responsável por:
 
 ### TurmaRepository
 
-Arquivo: `api/src/turma/TurmaRepository.php`
+Arquivo: [`TurmaRepository.php`](../../api/src/turma/TurmaRepository.php)
 
 Responsável por:
 
@@ -57,20 +57,14 @@ Responsável por:
 
 ### DTOs
 
-- `TurmaDTO`
-- `TurmaConfigHorarioDTO`
+- [`TurmaDTO.php`](../../api/src/turma/DTO/TurmaDTO.php)
+- [`TurmaConfigHorarioDTO.php`](../../api/src/turma/DTO/TurmaConfigHorarioDTO.php)
 
 ### Validation
 
 - `ConfigHorariosRule`
 
 Serve para validar configuração de horários da turma, garantindo consistência das regras de planejamento.
-
-## Entidades principais
-
-- `turma`
-- `treino_agenda`
-- `presenca_treino`
 
 ## Regras de negócio
 

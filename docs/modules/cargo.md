@@ -6,7 +6,7 @@ Gerencia os cargos utilizados no centro de treinamento, servindo como base para 
 
 ## Diretório
 
-- `api/src/cargo`
+- [`api/src/cargo`](../../api/src/cargo)
 
 ## Rotas principais
 
@@ -21,7 +21,7 @@ Gerencia os cargos utilizados no centro de treinamento, servindo como base para 
 
 ### CargoController
 
-Arquivo: `api/src/cargo/CargoController.php`
+Arquivo: [`CargoController.php`](../../api/src/cargo/CargoController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### CargoService
 
-Arquivo: `api/src/cargo/CargoService.php`
+Arquivo: [`CargoService.php`](../../api/src/cargo/CargoService.php)
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 
 ### CargoRepository
 
-Arquivo: `api/src/cargo/CargoRepository.php`
+Arquivo: [`CargoRepository.php`](../../api/src/cargo/CargoRepository.php)
 
 Responsável por:
 
@@ -51,11 +51,7 @@ Responsável por:
 
 ### DTO
 
-- `CargoDTO`
-
-## Entidades principais
-
-- `cargo`
+- [`CargoDTO.php`](../../api/src/cargo/DTO/CargoDTO.php)
 
 ## Regras de negócio
 

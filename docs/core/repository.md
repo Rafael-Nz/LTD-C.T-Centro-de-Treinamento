@@ -6,7 +6,7 @@ Classe base para repositórios de domínio que encapsula operações comuns de b
 
 Arquivo principal
 
-- [Repository.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Database/Repository.php)
+- [Repository.php](../../api/core/Database/Repository.php)
 
 Responsabilidades
 

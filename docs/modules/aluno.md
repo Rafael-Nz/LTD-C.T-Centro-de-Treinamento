@@ -6,7 +6,7 @@ Gerencia o cadastro, manutenção e acompanhamento dos alunos do centro de trein
 
 ## Diretório
 
-- `api/src/aluno`
+- [`api/src/aluno`](../../api/src/aluno)
 
 ## Rotas principais
 
@@ -23,7 +23,7 @@ Gerencia o cadastro, manutenção e acompanhamento dos alunos do centro de trein
 
 ### AlunoController
 
-Arquivo: `api/src/aluno/AlunoController.php`
+Arquivo: [`AlunoController.php`](../../api/src/aluno/AlunoController.php)
 
 Responsável por:
 
@@ -34,7 +34,7 @@ Responsável por:
 
 ### AlunoService
 
-Arquivo: `api/src/aluno/AlunoService.php`
+Arquivo: [`AlunoService.php`](../../api/src/aluno/AlunoService.php)
 
 Responsável por:
 
@@ -44,7 +44,7 @@ Responsável por:
 
 ### AlunoRepository
 
-Arquivo: `api/src/aluno/AlunoRepository.php`
+Arquivo: [`AlunoRepository.php`](../../api/src/aluno/AlunoRepository.php)
 
 Responsável por:
 
@@ -55,7 +55,7 @@ Responsável por:
 
 ### SequenciaMatriculaRepository
 
-Arquivo: `api/src/aluno/SequenciaMatriculaRepository.php`
+Arquivo: [`SequenciaMatriculaRepository.php`](../../api/src/aluno/SequenciaMatriculaRepository.php)
 
 Responsável por:
 
@@ -64,12 +64,7 @@ Responsável por:
 
 ### DTO
 
-- `AlunoDTO`
-
-## Entidades principais
-
-- `aluno`
-- `avaliacao_fisica` (através de rota específica)
+- [`AlunoDTO.php`](../../api/src/aluno/DTO/AlunoDTO.php)
 
 ## Regras de negócio
 

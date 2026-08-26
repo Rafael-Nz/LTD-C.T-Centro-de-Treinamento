@@ -6,7 +6,7 @@ Gerencia os espaços físicos e locais de treino disponíveis para o centro de t
 
 ## Diretório
 
-- `api/src/local`
+- [`api/src/local`](../../api/src/local)
 
 ## Rotas principais
 
@@ -21,7 +21,7 @@ Gerencia os espaços físicos e locais de treino disponíveis para o centro de t
 
 ### LocalController
 
-Arquivo: `api/src/local/LocalController.php`
+Arquivo: [`LocalController.php`](../../api/src/local/LocalController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### LocalService
 
-Arquivo: `api/src/local/LocalService.php`
+Arquivo: [`LocalService.php`](../../api/src/local/LocalService.php)
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 
 ### LocalRepository
 
-Arquivo: `api/src/local/LocalRepository.php`
+Arquivo: [`LocalRepository.php`](../../api/src/local/LocalRepository.php)
 
 Responsável por:
 
@@ -51,11 +51,7 @@ Responsável por:
 
 ### DTO
 
-- `LocalDTO`
-
-## Entidades principais
-
-- `espaco_treino` ou equivalente de local de treino
+- [`LocalDTO.php`](../../api/src/local/DTO/LocalDTO.php)
 
 ## Regras de negócio
 

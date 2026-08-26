@@ -6,8 +6,8 @@ Roteamento e abstração básica de controllers e respostas HTTP.
 
 Arquivos principais
 
-- [Router.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Http/Router.php)
-- [Controller.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Http/Controller.php)
+- [Router.php](../../api/core/Http/Router.php)
+- [Controller.php](../../api/core/Http/Controller.php)
 
 Router (Dispatcher)
 

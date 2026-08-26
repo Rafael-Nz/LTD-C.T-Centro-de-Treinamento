@@ -6,7 +6,7 @@ Gerencia as modalidades de treinamentos e serviços ofertados pelo centro, como 
 
 ## Diretório
 
-- `api/src/modalidade`
+- [`api/src/modalidade`](../../api/src/modalidade)
 
 ## Rotas principais
 
@@ -21,7 +21,7 @@ Gerencia as modalidades de treinamentos e serviços ofertados pelo centro, como 
 
 ### ModalidadeController
 
-Arquivo: `api/src/modalidade/ModalidadeController.php`
+Arquivo: [`ModalidadeController.php`](../../api/src/modalidade/ModalidadeController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### ModalidadeService
 
-Arquivo: `api/src/modalidade/ModalidadeService.php`
+Arquivo: [`ModalidadeService.php`](../../api/src/modalidade/ModalidadeService.php)
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 
 ### ModalidadeRepository
 
-Arquivo: `api/src/modalidade/ModalidadeRepository.php`
+Arquivo: [`ModalidadeRepository.php`](../../api/src/modalidade/ModalidadeRepository.php)
 
 Responsável por:
 
@@ -51,11 +51,7 @@ Responsável por:
 
 ### DTO
 
-- `ModalidadeDTO`
-
-## Entidades principais
-
-- `modalidade`
+- [`ModalidadeDTO.php`](../../api/src/modalidade/DTO/ModalidadeDTO.php)
 
 ## Regras de negócio
 

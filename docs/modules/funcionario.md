@@ -6,7 +6,7 @@ Gerencia o cadastro e manutenção dos funcionários da organização, incluindo
 
 ## Diretório
 
-- `api/src/funcionario`
+- [`api/src/funcionario`](../../api/src/funcionario)
 
 ## Rotas principais
 
@@ -21,7 +21,7 @@ Gerencia o cadastro e manutenção dos funcionários da organização, incluindo
 
 ### FuncionarioController
 
-Arquivo: `api/src/funcionario/FuncionarioController.php`
+Arquivo: [`FuncionarioController.php`](../../api/src/funcionario/FuncionarioController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### FuncionarioService
 
-Arquivo: `api/src/funcionario/FuncionarioService.php`
+Arquivo: [`FuncionarioService.php`](../../api/src/funcionario/FuncionarioService.php)
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 
 ### FuncionarioRepository
 
-Arquivo: `api/src/funcionario/FuncionarioRepository.php`
+Arquivo: [`FuncionarioRepository.php`](../../api/src/funcionario/FuncionarioRepository.php)
 
 Responsável por:
 
@@ -50,13 +50,7 @@ Responsável por:
 
 ### DTO
 
-- `FuncionarioDTO`
-
-## Entidades principais
-
-- `funcionario`
-- `usuario`
-- `cargo`
+- [`FuncionarioDTO.php`](../../api/src/funcionario/DTO/FuncionarioDTO.php)
 
 ## Regras de negócio
 

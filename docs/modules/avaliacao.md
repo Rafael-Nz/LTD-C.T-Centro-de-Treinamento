@@ -6,7 +6,7 @@ Gerencia avaliações físicas dos alunos, registrando indicadores de desempenho
 
 ## Diretório
 
-- `api/src/avaliacao`
+- [`api/src/avaliacao`](../../api/src/avaliacao)
 
 ## Rotas principais
 
@@ -19,7 +19,7 @@ Gerencia avaliações físicas dos alunos, registrando indicadores de desempenho
 
 ### AvaliacaoFisicaController
 
-Arquivo: `api/src/avaliacao/AvaliacaoFisicaController.php`
+Arquivo: [`AvaliacaoFisicaController.php`](../../api/src/avaliacao/AvaliacaoFisicaController.php)
 
 Responsável por:
 
@@ -29,7 +29,7 @@ Responsável por:
 
 ### AvaliacaoFisicaService
 
-Arquivo: `api/src/avaliacao/AvaliacaoFisicaService.php`
+Arquivo: [`AvaliacaoFisicaService.php`](../../api/src/avaliacao/AvaliacaoFisicaService.php)
 
 Responsável por:
 
@@ -39,7 +39,7 @@ Responsável por:
 
 ### AvaliacaoFisicaRepository
 
-Arquivo: `api/src/avaliacao/AvaliacaoFisicaRepository.php`
+Arquivo: [`AvaliacaoFisicaRepository.php`](../../api/src/avaliacao/AvaliacaoFisicaRepository.php)
 
 Responsável por:
 
@@ -49,7 +49,7 @@ Responsável por:
 
 ### DTO
 
-- `AvaliacaoFisicaDTO`
+- [`AvaliacaoFisicaDTO.php`](../../api/src/avaliacao/DTO/AvaliacaoFisicaDTO.php)
 
 ## Entidades principais
 

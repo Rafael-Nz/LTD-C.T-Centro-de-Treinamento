@@ -6,8 +6,8 @@ Gerenciar a conexão com o banco e configurar opções PDO compartilhadas.
 
 Arquivos principais
 
-- [Database.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Database/Database.php)
-- [Repository.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Database/Repository.php)
+- [Database.php](../../api/core/Database/Database.php)
+- [Repository.php](../../api/core/Database/Repository.php)
 
 Database
 

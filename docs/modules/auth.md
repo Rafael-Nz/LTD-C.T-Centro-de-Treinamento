@@ -6,7 +6,7 @@ Responsável pela autenticação e autorização do acesso ao painel administrat
 
 ## Diretório
 
-- `api/src/auth`
+- [`api/src/auth`](../../api/src/auth)
 
 ## Rotas principais
 
@@ -19,7 +19,7 @@ Responsável pela autenticação e autorização do acesso ao painel administrat
 
 ### AuthController
 
-Arquivo: `api/src/auth/AuthController.php`
+Arquivo: [`AuthController.php`](../../api/src/auth/AuthController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### AuthService
 
-Arquivo: `api/src/auth/AuthService.php`
+Arquivo: [`AuthService.php`](../../api/src/auth/AuthService.php)
 
 Responsável por:
 
@@ -43,7 +43,7 @@ Responsável por:
 
 ### LoginDTO
 
-Arquivo: `api/src/auth/DTO/LoginDTO.php`
+Arquivo: [`LoginDTO.php`](../../api/src/auth/DTO/LoginDTO.php)
 
 Estrutura de entrada para autenticação, contendo campos como `login` e `senha`.
 

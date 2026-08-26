@@ -6,7 +6,7 @@ Fornecer uma base para Data Transfer Objects (DTOs) que convertem arrays em obje
 
 Arquivo principal
 
-- [BaseDTO.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/DTO/BaseDTO.php)
+- [BaseDTO.php](../../api/core/DTO/BaseDTO.php)
 
 Funcionalidades
 

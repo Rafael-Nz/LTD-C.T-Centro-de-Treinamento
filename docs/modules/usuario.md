@@ -6,7 +6,7 @@ Gerencia os usuários do sistema, incluindo dados pessoais, contatos, endereços
 
 ## Diretório
 
-- `api/src/usuario`
+- [`api/src/usuario`](../../api/src/usuario)
 
 ## Rotas principais
 
@@ -20,7 +20,7 @@ Gerencia os usuários do sistema, incluindo dados pessoais, contatos, endereços
 
 ### UsuarioController
 
-Arquivo: `api/src/usuario/UsuarioController.php`
+Arquivo: [`UsuarioController.php`](../../api/src/usuario/UsuarioController.php)
 
 Responsável por:
 
@@ -32,7 +32,7 @@ Responsável por:
 
 ### UsuarioService
 
-Arquivo: `api/src/usuario/UsuarioService.php`
+Arquivo: [`UsuarioService.php`](../../api/src/usuario/UsuarioService.php)
 
 Responsável por:
 
@@ -42,7 +42,7 @@ Responsável por:
 
 ### UsuarioRepository
 
-Arquivo: `api/src/usuario/UsuarioRepository.php`
+Arquivo: [`UsuarioRepository.php`](../../api/src/usuario/UsuarioRepository.php)
 
 Responsável por:
 
@@ -54,17 +54,11 @@ Responsável por:
 
 ### DTOs
 
-- `UsuarioDTO`
-- `EnderecoDTO`
-- `ContatoDTO`
+- [`UsuarioDTO.php`](../../api/src/usuario/DTO/UsuarioDTO.php)
+- [`EnderecoDTO.php`](../../api/src/usuario/DTO/EnderecoDTO.php)
+- [`ContatoDTO.php`](../../api/src/usuario/DTO/ContatoDTO.php)
 
 Esses objetos representam a estrutura do usuário, do endereço e dos contatos e são convertidos automaticamete pelo `BaseDTO`.
-
-## Entidades principais
-
-- `usuario`
-- `endereco`
-- `contato`
 
 ## Regras de negócio
 

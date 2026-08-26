@@ -6,8 +6,8 @@ Fornecer helpers para construir respostas compatíveis com o plugin DataTables (
 
 Arquivo principal
 
-- [DataTablesResponseTrait.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/DataTables/DataTablesResponseTrait.php)
-- [DataTablesRepositoryInterface.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/DataTables/DataTablesRepositoryInterface.php)
+- [DataTablesResponseTrait.php](../../api/core/DataTables/DataTablesResponseTrait.php)
+- [DataTablesRepositoryInterface.php](../../api/core/DataTables/DataTablesRepositoryInterface.php)
 
 Funcionalidade
 

@@ -6,7 +6,7 @@ Gerencia formulários de anamnese, perguntas, opções de resposta e respostas d
 
 ## Diretório
 
-- `api/src/anamnese`
+- [`api/src/anamnese`](../../api/src/anamnese)
 
 ## Rotas principais
 
@@ -20,7 +20,7 @@ Gerencia formulários de anamnese, perguntas, opções de resposta e respostas d
 
 ### AnamneseController
 
-Arquivo: `api/src/anamnese/AnamneseController.php`
+Arquivo: [`AnamneseController.php`](../../api/src/anamnese/AnamneseController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### AnamneseService
 
-Arquivo: `api/src/anamnese/AnamneseService.php`
+Arquivo: [`AnamneseService.php`](../../api/src/anamnese/AnamneseService.php)
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 
 ### AnamneseRepository
 
-Arquivo: `api/src/anamnese/AnamneseRepository.php`
+Arquivo: [`AnamneseRepository.php`](../../api/src/anamnese/AnamneseRepository.php)
 
 Responsável por:
 
@@ -51,26 +51,19 @@ Responsável por:
 
 ### DTOs
 
-- `FormularioDTO`
-- `PerguntaDTO`
-- `OpcaoDTO`
-- `RespostaDTO`
-- `EnvioAnamneseDTO`
-- `RegraExibicaoDTO`
-- `CondicaoDTO`
+- [`FormularioDTO.php`](../../api/src/anamnese/DTO/FormularioDTO.php)
+- [`PerguntaDTO.php`](../../api/src/anamnese/DTO/PerguntaDTO.php)
+- [`OpcaoDTO.php`](../../api/src/anamnese/DTO/OpcaoDTO.php)
+- [`RespostaDTO.php`](../../api/src/anamnese/DTO/RespostaDTO.php)
+- [`EnvioAnamneseDTO.php`](../../api/src/anamnese/DTO/EnvioAnamneseDTO.php)
+- [`RegraExibicaoDTO.php`](../../api/src/anamnese/DTO/RegraExibicaoDTO.php)
+- [`CondicaoDTO.php`](../../api/src/anamnese/DTO/CondicaoDTO.php)
 
 ### Validation
 
-- `RespostaValorRule`
+- [`RespostaValorRule`]()
 
 Valida o valor enviado pela resposta, respeitando regras específicas do tipo de pergunta.
-
-## Entidades principais
-
-- `anamnese_formulario`
-- `anamnese_pergunta`
-- `anamnese_opcao`
-- `anamnese_resposta`
 
 ## Regras de negócio
 

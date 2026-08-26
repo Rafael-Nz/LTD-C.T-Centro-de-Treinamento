@@ -6,7 +6,7 @@ Gerencia os treinamentos, planos de aula e agenda de atividades disponíveis par
 
 ## Diretório
 
-- `api/src/treino`
+- [`api/src/treino`](../../api/src/treino)
 
 ## Rotas principais
 
@@ -21,7 +21,7 @@ Gerencia os treinamentos, planos de aula e agenda de atividades disponíveis par
 
 ### TreinoController
 
-Arquivo: `api/src/treino/TreinoController.php`
+Arquivo: [`TreinoController.php`](../../api/src/treino/TreinoController.php)
 
 Responsável por:
 
@@ -31,7 +31,7 @@ Responsável por:
 
 ### TreinoService
 
-Arquivo: `api/src/treino/TreinoService.php`
+Arquivo: [`TreinoService.php`](../../api/src/treino/TreinoService.php)
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 
 ### TreinoRepository
 
-Arquivo: `api/src/treino/TreinoRepository.php`
+Arquivo: [`TreinoRepository.php`](../../api/src/treino/TreinoRepository.php)
 
 Responsável por:
 
@@ -51,13 +51,8 @@ Responsável por:
 
 ### DTOs
 
-- `TreinoDTO`
-- `TreinoAgendaDTO`
-
-## Entidades principais
-
-- `treino`
-- `treino_agenda`
+- [`TreinoDTO.php`](../../api/src/treino/DTO/TreinoDTO.php)
+- [`TreinoAgendaDTO.php`](../../api/src/treino/DTO/TreinoAgendaDTO.php)
 
 ## Regras de negócio
 

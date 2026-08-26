@@ -6,11 +6,11 @@ Validar dados de entrada e centralizar regras e mensagens de erro.
 
 Arquivos principais
 
-- [Validator.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Validation/Validator.php)
-- [ValidatorInterface.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Validation/ValidatorInterface.php)
-- [ValidationRuleInterface.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Validation/ValidationRuleInterface.php)
-- [ValidationException.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Validation/ValidationException.php)
-- [ValidationErrorBag.php](/D:/xampp/htdocs/ctt.worktrees/layered-architecture-explanation/api/core/Validation/ValidationErrorBag.php)
+- [Validator.php](../../api/core/Validation/Validator.php)
+- [ValidatorInterface.php](../../api/core/Validation/ValidatorInterface.php)
+- [ValidationRuleInterface.php](../../api/core/Validation/ValidationRuleInterface.php)
+- [ValidationException.php](../../api/core/Validation/ValidationException.php)
+- [ValidationErrorBag.php](../../api/core/Validation/ValidationErrorBag.php)
 
 Funcionalidades do Validator
 

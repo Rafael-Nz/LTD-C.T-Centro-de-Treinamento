@@ -18,8 +18,13 @@ use Modalidade\ModalidadeController;
 use Treino\TreinoController;
 use Turma\TurmaController;
 use Avaliacao\AvaliacaoFisicaController;
+use Relatorio\RelatorioController;
 
 $auth = [AuthMiddleware::class];
+
+Router::get('/relatorios/metricas', [RelatorioController::class, 'metricas'], $auth);
+Router::get('/relatorios/gerar', [RelatorioController::class, 'gerar'], $auth);
+Router::get('/relatorios/exportar', [RelatorioController::class, 'exportar'], $auth);
 
 Router::post('/auth/login', [AuthController::class, 'login']);
 Router::post('/auth/logout', [AuthController::class, 'logout']);

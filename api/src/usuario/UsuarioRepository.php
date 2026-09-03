@@ -1,13 +1,16 @@
 <?php
+
 namespace Usuario;
 
 use Core\DataTables\DataTablesRepositoryInterface;
 use Core\Database\Repository;
 use Usuario\DTO\UsuarioDTO;
 
-class UsuarioRepository extends Repository implements DataTablesRepositoryInterface {
+class UsuarioRepository extends Repository implements DataTablesRepositoryInterface
+{
 
-    public function countAll(): int {
+    public function countAll(): int
+    {
         $result = $this->fetch("
             SELECT COUNT(*) as total
             FROM usuario
@@ -15,12 +18,13 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return (int) ($result['total'] ?? 0);
     }
 
-    public function findPaginated(int $start, int $length, string $search = '', array $filters = []): array {
+    public function findPaginated(int $start, int $length, string $search = '', array $filters = []): array
+    {
         $params = [];
         $where = [];
 
         $sql = "
-            SELECT 
+            SELECT
                 id,
                 nome,
                 sobrenome,
@@ -53,7 +57,8 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return $this->fetchAll($sql, $params);
     }
 
-    public function countFiltered(string $search = '', array $filters = []): int {
+    public function countFiltered(string $search = '', array $filters = []): int
+    {
         $params = [];
         $where = [];
 
@@ -77,9 +82,10 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return (int) ($result['total'] ?? 0);
     }
 
-    public function findById(int $id): ?array {
+    public function findById(int $id): ?array
+    {
         $usuario = $this->fetch("
-            SELECT 
+            SELECT
                 u.*,
                 e.logradouro,
                 e.numero,
@@ -108,11 +114,12 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return $usuario;
     }
 
-    public function create(UsuarioDTO $dto, ?int $enderecoId = null): int {
-        $sql = "INSERT INTO usuario 
+    public function create(UsuarioDTO $dto, ?int $enderecoId = null): int
+    {
+        $sql = "INSERT INTO usuario
                 (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
+
         $this->execute($sql, [
             $dto->nome,
             $dto->sobrenome,
@@ -128,7 +135,8 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return (int) $this->lastInsertId();
     }
 
-    public function update(int $id, array $data): void {
+    public function update(int $id, array $data): void
+    {
         $fields = [];
         $params = [];
 
@@ -154,15 +162,18 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         }
     }
 
-    public function deactivate(int $id): void {
+    public function deactivate(int $id): void
+    {
         $this->execute("UPDATE usuario SET ativo = 0 WHERE id = ?", [$id]);
     }
 
-    public function reactivate(int $id): void {
+    public function reactivate(int $id): void
+    {
         $this->execute("UPDATE usuario SET ativo = 1 WHERE id = ?", [$id]);
     }
 
-    public function getEnderecoId(int $usuarioId): ?int {
+    public function getEnderecoId(int $usuarioId): ?int
+    {
         $result = $this->fetch("
             SELECT endereco_id
             FROM usuario
@@ -172,11 +183,72 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return $result['endereco_id'] ?? null;
     }
 
-    public function findByLogin(string $login): ?array {
+    public function findByLogin(string $login): ?array
+    {
         return $this->fetch("
-            SELECT id, nome, email, senha, ativo, tipo_usuario 
-            FROM usuario 
+            SELECT id, nome, email, senha, ativo, tipo_usuario
+            FROM usuario
             WHERE email = ? OR cpf = ?
         ", [$login, $login]);
+    }
+
+    public function findByEmail(string $email): ?array
+    {
+        return $this->fetch("
+            SELECT id, nome, email, ativo
+            FROM usuario
+            WHERE email = ?
+            LIMIT 1
+        ", [$email]);
+    }
+
+    public function deletePasswordResetTokens(int $usuarioId): void
+    {
+        $this->execute(
+            'DELETE FROM password_resets WHERE usuario_id = ?',
+            [$usuarioId]
+        );
+    }
+
+    public function createPasswordResetToken(
+        int $usuarioId,
+        string $tokenHash,
+        string $expiresAt
+    ): void {
+        $this->execute(
+            'INSERT INTO password_resets (usuario_id, token_hash, expires_at)
+             VALUES (?, ?, ?)',
+            [$usuarioId, $tokenHash, $expiresAt]
+        );
+    }
+
+    public function findValidPasswordReset(string $tokenHash): ?array
+    {
+        return $this->fetch(
+            'SELECT id, usuario_id
+             FROM password_resets
+             WHERE token_hash = ?
+               AND used_at IS NULL
+               AND expires_at > NOW()
+             LIMIT 1',
+            [$tokenHash]
+        );
+    }
+
+    public function updatePassword(int $usuarioId, string $passwordHash): void
+    {
+        $this->execute(
+            'UPDATE usuario SET senha = ? WHERE id = ?',
+            [$passwordHash, $usuarioId]
+        );
+    }
+
+    public function invalidatePasswordResetToken(int $resetId): void
+    {
+        $this->execute(
+            'UPDATE password_resets SET used_at = NOW()
+             WHERE id = ? AND used_at IS NULL',
+            [$resetId]
+        );
     }
 }

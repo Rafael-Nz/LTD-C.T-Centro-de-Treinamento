@@ -1,7 +1,8 @@
 <?php
+
 /**
  * api/bootstrap.php - Inicializador da API
- * 
+ *
  * Entry point único para todas as requisições
  */
 
@@ -12,6 +13,11 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 date_default_timezone_set('America/Fortaleza');
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
 
 // 2. AUTOLOAD (PSR-4)
 

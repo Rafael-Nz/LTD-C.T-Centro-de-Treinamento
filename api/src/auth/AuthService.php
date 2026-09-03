@@ -1,4 +1,5 @@
 <?php
+
 namespace Auth;
 
 use Core\Auth\Auth as CoreAuth;
@@ -6,16 +7,20 @@ use Core\Services\Service;
 use Usuario\UsuarioRepository;
 use Auth\DTO\LoginDTO;
 use Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
-class AuthService extends Service {
+class AuthService extends Service
+{
 
     private UsuarioRepository $usuarioRepo;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->usuarioRepo = new UsuarioRepository();
     }
 
-    public function login(LoginDTO $dto): array {
+    public function login(LoginDTO $dto): array
+    {
         // Busca o usuário pelo e-mail ou CPF
         $usuario = $this->usuarioRepo->findByLogin($dto->login);
 
@@ -46,55 +51,48 @@ class AuthService extends Service {
         ];
     }
 
-    public function logout(): void {
+    public function logout(): void
+    {
         CoreAuth::logout();
     }
 
 
-    /**
-     * Prepara o fluxo de recuperação de senha.
-     * TODO: Implementar quando a tabela 'password_resets' for reintroduzida.
-     */
-    public function generatePasswordResetToken(string $email): void {
-        // 1. Verifica se o usuário existe no banco
-        $usuario = $this->usuarioRepo->findByLogin($email);
-        
-        // Se não existir, retornamos silenciosamente por segurança (evita descoberta de e-mails)
-        if (!$usuario) {
+    public function generatePasswordResetToken(string $email): void
+    {
+        $email = trim($email);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Informe um e-mail válido.");
+        }
+
+        $usuario = $this->usuarioRepo->findByEmail($email);
+
+        if (!$usuario || !(bool) $usuario['ativo']) {
             return;
         }
 
-        // 2. Gera um token único e seguro
         $token = bin2hex(random_bytes(32));
+        $expiresAt = date('Y-m-d H:i:s', time() + 3600);
 
-        /**
-         * TODO: IMPLEMENTAÇÃO FUTURA DE E-MAIL
-         * 
-         * 1. Persistência:
-         *    - Inserir na tabela 'password_resets' o e-mail e o $token (sem hash, conforme solicitado).
-         *    - A tabela deve ter o campo 'created_at' para validar a expiração de 1 hora.
-         * 
-         * 2. Integração com PHPMailer/SMTP:
-         *    - Configurar Host (ex: smtp.mailtrap.io ou Gmail).
-         *    - Montar o corpo do e-mail em HTML com a identidade visual do Cross C.T.
-         *    - O link deve apontar para: /admin/redefinir-senha?token=$token
-         * 
-         * 3. Segurança:
-         *    - Antes de inserir um novo token, deletar tokens antigos deste e-mail para manter o banco limpo.
-         */
-        
-        // Exemplo de como salvar no banco futuramente:
-        // $this->usuarioRepo->saveResetToken($email, $token);
-        
-        // Exemplo de chamada de envio:
-        // $this->sendEmail($email, $token);
+        $this->transaction(function () use ($usuario, $token, $expiresAt): void {
+            $this->usuarioRepo->deletePasswordResetTokens((int) $usuario['id']);
+            $this->usuarioRepo->createPasswordResetToken(
+                (int) $usuario['id'],
+                hash('sha256', $token),
+                $expiresAt
+            );
+        });
+
+        $this->sendPasswordResetEmail($usuario, $token);
     }
 
-    /**
-     * Processa a troca de senha após validação do token.
-     * TODO: Implementar lógica de persistência e expiração futuramente.
-     */
-    public function updatePasswordWithToken(string $token, string $novaSenha, string $confirmarSenha): void {
+    public function updatePasswordWithToken(string $token, string $novaSenha, string $confirmarSenha): void
+    {
+        $token = trim($token);
+
+        if ($token === '') {
+            throw new Exception("Token de recuperação inválido.");
+        }
+
         if ($novaSenha !== $confirmarSenha) {
             throw new Exception("As senhas não coincidem.");
         }
@@ -103,15 +101,54 @@ class AuthService extends Service {
             throw new Exception("A senha deve ter pelo menos 6 caracteres.");
         }
 
-        /**
-         * TODO: VALIDAÇÃO DE TOKEN
-         * 
-         * 1. Buscar o registro na tabela 'password_resets' onde o token seja igual ao recebido.
-         * 2. Verificar se (NOW - created_at) < 1 hora.
-         * 3. Se válido:
-         *    - $hash = password_hash($novaSenha, PASSWORD_DEFAULT);
-         *    - Update na tabela 'usuario' set senha = $hash where email = $email_do_token.
-         *    - Deletar o registro do token usado para invalidar o link.
-         */
+        $reset = $this->usuarioRepo->findValidPasswordReset(hash('sha256', $token));
+        if (!$reset) {
+            throw new Exception("Link inválido ou expirado.");
+        }
+
+        $passwordHash = password_hash($novaSenha, PASSWORD_ARGON2ID);
+
+        $this->transaction(function () use ($reset, $passwordHash): void {
+            $this->usuarioRepo->updatePassword((int) $reset['usuario_id'], $passwordHash);
+            $this->usuarioRepo->invalidatePasswordResetToken((int) $reset['id']);
+        });
+    }
+
+    private function sendPasswordResetEmail(array $usuario, string $token): void
+    {
+        $mailer = new PHPMailer(true);
+        $appUrl = rtrim($_ENV['APP_URL'], '/');
+        $resetUrl = $appUrl . '/admin/redefinir-senha/' . urlencode($token);
+        $nome = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
+
+        $mailer->isSMTP();
+        $mailer->Host = $_ENV['MAIL_HOST'];
+        $mailer->SMTPAuth = true;
+        $mailer->Username = $_ENV['MAIL_USERNAME'];
+        $mailer->Password = $_ENV['MAIL_PASSWORD'];
+        $mailer->Port = (int) $_ENV['MAIL_PORT'];
+        $mailer->SMTPSecure = strtolower($_ENV['MAIL_ENCRYPTION']) === 'ssl'
+            ? PHPMailer::ENCRYPTION_SMTPS
+            : PHPMailer::ENCRYPTION_STARTTLS;
+        $mailer->CharSet = 'UTF-8';
+        $mailer->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
+        $mailer->addAddress($usuario['email'], $usuario['nome']);
+        $mailer->isHTML(true);
+        $mailer->Subject = 'Recuperação de senha - Cross C.T';
+        $safeResetUrl = htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8');
+        $templatePath = __DIR__ . '/password-reset.html';
+        $template = file_get_contents($templatePath);
+
+        if ($template === false) {
+            throw new Exception('Template de e-mail não encontrado. Execute npm run email:build.');
+        }
+
+        $mailer->Body = str_replace(
+            ['{{nome}}', '{{link}}'],
+            [$nome, $safeResetUrl],
+            $template
+        );
+        $mailer->AltBody = "Acesse {$resetUrl} para redefinir sua senha. Este link expira em uma hora.";
+        $mailer->send();
     }
 }

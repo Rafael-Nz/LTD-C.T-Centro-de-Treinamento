@@ -1,0 +1,29 @@
+{
+  "name": "ctt",
+  "version": "1.0.0",
+  "description": "Sistema web para gerenciamento de um centro de treinamento, com foco no controle administrativo da operação, cadastro de alunos e funcionários, organização de turmas, agenda de treinos e acompanhamento de informações de saúde por meio de anamnese.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "email:build": "mjml templates/password-reset.mjml -o ../../api/src/auth/password-reset.html",
+    "email:watch": "mjml -w templates/password-reset.mjml -o ../../api/src/auth/password-reset.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rafael-Nz/LTD-C.T-Centro-de-Treinamento.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Rafael-Nz/LTD-C.T-Centro-de-Treinamento/issues"
+  },
+  "homepage": "https://github.com/Rafael-Nz/LTD-C.T-Centro-de-Treinamento#readme",
+  "devDependencies": {
+    "mjml": "^5.4.0"
+  }
+}

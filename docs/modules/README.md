@@ -15,6 +15,7 @@ Esta pasta reúne a documentação separada por módulo da API do projeto.
 - [Local](./local.md)
 - [Anamnese](./anamnese.md)
 - [Avaliacao](./avaliacao.md)
+- [Relatorio](./relatorio.md)
 
 ## Padrão arquitetural
 

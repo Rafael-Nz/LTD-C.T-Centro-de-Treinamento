@@ -39,6 +39,18 @@ CREATE TABLE usuario (
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 
+CREATE TABLE password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    INDEX idx_password_resets_usuario (usuario_id),
+    INDEX idx_password_resets_expires_at (expires_at)
+);
+
 CREATE TABLE funcionario (
     usuario_id INT PRIMARY KEY,
     cargo_id INT NOT NULL,
@@ -303,7 +315,7 @@ INSERT INTO cargo (nome, descricao, salario_base, ativo) VALUES
 ('Atendente', 'Atendimento ao cliente e secretaria', 0.00, TRUE);
 
 -- INSERINDO O PRIMEIRO ADMIN (Exemplo de Fluxo)
-INSERT INTO endereco (logradouro, numero, cidade, bairro, cep) 
+INSERT INTO endereco (logradouro, numero, cidade, bairro, cep)
 VALUES ('Av. Central', '100', 'São Paulo', 'Centro', '01010000');
 
 INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, tipo_usuario, endereco_id)

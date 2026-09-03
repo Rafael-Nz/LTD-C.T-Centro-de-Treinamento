@@ -65,3 +65,7 @@ Estrutura de entrada para autenticação, contendo campos como `login` e `senha`
 ## Integração com o Core
 
 O módulo usa a camada base `Core\Auth\Auth` para manter a sessão do usuário e `Core\Http\Controller` para padronizar respostas HTTP.
+
+## Configuração de e-mail
+
+A configuração do PHPMailer, SMTP e variáveis do ambiente está documentada em [`auth-email.md`](auth-email.md).

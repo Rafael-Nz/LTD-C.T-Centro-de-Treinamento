@@ -93,3 +93,9 @@ ctt/
 - A API possui bootstrap dedicado em `api/bootstrap.php`.
 - A conexão com banco utiliza PDO e banco MySQL `db_centro_treinamento`.
 - A estrutura da API segue uma divisão por responsabilidade para facilitar manutenção e evolução.
+
+## Documentação
+
+- [Guia de instalação](docs/instalacao.md)
+- [Módulo de autenticação](docs/modules/auth.md)
+- [Configuração de e-mail e PHPMailer](docs/modules/auth-email.md)

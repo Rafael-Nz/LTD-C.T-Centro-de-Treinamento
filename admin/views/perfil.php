@@ -64,22 +64,6 @@
                     <div class="profile-data-label">Email principal</div>
                     <div class="profile-data-value" id="profileEmailPrincipal">Carregando...</div>
                   </div>
-                  <div class="profile-data-item">
-                    <div class="profile-data-label">CPF</div>
-                    <div class="profile-data-value" id="profileCpf">Carregando...</div>
-                  </div>
-                  <div class="profile-data-item">
-                    <div class="profile-data-label">Data de nascimento</div>
-                    <div class="profile-data-value" id="profileDataNascimento">Carregando...</div>
-                  </div>
-                  <div class="profile-data-item">
-                    <div class="profile-data-label">Genero</div>
-                    <div class="profile-data-value" id="profileGenero">Carregando...</div>
-                  </div>
-                  <div class="profile-data-item">
-                    <div class="profile-data-label">Tipo de acesso</div>
-                    <div class="profile-data-value" id="profileTipoAcesso">Carregando...</div>
-                  </div>
                 </div>
               </div>
             </section>
@@ -115,7 +99,7 @@
                 <div class="profile-panel-header">
                   <h3 class="profile-panel-title">
                     <i class="ph ph-map-pin"></i>
-                    <span>Endereco cadastrado</span>
+                    <span>Endereço</span>
                   </h3>
                 </div>
 

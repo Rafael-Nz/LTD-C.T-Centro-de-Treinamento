@@ -24,12 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return text !== '' ? text : fallback;
     }
 
-    function formatCpf(value) {
-        const digits = String(value ?? '').replace(/\D/g, '');
-        if (digits.length !== 11) return 'Não informado';
-        return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    }
-
     function formatPhone(value) {
         const digits = String(value ?? '').replace(/\D/g, '');
         if (digits.length === 11) {
@@ -39,32 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
         }
         return formatFallback(value);
-    }
-
-    function formatDate(value) {
-        if (!value) return 'Não informado';
-        const date = new Date(String(value).replace(' ', 'T'));
-        return Number.isNaN(date.getTime()) ? 'Não informado' : date.toLocaleDateString('pt-BR');
-    }
-
-    function formatGender(value) {
-        const map = {
-            M: 'Masculino',
-            F: 'Feminino',
-            O: 'Outro'
-        };
-
-        return map[value] || 'Não informado';
-    }
-
-    function formatAccessType(value) {
-        const map = {
-            admin: 'Administrador',
-            funcionario: 'Funcionario',
-            aluno: 'Aluno'
-        };
-
-        return map[value] || 'Não informado';
     }
 
     function getInitials(name) {
@@ -101,10 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setText('profileEmail', emailPrincipal);
         setText('profileNomeCompleto', nomeCompleto);
         setText('profileEmailPrincipal', emailPrincipal);
-        setText('profileCpf', formatCpf(usuario.cpf));
-        setText('profileDataNascimento', formatDate(usuario.data_nascimento));
-        setText('profileGenero', formatGender(usuario.genero));
-        setText('profileTipoAcesso', formatAccessType(usuario.tipo_usuario));
         setText('profileTelefone', getContactValue(usuario.contatos, 'telefone', formatPhone));
         setText('profileWhatsapp', getContactValue(usuario.contatos, 'whatsapp', formatPhone));
         setText('profileEmailSecundario', getContactValue(usuario.contatos, 'email_secundario'));

@@ -1,6 +1,15 @@
 let graficoDist = null;
 let graficoPresenca = null;
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 $(document).ready(function () {
     $('.select2').select2({
         theme: 'bootstrap-5',
@@ -61,7 +70,7 @@ function carregarFiltros() {
             const select = $('#modalidade');
             select.empty();
             select.append('<option value="">Todas</option>');
-            items.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
+            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
         }
     });
 
@@ -74,7 +83,7 @@ function carregarFiltros() {
             const select = $('#turma');
             select.empty();
             select.append('<option value="">Todas</option>');
-            items.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
+            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
         }
     });
 
@@ -87,7 +96,7 @@ function carregarFiltros() {
             const select = $('#cargo');
             select.empty();
             select.append('<option value="">Todos</option>');
-            items.forEach(item => select.append(`<option value="${item.id}">${item.nome}</option>`));
+            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
         }
     });
 
@@ -100,7 +109,7 @@ function carregarFiltros() {
             const select = $('#aluno');
             select.empty();
             select.append('<option value="">Todos</option>');
-            items.forEach(item => select.append(`<option value="${item.id}">${item.nome} ${item.sobrenome || ''}</option>`));
+            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)} ${escapeHtml(item.sobrenome || '')}</option>`));
         }
     });
 }
@@ -197,7 +206,7 @@ function renderizarRelatorio(data, tipoRelatorio) {
             cabecalho = '<tr><th>Matrícula</th><th>Nome</th><th>CPF</th><th>Email</th><th>Data</th><th>Status</th></tr>';
             data.registros.forEach(a => {
                 const status = a.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>';
-                html += `<tr><td>${a.codigo_matricula}</td><td>${a.nome} ${a.sobrenome}</td><td>${mascararCpf(a.cpf)}</td><td>${a.email}</td><td>${new Date(a.data_matricula).toLocaleDateString('pt-BR')}</td><td>${status}</td></tr>`;
+                html += `<tr><td>${escapeHtml(a.codigo_matricula)}</td><td>${escapeHtml(a.nome)} ${escapeHtml(a.sobrenome)}</td><td>${escapeHtml(mascararCpf(a.cpf))}</td><td>${escapeHtml(a.email)}</td><td>${escapeHtml(new Date(a.data_matricula).toLocaleDateString('pt-BR'))}</td><td>${status}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Alunos');
             break;
@@ -209,7 +218,7 @@ function renderizarRelatorio(data, tipoRelatorio) {
                 if (p.situacao === 'presente') badge = '<span class="badge bg-success">Presente</span>';
                 else if (p.situacao === 'ausente') badge = '<span class="badge bg-danger">Ausente</span>';
                 else badge = '<span class="badge bg-warning">Justificado</span>';
-                html += `<tr><td>${new Date(p.data_treino).toLocaleDateString('pt-BR')}</td><td>${p.turma || '-'}</td><td>${p.modalidade || '-'}</td><td>${p.aluno}</td><td>${badge}</td></tr>`;
+                html += `<tr><td>${escapeHtml(new Date(p.data_treino).toLocaleDateString('pt-BR'))}</td><td>${escapeHtml(p.turma || '-')}</td><td>${escapeHtml(p.modalidade || '-')}</td><td>${escapeHtml(p.aluno)}</td><td>${badge}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Presença');
             break;
@@ -217,7 +226,7 @@ function renderizarRelatorio(data, tipoRelatorio) {
         case 'avaliacoes':
             cabecalho = '<tr><th>Data</th><th>Modalidade</th><th>Aluno</th><th>Avaliador</th><th>Peso (kg)</th><th>Altura (m)</th><th>% Gordura</th></tr>';
             data.registros.forEach(av => {
-                html += `<tr><td>${new Date(av.data_avaliacao).toLocaleDateString('pt-BR')}</td><td>${av.modalidade || '-'}</td><td>${av.aluno}</td><td>${av.avaliador}</td><td>${av.peso}</td><td>${av.altura}</td><td>${av.percentual_gordura}%</td></tr>`;
+                html += `<tr><td>${escapeHtml(new Date(av.data_avaliacao).toLocaleDateString('pt-BR'))}</td><td>${escapeHtml(av.modalidade || '-')}</td><td>${escapeHtml(av.aluno)}</td><td>${escapeHtml(av.avaliador)}</td><td>${escapeHtml(av.peso)}</td><td>${escapeHtml(av.altura)}</td><td>${escapeHtml(av.percentual_gordura)}%</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Avaliações');
             break;
@@ -225,7 +234,7 @@ function renderizarRelatorio(data, tipoRelatorio) {
         case 'turmas':
             cabecalho = '<tr><th>Turma</th><th>Modalidade</th><th>Instrutor</th><th>Alunos</th><th>Capacidade</th><th>Ocupação</th></tr>';
             data.registros.forEach(t => {
-                html += `<tr><td>${t.nome}</td><td>${t.modalidade || '-'}</td><td>${t.instrutor || '-'}</td><td>${t.alunos}</td><td>${t.alunos}/${t.capacidade_maxima}</td><td>${t.ocupacao || 0}%</td></tr>`;
+                html += `<tr><td>${escapeHtml(t.nome)}</td><td>${escapeHtml(t.modalidade || '-')}</td><td>${escapeHtml(t.instrutor || '-')}</td><td>${escapeHtml(t.alunos)}</td><td>${escapeHtml(t.alunos)}/${escapeHtml(t.capacidade_maxima)}</td><td>${escapeHtml(t.ocupacao || 0)}%</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Turmas');
             break;
@@ -234,14 +243,14 @@ function renderizarRelatorio(data, tipoRelatorio) {
             cabecalho = '<tr><th>Nome</th><th>CPF</th><th>Email</th><th>Cargo</th><th>Registro</th><th>Status</th></tr>';
             data.registros.forEach(f => {
                 const status = f.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>';
-                html += `<tr><td>${f.nome} ${f.sobrenome}</td><td>${mascararCpf(f.cpf)}</td><td>${f.email}</td><td>${f.cargo}</td><td>${f.registro_profissional || '-'}</td><td>${status}</td></tr>`;
+                html += `<tr><td>${escapeHtml(f.nome)} ${escapeHtml(f.sobrenome)}</td><td>${escapeHtml(mascararCpf(f.cpf))}</td><td>${escapeHtml(f.email)}</td><td>${escapeHtml(f.cargo)}</td><td>${escapeHtml(f.registro_profissional || '-')}</td><td>${status}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Funcionários');
             break;
 
         case 'treinos':
             cabecalho = '<tr><th>Início</th><th>Treino</th><th>Turma</th><th>Espaço</th><th>Instrutor</th><th>Status</th></tr>';
-            data.registros.forEach(t => { html += `<tr><td>${new Date(t.data_hora_inicio).toLocaleString('pt-BR')}</td><td>${t.treino}</td><td>${t.turma || '-'}</td><td>${t.espaco}</td><td>${t.instrutor || '-'}</td><td>${t.status}</td></tr>`; });
+            data.registros.forEach(t => { html += `<tr><td>${escapeHtml(new Date(t.data_hora_inicio).toLocaleString('pt-BR'))}</td><td>${escapeHtml(t.treino)}</td><td>${escapeHtml(t.turma || '-')}</td><td>${escapeHtml(t.espaco)}</td><td>${escapeHtml(t.instrutor || '-')}</td><td>${escapeHtml(t.status)}</td></tr>`; });
             $('#tituloTabela').text('Agenda de Treinos');
             break;
 

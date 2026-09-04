@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Máscaras
     function applyMasks() {
         if (typeof IMask !== 'undefined') {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             const cpfField = document.getElementById('cpf');
             if (cpfField) {
-                cpfField.addEventListener('input', function(e) {
+                cpfField.addEventListener('input', function (e) {
                     let v = e.target.value.replace(/\D/g, '');
                     if (v.length <= 11) {
                         v = v.replace(/(\d{3})(\d)/, '$1.$2');
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Buscar CEP
     const buscarCepBtn = document.getElementById('buscarCep');
     if (buscarCepBtn) {
-        buscarCepBtn.addEventListener('click', function() {
+        buscarCepBtn.addEventListener('click', function () {
             const cepInput = document.getElementById('cep');
             const cep = cepInput ? cepInput.value.replace(/\D/g, '') : '';
             if (cep.length !== 8) {
@@ -116,13 +116,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function buildPayload() {
-        const senha = document.getElementById('senha')?.value || document.getElementById('cpf')?.value.replace(/\D/g, '');
         const payload = {
             nome: document.getElementById('nome')?.value.trim(),
             sobrenome: document.getElementById('sobrenome')?.value.trim(),
             cpf: document.getElementById('cpf')?.value.replace(/\D/g, ''),
             email: document.getElementById('email')?.value,
-            senha: senha,
+            senha: document.getElementById('senha')?.value || undefined,
             data_nascimento: document.getElementById('nascimento')?.value,
             genero: document.getElementById('genero')?.value || 'O',
             cargo_id: parseInt(document.getElementById('cargo')?.value),
@@ -245,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const form = document.getElementById('formFuncionario');
     if (form) {
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async function (e) {
             e.preventDefault();
             if (!validate()) {
                 Swal.fire('Atenção', 'Por favor, corrija os erros no formulário.', 'warning');

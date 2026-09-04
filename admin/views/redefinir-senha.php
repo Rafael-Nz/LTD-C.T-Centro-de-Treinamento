@@ -27,13 +27,32 @@
                 <label for="nova_senha" class="form-label">Nova Senha</label>
                 <div class="password-container">
                     <input type="password" class="form-control form-control-dark" id="nova_senha" name="nova_senha" required
-                        placeholder="••••••••" minlength="6">
+                        placeholder="••••••••" minlength="12" maxlength="128">
                     <button type="button" class="password-toggle" data-password-toggle="nova_senha" data-icon="eyeIcon1">
                         <i class="ph ph-eye-slash" id="eyeIcon1"></i>
                     </button>
                 </div>
-                <div class="form-text mt-1" style="color: #aaa; font-size: 0.85rem;">
-                    Mínimo de 6 caracteres.
+                <div class="password-rules" aria-label="Regras da senha">
+                    <div class="password-rule" data-password-rule="length">
+                        <i class="ph ph-x-circle"></i>
+                        <span>Conter de 12 a 128 caracteres.</span>
+                    </div>
+                    <div class="password-rule" data-password-rule="number">
+                        <i class="ph ph-x-circle"></i>
+                        <span>Conter ao menos um número.</span>
+                    </div>
+                    <div class="password-rule" data-password-rule="uppercase">
+                        <i class="ph ph-x-circle"></i>
+                        <span>Conter ao menos uma letra maiúscula.</span>
+                    </div>
+                    <div class="password-rule" data-password-rule="lowercase">
+                        <i class="ph ph-x-circle"></i>
+                        <span>Conter ao menos uma letra minúscula.</span>
+                    </div>
+                    <div class="password-rule" data-password-rule="symbol">
+                        <i class="ph ph-x-circle"></i>
+                        <span>Conter ao menos um caractere especial. "@#$!%"</span>
+                    </div>
                 </div>
             </div>
 
@@ -41,7 +60,7 @@
                 <label for="confirmar_senha" class="form-label">Confirmar Nova Senha</label>
                 <div class="password-container">
                     <input type="password" class="form-control form-control-dark" id="confirmar_senha" name="confirmar_senha" required
-                        placeholder="••••••••" minlength="6">
+                        placeholder="••••••••" minlength="12" maxlength="128">
                     <button type="button" class="password-toggle" data-password-toggle="confirmar_senha" data-icon="eyeIcon2">
                         <i class="ph ph-eye-slash" id="eyeIcon2"></i>
                     </button>

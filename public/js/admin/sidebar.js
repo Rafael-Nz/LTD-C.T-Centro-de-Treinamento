@@ -1,4 +1,36 @@
-document.addEventListener('DOMContentLoaded', function() {
+function getCsrfToken() {
+    const cookie = document.cookie
+        .split('; ')
+        .find((item) => item.startsWith('CTT_CSRF_TOKEN='));
+    return cookie ? decodeURIComponent(cookie.split('=').slice(1).join('=')) : '';
+}
+
+if (window.fetch) {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+        const method = String(init.method || 'GET').toUpperCase();
+        if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            return originalFetch(input, init);
+        }
+
+        const headers = new Headers(init.headers || {});
+        const token = getCsrfToken();
+        if (token) headers.set('X-CSRF-Token', token);
+        return originalFetch(input, { ...init, headers, credentials: init.credentials || 'same-origin' });
+    };
+}
+
+if (window.jQuery) {
+    $.ajaxPrefilter((options, originalOptions, jqXHR) => {
+        const method = String(options.type || options.method || 'GET').toUpperCase();
+        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            const token = getCsrfToken();
+            if (token) jqXHR.setRequestHeader('X-CSRF-Token', token);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
     const body = document.body;
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -69,8 +101,14 @@ document.addEventListener('DOMContentLoaded', function() {
     restoreProfileSummary();
     loadProfileSummary();
 
-    document.querySelector('a[href="/ctt/admin/logout"]')?.addEventListener('click', () => {
+    document.querySelector('a[href="/ctt/admin/logout"]')?.addEventListener('click', async (event) => {
+        event.preventDefault();
         sessionStorage.removeItem(PROFILE_SUMMARY_KEY);
+        try {
+            await fetch('/ctt/api/auth/logout', { method: 'POST' });
+        } finally {
+            window.location.href = '/ctt/admin/login';
+        }
     });
 
     // OverlayScrollbars
@@ -101,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function toggleSidebar() {
-        if (window.innerWidth <= breakpoint){
+        if (window.innerWidth <= breakpoint) {
             body.classList.toggle('sidebar-open');
         }
         else {
@@ -122,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.addEventListener('resize', handleResize);
-    
+
     // ---------------------------
     // Submenus
     // ---------------------------
@@ -149,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
             el.classList.add('show');
             btn.classList.remove('collapsed');
             btn.setAttribute('aria-expanded', 'true');
-            
+
             const icon = btn.querySelector('.angle-icon');
             if (icon) {
                 icon.classList.add('no-transition');

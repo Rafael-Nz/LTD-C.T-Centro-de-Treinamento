@@ -1,10 +1,12 @@
 <?php
+
 namespace Avaliacao;
 
 use Avaliacao\DTO\AvaliacaoFisicaDTO;
 use Core\Database\Repository;
 
-class AvaliacaoFisicaRepository extends Repository {
+class AvaliacaoFisicaRepository extends Repository
+{
     private const REQUIRED_WRITE_COLUMNS = [
         'imc',
         'cintura',
@@ -24,13 +26,15 @@ class AvaliacaoFisicaRepository extends Repository {
         'gordura_visceral',
     ];
 
-    public function isFuncionario(int $usuarioId): bool {
+    public function isFuncionario(int $usuarioId): bool
+    {
         return $this->fetch("SELECT usuario_id FROM funcionario WHERE usuario_id = ?", [$usuarioId]) !== null;
     }
 
-    public function assertWriteSchemaIsReady(): void {
+    public function assertWriteSchemaIsReady(): void
+    {
         $columns = array_map(
-            static fn (array $column): string => (string) ($column['Field'] ?? ''),
+            static fn(array $column): string => (string) ($column['Field'] ?? ''),
             $this->fetchAll("SHOW COLUMNS FROM avaliacao_fisica")
         );
 
@@ -40,11 +44,12 @@ class AvaliacaoFisicaRepository extends Repository {
         }
 
         throw new \RuntimeException(
-            'A estrutura da tabela avaliacao_fisica esta desatualizada. Execute docs/sql/avaliacao_fisica_alter.sql para salvar a ficha completa.'
+            'A estrutura da tabela avaliacao_fisica esta desatualizada. Execute docs/sql/migrations/avaliacao_fisica_alter.sql para salvar a ficha completa.'
         );
     }
 
-    public function findById(int $id): ?array {
+    public function findById(int $id): ?array
+    {
         return $this->fetch("
             SELECT
                 af.*,
@@ -64,7 +69,8 @@ class AvaliacaoFisicaRepository extends Repository {
         ", [$id]);
     }
 
-    public function findByAlunoId(int $alunoId): array {
+    public function findByAlunoId(int $alunoId): array
+    {
         return $this->fetchAll("
             SELECT
                 af.*,
@@ -85,7 +91,8 @@ class AvaliacaoFisicaRepository extends Repository {
         ", [$alunoId]);
     }
 
-    public function create(int $alunoId, int $avaliadorId, AvaliacaoFisicaDTO $dto): int {
+    public function create(int $alunoId, int $avaliadorId, AvaliacaoFisicaDTO $dto): int
+    {
         $this->execute("
             INSERT INTO avaliacao_fisica (
                 aluno_id,
@@ -139,7 +146,8 @@ class AvaliacaoFisicaRepository extends Repository {
         return (int) $this->lastInsertId();
     }
 
-    public function update(int $id, AvaliacaoFisicaDTO $dto): void {
+    public function update(int $id, AvaliacaoFisicaDTO $dto): void
+    {
         $this->execute("
             UPDATE avaliacao_fisica SET
                 data_avaliacao = ?,

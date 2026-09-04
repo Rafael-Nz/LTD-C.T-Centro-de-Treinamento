@@ -44,7 +44,7 @@ No painel do XAMPP, inicie Apache e MySQL. O Apache precisa atender a porta usad
 ### Criar o banco de dados
 
 1. Abra o phpMyAdmin em `http://localhost/phpmyadmin`.
-2. Abra [`sql/banco.sql`](sql/banco.sql).
+2. Abra [`sql/setup/banco.sql`](sql/setup/banco.sql).
 3. Execute o script para criar o banco `db_centro_treinamento` e suas tabelas.
 
 > Atenção: esse script começa com `DROP DATABASE` e apaga o banco inteiro. Use-o somente em uma instalação nova ou depois de realizar um backup. Para uma atualização de cliente com dados existentes, use uma migration específica fornecida pelo desenvolvedor.
@@ -90,6 +90,10 @@ MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=seu-email@gmail.com
 MAIL_FROM_NAME="Cross C.T"
 ```
+
+Em produção, altere `APP_ENV` para `production`, configure `APP_ALLOWED_ORIGIN` com a origem exata da aplicação e informe credenciais próprias do banco em `DB_USERNAME` e `DB_PASSWORD`. Não use o usuário `root` nem senha vazia fora do ambiente local.
+
+As regras de senha, recuperação de acesso e limitação de tentativas estão documentadas em [`modules/auth.md`](modules/auth.md).
 
 Consulte [`modules/auth-email.md`](modules/auth-email.md) para detalhes do Gmail e do PHPMailer. O arquivo `.env` nao deve ser versionado.
 
@@ -172,12 +176,14 @@ O pacote final nao deve incluir:
 2. Inicie Apache e MySQL.
 3. Copie a aplicacao para `D:\xampp\htdocs\ctt`.
 4. Abra o phpMyAdmin em `http://localhost/phpmyadmin`.
-5. Em uma instalação nova, crie o banco executando [`sql/banco.sql`](sql/banco.sql). Se o banco já existir e tiver dados, não execute esse script: solicite uma migration ao responsável pelo sistema.
+5. Em uma instalação nova, crie o banco executando [`sql/setup/banco.sql`](sql/setup/banco.sql). Se o banco já existir e tiver dados, não execute esse script: solicite uma migration ao responsável pelo sistema.
 6. Copie `.env.example` para `.env`.
 7. Preencha o `.env` com as configuracoes fornecidas pelo responsavel pelo sistema.
 8. Acesse `http://localhost/ctt` pelo navegador.
 
 O cliente final nao deve executar comandos NPM nem instalar Node.js. O arquivo HTML do e-mail ja deve estar compilado e ser usado pelo PHPMailer.
+
+Para bancos existentes, execute a migration [`sql/migrations/student_account_activations.sql`](sql/migrations/student_account_activations.sql). Novos alunos recebem um convite por e-mail para definir a própria senha; o link de ativação é de uso único e expira em 24 horas.
 
 ### Configuracao de e-mail no cliente
 

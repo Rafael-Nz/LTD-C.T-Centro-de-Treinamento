@@ -113,7 +113,7 @@ Arquivos principais:
 
 ### 3. Banco de dados
 
-O banco e MySQL e a conexao e feita via PDO. Os scripts ficam em `docs/sql/`.
+O banco e MySQL e a conexao e feita via PDO. Os scripts SQL ficam organizados em `docs/sql/setup/` (estrutura e dados iniciais), `docs/sql/migrations/` (alteracoes de bases existentes) e `docs/sql/testes/` (seeds e dados de teste).
 
 Responsabilidades:
 

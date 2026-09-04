@@ -4,7 +4,7 @@
 
 Esta configuracao prepara o modulo de autenticacao para enviar e-mails de recuperacao de senha por SMTP usando o PHPMailer. As variaveis de ambiente sao carregadas pelo `vlucas/phpdotenv`.
 
-> A configuracao das bibliotecas e do ambiente nao substitui a implementacao do fluxo de tokens, envio e redefinicao de senha no `AuthService`.
+O fluxo de tokens, envio e redefinicao de senha e implementado pelo `AuthService`; este documento cobre apenas a configuracao do envio por e-mail.
 
 ## Dependencias
 
@@ -98,7 +98,7 @@ $password = $_ENV['MAIL_PASSWORD'];
 - Nunca publique `MAIL_PASSWORD` ou outra credencial SMTP.
 - Nao registre credenciais em logs.
 - Em producao, use `APP_URL` com HTTPS.
-- Para redefinicao de senha, use tokens aleatorios, com expiracao e uso unico.
+- O fluxo de redefinicao usa tokens aleatorios, armazenados como hash, com expiracao de 15 minutos e uso unico. As regras do fluxo estao em [`auth.md`](auth.md).
 
 ## Validacao
 

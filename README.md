@@ -78,7 +78,10 @@ ctt/
 |   |-- routes/     # definicao central das rotas da API
 |   `-- src/        # modulos por dominio (controller/service/repository/DTO)
 |-- docs/
-|   `-- sql/        # scripts SQL e estrutura inicial do banco
+|   `-- sql/        # scripts SQL organizados por finalidade
+|       |-- setup/      # estrutura e dados iniciais do banco
+|       |-- migrations/ # alteracoes de bases existentes
+|       `-- testes/     # seeds e dados de teste
 |-- public/         # assets publicos (CSS, JS, imagens)
 |-- index.php       # ponto de entrada da aplicacao principal
 `-- .htaccess       # reescrita de rotas para Apache/XAMPP

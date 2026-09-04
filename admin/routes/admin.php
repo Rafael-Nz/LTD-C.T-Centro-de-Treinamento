@@ -1,6 +1,22 @@
 <?php
-$auth = function() {
-    if (session_status() === PHP_SESSION_NONE) session_start();
+$startSession = function (): void {
+    if (session_status() !== PHP_SESSION_NONE) {
+        return;
+    }
+
+    session_name('CTTSESSID');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/ctt',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+};
+
+$auth = function () use ($startSession) {
+    $startSession();
 
     $userId = $_SESSION['user_id'] ?? null;
     $userTipo = $_SESSION['user_tipo'] ?? null;
@@ -9,7 +25,7 @@ $auth = function() {
         header('Location: /ctt/admin/login');
         exit;
     }
-    
+
     $tiposAutorizados = ['admin', 'funcionario'];
     if (!in_array($userTipo, $tiposAutorizados)) {
         // Opcional: Destruir a sessão ou apenas redirecionar com erro
@@ -18,25 +34,17 @@ $auth = function() {
     }
 };
 
-$guest = function() {
-    if (session_status() === PHP_SESSION_NONE) session_start();
+$guest = function () use ($startSession) {
+    $startSession();
     if (!empty($_SESSION['user_id'])) {
         header('Location: /ctt/admin/inicio');
         exit;
     }
 };
 
-$logoutAction = function() {
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $_SESSION = []; // Limpa os dados
-    session_destroy(); // Destrói a sessão
-    header('Location: /ctt/admin/login'); // Redireciona
-    exit;
-};
-
 // routes/admin.php
-return function($router) use ($auth, $guest, $logoutAction) {
-    
+return function ($router) use ($auth, $guest) {
+
     // Dashboard
     $router->add('', 'home.php', [], [$auth]);
     $router->add('inicio', 'home.php', [], [$auth]); // Alias para Dashboard
@@ -103,7 +111,7 @@ return function($router) use ($auth, $guest, $logoutAction) {
 
     // Autenticação
     $router->add('login', 'login.php', [], [$guest]);
-    $router->add('logout', '', [], [$logoutAction]); // Rota de logout sem view, apenas ação
+    $router->add('ativar-conta/{token}', 'ativar-conta.php');
     $router->add('esqueci-senha', 'recuperar-senha.php', [], [$guest]);
     $router->add('redefinir-senha/{token}', 'redefinir-senha.php', [], [$guest]);
 };

@@ -13,6 +13,7 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,20 +22,21 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 	<link rel="stylesheet" href="/ctt/css/admin-styles.css">
 	<link rel="stylesheet" href="/ctt/css/form.css">
 	<link rel="stylesheet" href="/ctt/css/sidebar.css">
-	<link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet"/>
-	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"/>
-	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"/>
+	<link href="https://cdn.jsdelivr.net/npm/overlayscrollbars/styles/overlayscrollbars.min.css" rel="stylesheet" />
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 	<script src="https://kit.fontawesome.com/2748b3b4b0.js" crossorigin="anonymous"></script>
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-	<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet"/>
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 </head>
+
 <body class="d-flex flex-column min-vh-100">
 	<?php include __DIR__ . '/partials/sidebar.php'; ?>
 	<?php include __DIR__ . '/partials/header.php'; ?>
-	
+
 	<main class="flex-fill d-flex" id="mainContent">
 		<div class="container-lg p-4 d-flex flex-column flex-fill">
 			<h1 class="h4 mb-4"><?= $id ? "Editar Aluno" : "Cadastrar Aluno" ?></h1>
@@ -43,7 +45,7 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 					<form id="formAluno" data-id="<?= $id ?>" action="" method="POST">
 						<?php if ($id): ?><input type="hidden" name="id" value="<?= $id ?>"><?php endif; ?>
 						<input type="hidden" name="cadastrado_por" id="cadastrado_por" value="1">
-						
+
 						<div class="row gy-4">
 							<!-- Informações Pessoais -->
 							<div class="col-12">
@@ -53,13 +55,13 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 										<label for="nome" class="form-label">Nome:</label>
 										<input type="text" name="nome" id="nome" class="form-control" placeholder="Digite o nome" required>
 									</div>
-									
+
 									<div class="col-md-6">
 										<label for="sobrenome" class="form-label">Sobrenome:</label>
 										<input type="text" name="sobrenome" id="sobrenome" class="form-control" placeholder="Digite o sobrenome" required>
 									</div>
 								</div>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-12">
 										<label for="email" class="form-label">E-mail:</label>
@@ -72,13 +74,13 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 										<label for="cpf" class="form-label">CPF:</label>
 										<input type="text" name="cpf" id="cpf" class="form-control" placeholder="___.___.___-__" maxlength="14" required>
 									</div>
-									
+
 									<div class="col-md-6">
 										<label for="nascimento" class="form-label">Data de Nascimento:</label>
 										<input type="date" name="nascimento" id="nascimento" class="form-control" required>
 									</div>
 								</div>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-6">
 										<label for="genero" class="form-label">Gênero:</label>
@@ -95,19 +97,19 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 							<!-- Contatos -->
 							<div class="col-12">
 								<h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Contatos</h3>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-6">
 										<label for="telefone1" class="form-label">Telefone (Celular):</label>
 										<input type="tel" name="telefone1" id="telefone1" class="form-control" placeholder="(__) _____-____" maxlength="15" required>
 									</div>
-									
+
 									<div class="col-md-6">
 										<label for="telefone2" class="form-label">WhatsApp (Opcional):</label>
 										<input type="tel" name="telefone2" id="telefone2" class="form-control" placeholder="(__) _____-____" maxlength="15">
 									</div>
 								</div>
-								
+
 								<div class="mb-3">
 									<label for="email2" class="form-label">E-mail Secundário:</label>
 									<input type="email" name="email2" id="email2" class="form-control" placeholder="email@exemplo.com">
@@ -117,31 +119,31 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 							<!-- Endereço -->
 							<div class="col-12">
 								<h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Endereço</h3>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-8">
 										<label for="endereco" class="form-label">Logradouro/Rua:</label>
 										<input type="text" name="endereco" id="endereco" class="form-control" placeholder="Rua, Avenida, etc." required>
 									</div>
-									
+
 									<div class="col-md-4">
 										<label for="numero" class="form-label">Nº:</label>
 										<input type="text" name="numero" id="numero" class="form-control" placeholder="Ex: 123" required>
 									</div>
 								</div>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-6">
 										<label for="cidade" class="form-label">Cidade:</label>
 										<input type="text" name="cidade" id="cidade" class="form-control" placeholder="Ex: São Luís" required>
 									</div>
-									
+
 									<div class="col-md-6">
 										<label for="bairro" class="form-label">Bairro:</label>
 										<input type="text" name="bairro" id="bairro" class="form-control" placeholder="Ex: Centro" required>
 									</div>
 								</div>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-6">
 										<label for="cep" class="form-label">CEP:</label>
@@ -154,7 +156,7 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 									</div>
 									<div class="col-md-6"></div>
 								</div>
-								
+
 								<div class="mb-3">
 									<label for="complemento" class="form-label">Complemento (Opcional):</label>
 									<textarea name="complemento" id="complemento" class="form-control" rows="3" placeholder="Complemento do endereço (opcional)" style="resize: none;"></textarea>
@@ -166,11 +168,11 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 								<h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Informações Médicas</h3>
 								<div id="anamnese-container"></div>
 							</div>
-							
+
 							<!-- Informações da Matrícula -->
 							<div class="col-12">
 								<h3 class="h6 mb-3 section-title border-bottom border-1 pb-1">Informações da Matrícula</h3>
-								
+
 								<div class="row g-3 mb-3">
 									<div class="col-md-6">
 										<label for="dataMatricula" class="form-label">Data de Matrícula:</label>
@@ -179,7 +181,7 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 									<div class="col-md-6">
 										<label for="turma" class="form-label">Turma:</label>
 										<select class="form-select" id="turma" name="turma" required>
-										<option value="" selected disabled>Selecione uma turma</option>
+											<option value="" selected disabled>Selecione uma turma</option>
 										</select>
 									</div>
 								</div>
@@ -210,4 +212,5 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 	<script src="/ctt/js/admin/form/anamnese.js"></script>
 	<script src="/ctt/js/admin/form/aluno_form.js"></script>
 </body>
+
 </html>

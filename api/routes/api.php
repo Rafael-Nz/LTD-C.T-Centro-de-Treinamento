@@ -1,4 +1,5 @@
 <?php
+
 /**
  * api/routes/api.php
  *
@@ -27,9 +28,10 @@ Router::get('/relatorios/gerar', [RelatorioController::class, 'gerar'], $auth);
 Router::get('/relatorios/exportar', [RelatorioController::class, 'exportar'], $auth);
 
 Router::post('/auth/login', [AuthController::class, 'login']);
-Router::post('/auth/logout', [AuthController::class, 'logout']);
+Router::post('/auth/logout', [AuthController::class, 'logout'], $auth);
 Router::post('/auth/recuperar-senha', [AuthController::class, 'requestPasswordReset']);
 Router::post('/auth/redefinir-senha', [AuthController::class, 'resetPassword']);
+Router::post('/auth/ativar-conta', [AuthController::class, 'activateStudent']);
 
 Router::get('/usuarios', [UsuarioController::class, 'index'], $auth);
 Router::get('/usuarios/me', [UsuarioController::class, 'me'], $auth);

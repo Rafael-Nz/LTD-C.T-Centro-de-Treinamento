@@ -86,7 +86,18 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
     {
         $usuario = $this->fetch("
             SELECT
-                u.*,
+                u.id,
+                u.nome,
+                u.sobrenome,
+                u.cpf,
+                u.email,
+                u.data_nascimento,
+                u.genero,
+                u.endereco_id,
+                u.tipo_usuario,
+                u.ativo,
+                u.data_criacao,
+                u.data_atualizacao,
                 e.logradouro,
                 e.numero,
                 e.cidade,
@@ -125,7 +136,7 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
             $dto->sobrenome,
             $dto->cpf,
             $dto->email,
-            password_hash($dto->senha ?? $dto->cpf, PASSWORD_ARGON2ID), // Gera senha a partir do CPF se não for fornecida
+            password_hash($dto->senha, PASSWORD_ARGON2ID),
             $dto->data_nascimento,
             $dto->genero,
             $enderecoId,
@@ -249,6 +260,108 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
             'UPDATE password_resets SET used_at = NOW()
              WHERE id = ? AND used_at IS NULL',
             [$resetId]
+        );
+    }
+
+    public function createStudentActivationToken(int $usuarioId, string $tokenHash, string $expiresAt): void
+    {
+        $this->execute(
+            'INSERT INTO student_account_activations (usuario_id, token_hash, expires_at)
+             VALUES (?, ?, ?)',
+            [$usuarioId, $tokenHash, $expiresAt]
+        );
+    }
+
+    public function deleteStudentActivationTokens(int $usuarioId): void
+    {
+        $this->execute('DELETE FROM student_account_activations WHERE usuario_id = ?', [$usuarioId]);
+    }
+
+    public function findValidStudentActivation(string $tokenHash): ?array
+    {
+        return $this->fetch(
+            'SELECT a.id, a.usuario_id, u.nome, u.email
+             FROM student_account_activations a
+             INNER JOIN usuario u ON u.id = a.usuario_id
+             INNER JOIN aluno al ON al.usuario_id = u.id
+             WHERE a.token_hash = ?
+               AND a.used_at IS NULL
+               AND a.expires_at > NOW()
+               AND u.ativo = 0
+             LIMIT 1',
+            [$tokenHash]
+        );
+    }
+
+    public function activateStudentAccount(int $usuarioId, int $activationId, string $passwordHash): void
+    {
+        $this->execute(
+            'UPDATE usuario SET senha = ?, ativo = 1 WHERE id = ? AND ativo = 0',
+            [$passwordHash, $usuarioId]
+        );
+        $this->execute(
+            'UPDATE student_account_activations SET used_at = NOW()
+             WHERE id = ? AND usuario_id = ? AND used_at IS NULL',
+            [$activationId, $usuarioId]
+        );
+    }
+
+    public function isAuthRateLimited(string $action, string $identifier, string $ip, int $maxAttempts, int $windowSeconds): bool
+    {
+        $row = $this->findAuthRateLimit($action, $identifier, $ip);
+        if (!$row) {
+            return false;
+        }
+
+        if (strtotime($row['window_started_at']) <= time() - $windowSeconds) {
+            $this->clearAuthAttempts($action, $identifier, $ip);
+            return false;
+        }
+
+        return (int) $row['attempts'] >= $maxAttempts
+            || ($row['blocked_until'] !== null && strtotime($row['blocked_until']) > time());
+    }
+
+    public function recordAuthAttempt(string $action, string $identifier, string $ip, int $maxAttempts, int $windowSeconds, int $blockSeconds): void
+    {
+        $actionHash = hash('sha256', $action . '|' . strtolower($identifier));
+        $ipHash = hash('sha256', $ip);
+        $row = $this->findAuthRateLimit($action, $identifier, $ip);
+
+        if (!$row || strtotime($row['window_started_at']) <= time() - $windowSeconds) {
+            $this->execute(
+                'INSERT INTO auth_rate_limits (action, identifier_hash, ip_hash, attempts, window_started_at, blocked_until)
+                 VALUES (?, ?, ?, 1, NOW(), NULL)
+                 ON DUPLICATE KEY UPDATE attempts = 1, window_started_at = NOW(), blocked_until = NULL',
+                [$action, $actionHash, $ipHash]
+            );
+            return;
+        }
+
+        $attempts = (int) $row['attempts'] + 1;
+        $blockedUntil = $attempts >= $maxAttempts ? date('Y-m-d H:i:s', time() + $blockSeconds) : null;
+        $this->execute(
+            'UPDATE auth_rate_limits SET attempts = ?, blocked_until = ? WHERE action = ? AND identifier_hash = ? AND ip_hash = ?',
+            [$attempts, $blockedUntil, $action, $actionHash, $ipHash]
+        );
+    }
+
+    public function clearAuthAttempts(string $action, string $identifier, string $ip): void
+    {
+        $this->execute(
+            'DELETE FROM auth_rate_limits WHERE action = ? AND identifier_hash = ? AND ip_hash = ?',
+            [$action, hash('sha256', $action . '|' . strtolower($identifier)), hash('sha256', $ip)]
+        );
+    }
+
+    private function findAuthRateLimit(string $action, string $identifier, string $ip): ?array
+    {
+        return $this->fetch(
+            'SELECT attempts, window_started_at, blocked_until
+             FROM auth_rate_limits
+             WHERE action = ? AND identifier_hash = ? AND ip_hash = ?
+             LIMIT 1',
+            [$action, hash('sha256', $action . '|' . strtolower($identifier)), hash('sha256', $ip)]
         );
     }
 }

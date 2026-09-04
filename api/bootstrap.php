@@ -8,8 +8,6 @@
 
 // 1. CONFIGURAÇÕES INICIAIS
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 date_default_timezone_set('America/Fortaleza');
@@ -18,6 +16,10 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
+
+$isDevelopment = ($_ENV['APP_ENV'] ?? 'production') === 'development';
+ini_set('display_errors', $isDevelopment ? '1' : '0');
+ini_set('display_startup_errors', $isDevelopment ? '1' : '0');
 
 // 2. AUTOLOAD (PSR-4)
 
@@ -47,9 +49,21 @@ spl_autoload_register(function ($class) {
 // 3. HEADERS HTTP (CORS e Content-Type)
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
+$allowedOrigin = trim($_ENV['APP_ALLOWED_ORIGIN'] ?? '');
+$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($allowedOrigin !== '' && hash_equals($allowedOrigin, $requestOrigin)) {
+    header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+    header('Access-Control-Allow-Credentials: true');
+    header('Vary: Origin');
+}
+
+\Core\Auth\Csrf::token();
 
 // Responde a pre-flight requests (CORS)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

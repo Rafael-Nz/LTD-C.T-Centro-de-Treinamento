@@ -150,6 +150,32 @@ body {
     line-height: 1.4;
 }
 
+.password-rules {
+    padding: 0;
+    margin: 8px 0 0;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+.password-rule {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.password-rule i {
+    color: #dc3545;
+}
+
+.password-rule.valid {
+    color: #75b798;
+}
+
+.password-rule.valid i {
+    color: #198754;
+}
+
 .large-icon {
     font-size: 3rem;
     color: var(--bg-thema);

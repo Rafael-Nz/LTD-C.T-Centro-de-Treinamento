@@ -1,10 +1,12 @@
 <?php
+
 namespace Core\Database;
 
 use PDO;
 use PDOException;
 
-class Database {
+class Database
+{
     private static ?PDO $connection = null;
     private static string $host = 'localhost';
     private static string $db = 'db_centro_treinamento';
@@ -13,7 +15,8 @@ class Database {
     private static string $port = '3306';
     private static string $charset = 'utf8mb4';
 
-    public static function getConnection(): PDO {
+    public static function getConnection(): PDO
+    {
         if (self::$connection === null) {
             self::connect();
         }
@@ -21,8 +24,15 @@ class Database {
         return self::$connection;
     }
 
-    private static function connect(): void {
+    private static function connect(): void
+    {
         try {
+            self::$host = $_ENV['DB_HOST'] ?? self::$host;
+            self::$db = $_ENV['DB_DATABASE'] ?? self::$db;
+            self::$user = $_ENV['DB_USERNAME'] ?? self::$user;
+            self::$pass = $_ENV['DB_PASSWORD'] ?? self::$pass;
+            self::$port = $_ENV['DB_PORT'] ?? self::$port;
+
             $dsn = sprintf(
                 "mysql:host=%s;port=%s;dbname=%s;charset=%s",
                 self::$host,
@@ -38,7 +48,6 @@ class Database {
                 PDO::ATTR_PERSISTENT => false,
                 PDO::ATTR_TIMEOUT => 5,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
             ];
 
             self::$connection = new PDO($dsn, self::$user, self::$pass, $options);
@@ -49,7 +58,8 @@ class Database {
         }
     }
 
-    private static function handleError(PDOException $e): void {
+    private static function handleError(PDOException $e): void
+    {
         $date = new \DateTime('now', new \DateTimeZone('America/Fortaleza'));
 
         error_log(sprintf(
@@ -63,7 +73,8 @@ class Database {
         throw $e;
     }
 
-    public static function now(): string {
+    public static function now(): string
+    {
         $stmt = self::getConnection()->query("SELECT NOW()");
         return $stmt->fetchColumn();
     }

@@ -1,31 +1,37 @@
 <?php
+
 namespace Auth;
 
 use Core\Http\Controller;
 use Auth\DTO\LoginDTO;
+use Core\Auth\AuthRateLimitException;
 use Throwable;
 
-class AuthController extends Controller {
-    
+class AuthController extends Controller
+{
+
     private AuthService $authService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->authService = new AuthService();
     }
 
-    public function login() {
+    public function login()
+    {
         $this->only('POST');
 
         try {
             $dto = LoginDTO::fromArray($this->body());
-            
+
             if (empty($dto->login) || empty($dto->senha)) {
                 $this->error("Login e senha são obrigatórios.");
             }
 
             $user = $this->authService->login($dto);
             $this->json(['message' => 'Login realizado com sucesso', 'user' => $user]);
-            
+        } catch (AuthRateLimitException $e) {
+            $this->error($e->getMessage(), 429);
         } catch (\PDOException $e) {
             $this->error("Algo deu errado. Por favor, tente novamente em instantes.", 500);
         } catch (Throwable $e) {
@@ -33,12 +39,14 @@ class AuthController extends Controller {
         }
     }
 
-    public function logout() {
+    public function logout()
+    {
         $this->authService->logout();
         $this->json(['message' => 'Sessão encerrada com sucesso.']);
     }
 
-    public function requestPasswordReset() {
+    public function requestPasswordReset()
+    {
         $this->only('POST');
         try {
             $email = $this->body()['email'] ?? '';
@@ -47,9 +55,11 @@ class AuthController extends Controller {
             }
 
             $this->authService->generatePasswordResetToken($email);
-            
+
             // Mensagem genérica por segurança: não revela se o e-mail existe
             $this->json(['message' => 'Se o e-mail estiver cadastrado, um link de recuperação será enviado.']);
+        } catch (AuthRateLimitException $e) {
+            $this->error($e->getMessage(), 429);
         } catch (\PDOException $e) {
             $this->error("Algo deu errado. Tente novamente em instantes.", 500);
         } catch (Throwable $e) {
@@ -57,20 +67,39 @@ class AuthController extends Controller {
         }
     }
 
-    public function resetPassword() {
+    public function resetPassword()
+    {
         $this->only('POST');
         try {
             $body = $this->body();
             // Em um sistema real, você usaria um ResetPasswordDTO aqui
             $this->authService->updatePasswordWithToken(
-                $body['token'], 
-                $body['nova_senha'], 
+                $body['token'],
+                $body['nova_senha'],
                 $body['confirmar_senha']
             );
 
             $this->json(['message' => 'Senha redefinida com sucesso!']);
         } catch (\PDOException $e) {
             $this->error("Erro ao conectar ao banco.", 500);
+        } catch (Throwable $e) {
+            $this->error($e->getMessage(), 400);
+        }
+    }
+
+    public function activateStudent()
+    {
+        $this->only('POST');
+        try {
+            $body = $this->body();
+            $this->authService->activateStudent(
+                (string) ($body['token'] ?? ''),
+                (string) ($body['nova_senha'] ?? ''),
+                (string) ($body['confirmar_senha'] ?? '')
+            );
+            $this->json(['message' => 'Conta ativada com sucesso.']);
+        } catch (\PDOException $e) {
+            $this->error('Erro ao conectar ao banco.', 500);
         } catch (Throwable $e) {
             $this->error($e->getMessage(), 400);
         }

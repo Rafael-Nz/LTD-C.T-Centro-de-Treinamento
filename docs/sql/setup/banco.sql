@@ -51,6 +51,30 @@ CREATE TABLE password_resets (
     INDEX idx_password_resets_expires_at (expires_at)
 );
 
+CREATE TABLE auth_rate_limits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(32) NOT NULL,
+    identifier_hash CHAR(64) NOT NULL,
+    ip_hash CHAR(64) NOT NULL,
+    attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    window_started_at DATETIME NOT NULL,
+    blocked_until DATETIME NULL,
+    UNIQUE KEY uq_auth_rate_limit (action, identifier_hash, ip_hash),
+    INDEX idx_auth_rate_limits_blocked (blocked_until)
+);
+
+CREATE TABLE student_account_activations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    INDEX idx_student_activation_usuario (usuario_id),
+    INDEX idx_student_activation_expires (expires_at)
+);
+
 CREATE TABLE funcionario (
     usuario_id INT PRIMARY KEY,
     cargo_id INT NOT NULL,

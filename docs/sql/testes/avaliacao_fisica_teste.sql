@@ -1,8 +1,8 @@
 -- Seed de apoio para testar o formulario e o historico de avaliacao fisica
 -- Dependencias esperadas:
--- 1. docs/sql/aluno_teste.sql
--- 2. docs/sql/gerenciar_turma_seed.sql
--- 3. docs/sql/avaliacao_fisica_alter.sql em bases antigas
+-- 1. Dados de um aluno de teste previamente cadastrado
+-- 2. docs/sql/testes/gerenciar_turma_seed.sql
+-- 3. docs/sql/migrations/avaliacao_fisica_alter.sql em bases antigas
 
 START TRANSACTION;
 

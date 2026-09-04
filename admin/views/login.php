@@ -55,7 +55,8 @@
     </div>
 
     <div class="text-center mt-4">
-      <a href="../home.php" class="back-link">
+      /* modifiquei o essa linha de ../home.php para /ctt/ */
+      <a href="/ctt/" class="back-link">
         <i class="ph ph-arrow-left me-1"></i> Página Inicial
       </a>
     </div>

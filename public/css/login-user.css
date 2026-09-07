@@ -128,7 +128,7 @@ body {
    BOTÃO
    ========================================================= */
 
-.login-user-card input[type="button"] {
+.login-user-card input[type="submit"] {
     width: 100%;
     padding: 14px;
     border-radius: 8px;
@@ -140,6 +140,6 @@ body {
     cursor: pointer;
 }
 
-.login-user-card input[type="button"]:hover {
+.login-user-card input[type="submit"]:hover {
     background-color: var(--primary-red-hover);
 }

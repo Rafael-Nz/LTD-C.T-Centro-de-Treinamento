@@ -14,13 +14,13 @@
         <h1>Cross C.T</h1>
         <p>Acesse sua conta para continuar</p>
         
-        <form action="">
+        <form action="/ctt/dashboardaluno" method="post">
             <label for="uEmail">E-mail:</label>
-            <input type="email" id="uEmail" placeholder="nome@email.com">
+            <input type="email" id="uEmail" placeholder="nome@email.com" required>
             <label for="uSenha">Senha:</label>
-            <input type="password" id="uSenha" placeholder="●●●●●●●●">
+            <input type="password" id="uSenha" placeholder="●●●●●●●●" required>
             <a href="#">Esqueceu a senha?</a>
-            <input type="button" value="Entrar">
+            <input type="submit" value="Entrar">
         </form>
 
     </div>

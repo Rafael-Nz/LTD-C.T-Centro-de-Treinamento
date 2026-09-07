@@ -24,7 +24,7 @@
 
             <div class="nav-actions">
                 <a href="/ctt/admin/login" class="nav-link">Login do Admin</a>
-                <a href="#" class="btn-primary">Sign In usuário</a>
+                <a href="/ctt/loginuser" class="btn-primary">Sign In usuário</a>
             </div>
         </nav>
      </header>

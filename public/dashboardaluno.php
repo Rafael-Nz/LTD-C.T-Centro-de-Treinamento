@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/dashboard-aluno.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <title>Painel do Aluno</title>
 </head>
 <body>
-    <div class="dashboard">
-        <aside class="sidebar">
+    <div class="d-flex vh-100">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <img src="<?= PUBLIC_URL ?>img/logo.png" alt="Cross C.T">
                 <span>Cross C.T</span>
             </div>
 
-            <nav class="sidebar-nav">
+            <nav class="d-flex flex-column gap-1">
                 <a href="#" class="sidebar-link active">Dados Pessoais</a>
                 <a href="#" class="sidebar-link">Matrícula</a>
                 <a href="#" class="sidebar-link">Avaliações</a>
@@ -24,25 +26,30 @@
             </nav>
         </aside>
 
-        <div class="dashboard-content">
-            <header class="topbar">
-                <span class="topbar-welcome">Olá, Nome do Usuário</span>
-                <a href="/ctt/loginuser" class="topbar-logout">Sair</a>
+        <div class="d-flex flex-column flex-grow-1 min-width-0">
+            <header class="topbar d-flex align-items-center justify-content-between px-4 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn-menu d-lg-none" id="btnMenu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <span class="topbar-welcome">Olá, Nome do Usuário</span>
+                </div>
+                <a href="/ctt/loginuser" class="btn btn-danger btn-sm fw-semibold">Sair</a>
             </header>
-            
-            <main class="content">
+
+            <main class="p-4 flex-grow-1">
                 <h2 class="content-title">Dados Pessoais</h2>
 
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex align-items-center gap-3">
                         <div class="avatar">CS</div>
                         <div>
-                            <p class="avatar-name">Nome do Usuário</p>
-                            <p class="avatar-status">Aluno ativo</p>
+                            <p class="avatar-name mb-0">Nome do Usuário</p>
+                            <p class="avatar-status mb-0">Aluno ativo</p>
                         </div>
                     </div>
 
-                    <div class="card-rows">
+                    <div class="card-body p-0">
                         <div class="card-row">
                             <span class="card-label">Nome completo</span>
                             <span class="card-value">Nome do usuário</span>
@@ -76,10 +83,10 @@
             </main>
         </div>
     </div>
-    <script>
-        document.querySelector('.sidebar-logo').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
-        });
-    </script>
+
+    <div class="sidebar-overlay d-none" id="sidebarOverlay"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= PUBLIC_URL ?>sidebar_aluno.js"></script>
 </body>
 </html>

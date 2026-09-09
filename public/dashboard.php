@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/dashboard-aluno.css">
+    <link rel="stylesheet" href="<?= PUBLIC_URL ?>dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <title>Painel do Aluno</title>
@@ -18,11 +18,11 @@
             </div>
 
             <nav class="d-flex flex-column gap-1">
-                <a href="#" class="sidebar-link active">Dados Pessoais</a>
-                <a href="#" class="sidebar-link">Matrícula</a>
-                <a href="#" class="sidebar-link">Avaliações</a>
-                <a href="#" class="sidebar-link">Horários</a>
-                <a href="#" class="sidebar-link">Mensalidade</a>
+                <a href="#" class="sidebar-link active"><i class="bi bi-person me-2"></i><span>Dados Pessoais</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-card-checklist me-2"></i><span>Matrícula</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-clipboard-data me-2"></i><span>Avaliações</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-clock me-2"></i><span>Horários</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-wallet2 me-2"></i><span>Mensalidade</span></a>
             </nav>
         </aside>
 
@@ -34,7 +34,7 @@
                     </button>
                     <span class="topbar-welcome">Olá, Nome do Usuário</span>
                 </div>
-                <a href="/ctt/loginuser" class="btn btn-danger btn-sm fw-semibold">Sair</a>
+                <a href="/ctt/login" class="btn btn-danger btn-sm fw-semibold">Sair</a>
             </header>
 
             <main class="p-4 flex-grow-1">
@@ -87,6 +87,6 @@
     <div class="sidebar-overlay d-none" id="sidebarOverlay"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= PUBLIC_URL ?>sidebar_aluno.js"></script>
+    <script src="<?= PUBLIC_URL ?>sidebar.js"></script>
 </body>
 </html>

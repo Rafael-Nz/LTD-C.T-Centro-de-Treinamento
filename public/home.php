@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T - Centro de Treinamento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= PUBLIC_URL ?>css/home.css">
+    <link rel="stylesheet" href="<?= PUBLIC_URL ?>home.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
@@ -31,7 +31,7 @@
 
                 <div class="d-flex align-items-center gap-3">
                     <a href="/ctt/admin/login" class="nav-link">Log In Admin</a>
-                    <a href="/ctt/loginuser" class="btn btn-danger btn-sm fw-semibold">Log In Aluno</a>
+                    <a href="/ctt/login" class="btn btn-danger btn-sm fw-semibold">Log In Aluno</a>
                 </div>
             </div>
         </nav>

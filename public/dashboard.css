@@ -49,8 +49,13 @@ body {
 }
 
 .sidebar.collapsed .sidebar-logo span,
-.sidebar.collapsed .sidebar-link {
+.sidebar.collapsed .sidebar-link span {
     display: none;
+}
+
+.sidebar.collapsed .sidebar-link {
+    text-align: center;
+    padding: 10px 0;
 }
 
 .sidebar.collapsed .sidebar-logo {

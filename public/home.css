@@ -1,0 +1,234 @@
+/* =========================================================
+   VARIÁVEIS
+   ========================================================= */
+
+:root {
+    --primary-red: #dc3545;
+    --primary-red-hover: #bb2d3b;
+    --dark: #1a1a1e;
+    --text-dark: #2c3e50;
+    --text-muted: #495057;
+    --text-light: #adb5bd;
+    --white: #fff;
+    --border: #e9ecef;
+    --bg-light: #f8f9fa;
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+}
+
+/* =========================================================
+   NAVBAR MOBILE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: var(--white);
+        padding: 16px;
+        border-top: 1px solid var(--border);
+    }
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero {
+    background-color: var(--dark);
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.hero-text {
+    color: var(--white);
+}
+
+.hero-text h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.hero-imagem-ct {
+    overflow: hidden;
+}
+
+/* =========================================================
+   BENEFÍCIOS
+   ========================================================= */
+
+.beneficio-card {
+    background-color: var(--dark);
+    border-radius: 24px;
+    height: 320px;
+    position: relative;
+}
+
+.beneficio-body {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    color: var(--white);
+}
+
+/* =========================================================
+   PLANOS
+   ========================================================= */
+
+.planos {
+    background-color: var(--dark);
+}
+
+.planos-subtitulo {
+    color: var(--text-light);
+}
+
+.plano-card {
+    background-color: var(--white);
+    padding: 32px;
+    border-radius: 12px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.plano-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.plano-preco {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-red);
+    margin-bottom: 24px;
+}
+
+.plano-preco span {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+.plano-itens {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 32px;
+    flex: 1;
+}
+
+.plano-itens li {
+    padding-bottom: 10px;
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.plano-itens li::before {
+    content: '✓  ';
+    color: var(--primary-red);
+    font-weight: 700;
+}
+
+.btn-plano {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    border: 2px solid var(--primary-red);
+    color: var(--primary-red);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-plano:hover {
+    background-color: var(--primary-red);
+    color: var(--white);
+}
+
+.plano-destaque {
+    background-color: var(--primary-red);
+}
+
+.plano-destaque h3,
+.plano-destaque .plano-preco,
+.plano-destaque .plano-itens li {
+    color: var(--white);
+}
+
+.plano-destaque .plano-preco span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.plano-destaque .plano-itens li::before {
+    color: var(--white);
+}
+
+.plano-destaque .btn-plano {
+    background-color: var(--white);
+    color: var(--primary-red);
+    border-color: var(--white);
+}
+
+.plano-destaque .btn-plano:hover {
+    background-color: var(--primary-red-hover);
+    color: var(--white);
+    border-color: var(--text-light);
+}
+
+/* =========================================================
+   SEÇÃO FINAL
+   ========================================================= */
+
+.secao-final {
+    border-bottom: 3px solid var(--border);
+}
+
+.secao-final h2 {
+    font-size: 32px;
+}
+
+.secao-final p {
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.footer-link {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.footer-link:hover {
+    color: var(--primary-red);
+}
+
+.footer-social {
+    color: var(--text-muted);
+    font-size: 20px;
+    text-decoration: none;
+}
+
+.footer-social:hover {
+    color: var(--primary-red);
+}
+
+.footer-copy {
+    color: var(--text-light);
+    font-size: 13px;
+}

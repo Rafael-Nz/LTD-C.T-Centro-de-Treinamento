@@ -55,7 +55,23 @@ Rotas novas: `POST /financeiro/cobrancas/gerar-automaticas`, `POST /financeiro/c
 
 ## Testes
 
-`tools/test_financeiro.php` recusa conexao com o banco normal: exige servidor MariaDB isolado em 127.0.0.1:33317 e diretorio de dados `ctt-financeiro-*`. `--setup` prepara esse banco; `--migration` tambem verifica a migracao sobre a estrutura anterior. A execucao sem argumentos testa centavos, datas, calendario, parciais, reenvios, estornos, cancelamentos, auditoria, rollback simulado e duas conexoes concorrentes (com chaves diferentes e com a mesma chave). Usa o seed de teste; o marcador legado de auditoria do seed e omitido por incompatibilidade de INSERT SELECT nessa versao do MariaDB.
+Execute a suite rapida, sem acessar o MySQL, antes de cada commit:
+
+```powershell
+composer test
+```
+
+Esse comando cobre calendario de cobrancas, regras de edicao e status, paginacao, filtros, contagens, saldos e exclusao de pagamentos estornados. Os testes de repositorio usam SQLite em memoria e o teste de acoes usa um repositorio falso; nenhum deles depende do banco da aplicacao.
+
+Os cenarios completos exigem um MariaDB isolado em `127.0.0.1:33317`, com diretorio de dados cujo caminho contenha `ctt-financeiro-`. O teste recusa qualquer outro servidor para proteger o banco normal. Com o servidor isolado em execucao, use:
+
+```powershell
+composer test:financeiro:setup
+composer test:financeiro:integracao
+composer test:financeiro:migracao
+```
+
+O setup recria `ctt_financeiro_test` e aplica o seed. A integracao testa centavos, datas, calendario, pagamentos parciais, reenvios, estornos, cancelamentos, auditoria, rollback e duas conexoes concorrentes. O teste de migracao simula a estrutura anterior, aplica `financeiro_seguranca.sql` e verifica a compatibilidade dos contratos existentes. O marcador legado de auditoria do seed e omitido por incompatibilidade de `INSERT SELECT` nessa versao do MariaDB.
 
 ## Rotas
 

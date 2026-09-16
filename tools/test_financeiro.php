@@ -119,7 +119,8 @@ $results = [];
 foreach ($processes as [$process, $pipes]) { $results[] = stream_get_contents($pipes[1]); $err = stream_get_contents($pipes[2]); fclose($pipes[1]); fclose($pipes[2]); check(proc_close($process) === 0, $err); }
 check($results[0] === $results[1] && str_starts_with($results[0], 'PAGO:') && count($repo->pagamentos($retryInvoice)) === 1, 'Retries simultaneos duplicados');
 
-$service->configurarGeracao($contrato, true);
+// A geracao e obrigatoria para todo contrato ativo, inclusive registros legados
+// cujo indicador geracao_automatica ainda esteja desabilitado.
 $first = $service->gerarAutomaticas('2026-09-14');
 $repeat = $service->gerarAutomaticas('2026-09-14');
 check($first['geradas'] === 5 && $repeat['geradas'] === 0, 'Geracao nao idempotente');

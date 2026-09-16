@@ -14,6 +14,7 @@ class RepositorioAcoesTeste extends \Financeiro\FinanceiroRepository {
     public function salvarStatusContrato(int $id, string $status): void { $this->contratoTeste['status'] = $status; }
 }
 class ServicoAcoesTeste extends \Financeiro\FinanceiroService {
+    public function __construct() {}
     protected function transaction(callable $callback) { return $callback(); }
 }
 $repo = new RepositorioAcoesTeste();

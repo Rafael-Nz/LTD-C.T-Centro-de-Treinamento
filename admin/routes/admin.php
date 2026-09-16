@@ -95,6 +95,21 @@ return function ($router) use ($auth, $guest) {
     $router->add('relatorios/alunos', 'relatorios.php', ['tipo' => 'alunos'], [$auth]);
     $router->add('relatorios/financeiro', 'relatorios.php', ['tipo' => 'financeiro'], [$auth]);
 
+    // Financeiro
+    $router->add('financeiro', 'financeiro.php', [], [$auth]);
+    $router->add('financeiro/servicos', 'financeiro_servicos.php', [], [$auth]);
+    $router->add('financeiro/planos', 'financeiro_planos.php', [], [$auth]);
+    $router->add('financeiro/servicos/cadastrar', 'servico_form.php', [], [$auth]);
+    $router->add('financeiro/planos/cadastrar', 'plano_form.php', [], [$auth]);
+    $router->add('financeiro/servicos/editar/{id}', 'servico_form.php', [], [$auth]);
+    $router->add('financeiro/planos/editar/{id}', 'plano_form.php', [], [$auth]);
+    $router->add('financeiro/contratos', '', [], [$auth, static function () {
+        header('Location: /ctt/admin/financeiro');
+        exit;
+    }]);
+    $router->add('financeiro/cobrancas', 'financeiro_cobrancas.php', [], [$auth]);
+    $router->add('financeiro/contratos/cadastrar', 'contrato_form.php', ['acao' => 'cadastrar'], [$auth]);
+
     // Cargos
     $router->add('cargos', 'configuracoes.php', ['tab' => 'cargos'], [$auth]);
     $router->add('cargos/cadastrar', 'cargo_form.php', ['acao' => 'cadastrar'], [$auth]);

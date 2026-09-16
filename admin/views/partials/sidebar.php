@@ -1,49 +1,56 @@
 <?php
-function currentRoute(): string {
-    return trim($_GET['url'] ?? '', '/');
+function currentRoute(): string
+{
+  return trim($_GET['url'] ?? '', '/');
 }
 
-function routeIs($patterns): bool {
-    $current = currentRoute();
+function routeIs($patterns): bool
+{
+  $current = currentRoute();
 
-    foreach ((array)$patterns as $pattern) {
-        $pattern = trim($pattern, '/');
+  foreach ((array)$patterns as $pattern) {
+    $pattern = trim($pattern, '/');
 
-        // dashboard (rota vazia)
-        if ($pattern === '') {
-            if ($current === '') return true;
-            continue;
-        }
-
-        // wildcard tipo alunos.*
-        if (str_ends_with($pattern, '.*')) {
-            $base = substr($pattern, 0, -2);
-            if ($current === $base || str_starts_with($current, $base . '/')) {
-                return true;
-            }
-        }
-
-        // match exato
-        if ($current === $pattern) {
-            return true;
-        }
+    // dashboard (rota vazia)
+    if ($pattern === '') {
+      if ($current === '') return true;
+      continue;
     }
 
-    return false;
+    // wildcard tipo alunos.*
+    if (str_ends_with($pattern, '.*')) {
+      $base = substr($pattern, 0, -2);
+      if ($current === $base || str_starts_with($current, $base . '/')) {
+        return true;
+      }
+    }
+
+    // match exato
+    if ($current === $pattern) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
-function navActive($patterns, $class = 'active root'): string {
-    return routeIs($patterns) ? $class : '';
+function navActive($patterns, $class = 'active root'): string
+{
+  return routeIs($patterns) ? $class : '';
 }
 
-function navHref($path): string {
-    return BASE_URL . ltrim($path, '/');
+function navHref($path): string
+{
+  return BASE_URL . ltrim($path, '/');
 }
 ?>
 
-<?php $isUserOpen = routeIs(['alunos.*', 'funcionarios.*']); ?>
+<?php
+$isUserOpen = routeIs(['alunos.*', 'funcionarios.*']);
+$isFinanceOpen = routeIs(['financeiro.*']);
+?>
 <script>
-  (function () {
+  (function() {
     document.body.classList.add('sidebar-initializing');
 
     const isDesktop = window.innerWidth > 768;
@@ -80,7 +87,7 @@ function navHref($path): string {
 
     <!-- Navegação -->
     <ul class="nav flex-column nav-sidebar">
-      
+
       <!-- Dashboard -->
       <li class="nav-item mt-2">
         <a href="<?= navHref('/') ?>" class="nav-link text-white d-flex align-items-center <?= navActive(['', 'inicio']) ?>">
@@ -125,10 +132,44 @@ function navHref($path): string {
                 <i class="ph ph-users-three me-2 nav-icon"></i>Alunos
               </a>
             </li>
-            
+
             <li class="nav-item">
               <a href="<?= navHref('/funcionarios') ?>" class="nav-link text-light <?= navActive('funcionarios.*', 'active') ?>">
                 <i class="ph ph-users-three me-2 nav-icon"></i>Funcionários
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Módulo: Gerenciar Financeiro -->
+      <li class="nav-item">
+        <button class="btn nav-link text-white d-flex align-items-center w-100 btn-toggle <?= $isFinanceOpen ? 'active root' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#submenuFinanceiro" aria-expanded="<?= $isFinanceOpen ? 'true' : 'false' ?>">
+          <span class="nav-icon-wrapper"><i class="ph ph-wallet nav-icon"></i></span>
+          <span class="nav-link-text">Gerenciar Financeiro</span>
+          <i class="ph ph-caret-down angle-icon"></i>
+        </button>
+
+        <div class="collapse ps-3 <?= $isFinanceOpen ? 'show' : '' ?>" id="submenuFinanceiro">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a href="<?= navHref('/financeiro') ?>" class="nav-link text-light <?= navActive(['financeiro', 'financeiro/contratos.*'], 'active') ?>">
+                <i class="ph ph-chart-line-up me-2 nav-icon"></i>Visão geral
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?= navHref('/financeiro/servicos') ?>" class="nav-link text-light <?= navActive('financeiro/servicos.*', 'active') ?>">
+                <i class="ph ph-tag me-2 nav-icon"></i>Serviços
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?= navHref('/financeiro/planos') ?>" class="nav-link text-light <?= navActive('financeiro/planos.*', 'active') ?>">
+                <i class="ph ph-stack me-2 nav-icon"></i>Planos
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?= navHref('/financeiro/cobrancas') ?>" class="nav-link text-light <?= navActive('financeiro/cobrancas', 'active') ?>">
+                <i class="ph ph-receipt me-2 nav-icon"></i>Cobranças
               </a>
             </li>
           </ul>

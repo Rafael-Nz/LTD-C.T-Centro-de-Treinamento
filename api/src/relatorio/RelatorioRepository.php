@@ -55,8 +55,8 @@ class RelatorioRepository extends Repository
 
     public function presenca(array $filters): array
     {
-        $where = [];
-        $params = [];
+        $where = ['p.aluno_id = ?'];
+        $params = [(int) $filters['aluno']];
         $this->addDateFilter($where, $params, 'ta.data_hora_inicio', $filters);
         if (!empty($filters['modalidade'])) {
             $where[] = 'tr.modalidade_id = ?';
@@ -87,13 +87,14 @@ class RelatorioRepository extends Repository
         }
 
         return $this->fetchAll("SELECT av.id, av.data_avaliacao, av.peso, av.altura, av.imc, av.percentual_gordura,
+                av.percentual_musculo, av.gordura_visceral,
             (SELECT m2.nome FROM aluno_turma at2 INNER JOIN treino_agenda ta2 ON ta2.turma_id = at2.turma_id
                 INNER JOIN treino tr2 ON tr2.id = ta2.treino_id INNER JOIN modalidade m2 ON m2.id = tr2.modalidade_id
                 WHERE at2.aluno_id = av.aluno_id ORDER BY ta2.data_hora_inicio DESC LIMIT 1) AS modalidade,
                 CONCAT(au.nome, ' ', au.sobrenome) AS aluno, CONCAT(fu.nome, ' ', fu.sobrenome) AS avaliador
             FROM avaliacao_fisica av INNER JOIN usuario au ON au.id = av.aluno_id
             INNER JOIN funcionario f ON f.usuario_id = av.avaliador_id INNER JOIN usuario fu ON fu.id = f.usuario_id
-            " . $this->where($where) . " ORDER BY av.data_avaliacao DESC", $params);
+            " . $this->where($where) . " ORDER BY av.data_avaliacao ASC, av.id ASC", $params);
     }
 
     public function turmas(array $filters): array

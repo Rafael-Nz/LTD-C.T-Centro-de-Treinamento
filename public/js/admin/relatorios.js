@@ -1,5 +1,7 @@
 let graficoDist = null;
 let graficoPresenca = null;
+let versaoRelatorio = 0;
+let versaoListaAlunos = 0;
 
 function escapeHtml(value) {
     return String(value ?? '')
@@ -17,9 +19,13 @@ $(document).ready(function () {
         language: 'pt-BR'
     });
 
+    $('#turma').on('change', carregarAlunosRelatorio);
+
     carregarFiltros();
 
     $('#tipoRelatorio').on('change', function () {
+        versaoRelatorio++;
+        limparResultadoRelatorio();
         atualizarFiltros($(this).val());
     });
 
@@ -84,6 +90,7 @@ function carregarFiltros() {
             select.empty();
             select.append('<option value="">Todas</option>');
             items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
+            atualizarFiltroTurma($('#tipoRelatorio').val());
         }
     });
 
@@ -100,49 +107,125 @@ function carregarFiltros() {
         }
     });
 
+    carregarAlunosRelatorio();
+}
+
+function carregarAlunosRelatorio() {
+    const versaoConsulta = ++versaoListaAlunos;
+    const turma = $('#tipoRelatorio').val() === 'presenca' ? $('#turma').val() : null;
+    const select = $('#aluno');
+    select.empty().append('<option value="">Carregando alunos...</option>')
+        .prop('disabled', true).trigger('change');
+
     $.ajax({
-        url: '/ctt/api/alunos?draw=1&start=0&length=1000',
+        url: turma ? `/ctt/api/turmas/${encodeURIComponent(turma)}` : '/ctt/api/alunos?draw=1&start=0&length=1000',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            const items = data.data || data || [];
-            const select = $('#aluno');
+            if (versaoConsulta !== versaoListaAlunos) return;
+            const resultado = data.data || data;
+            const items = turma ? resultado.alunos || [] : resultado || [];
+            const placeholder = textoPlaceholderAluno($('#tipoRelatorio').val());
             select.empty();
-            select.append('<option value="">Todos</option>');
-            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)} ${escapeHtml(item.sobrenome || '')}</option>`));
+            select.append(`<option value="">${placeholder}</option>`);
+            items.forEach(item => {
+                const id = turma ? item.aluno_id : item.id;
+                const nome = turma ? item.aluno_nome : `${item.nome} ${item.sobrenome || ''}`;
+                select.append(`<option value="${escapeHtml(id)}">${escapeHtml(nome)}</option>`);
+            });
+            if (!items.length) select.find('option[value=""]').text('Nenhum aluno encontrado');
+            select.prop('disabled', false).trigger('change');
+        },
+        error: function () {
+            if (versaoConsulta !== versaoListaAlunos) return;
+            select.empty().append('<option value="">Não foi possível carregar os alunos</option>').trigger('change');
+            Swal.fire('Erro', 'Não foi possível carregar os alunos. Selecione a turma novamente para tentar.', 'error');
         }
     });
+}
+
+function textoPlaceholderAluno(tipoRelatorio) {
+    return tipoRelatorio === 'avaliacoes' ? 'Selecione um aluno' : 'Selecione um aluno';
+}
+
+function atualizarFiltroAluno(tipoRelatorio) {
+    const select = $('#aluno');
+    const placeholder = textoPlaceholderAluno(tipoRelatorio);
+    let primeiraOpcao = select.find('option[value=""]');
+    if (!primeiraOpcao.length) {
+        select.prepend(`<option value="">${placeholder}</option>`);
+        primeiraOpcao = select.find('option[value=""]');
+    }
+    primeiraOpcao.text(placeholder);
+    const obrigatorio = ['avaliacoes', 'presenca'].includes(tipoRelatorio);
+    $('#alunoObrigatorio').toggleClass('d-none', !obrigatorio);
+    select.attr('aria-required', String(obrigatorio));
+    select.trigger('change');
+}
+
+function atualizarFiltroTurma(tipoRelatorio) {
+    const obrigatoria = tipoRelatorio === 'treinos';
+    const select = $('#turma');
+    select.find('option[value=""]')
+        .text(obrigatoria ? 'Selecione uma turma' : 'Todas as turmas')
+        .prop('disabled', obrigatoria);
+    select.attr('aria-required', String(obrigatoria));
+    $('#turmaObrigatoria').toggleClass('d-none', !obrigatoria);
+    select.trigger('change');
+}
+
+function validarTurmaRelatorio(tipoRelatorio) {
+    if (tipoRelatorio === 'treinos' && !$('#turma').val()) {
+        Swal.fire('Atenção', 'Selecione uma turma para o relatório de Agenda de Treinos.', 'warning');
+        return false;
+    }
+    return true;
+}
+
+function limparResultadoRelatorio() {
+    $('#btnExportar').hide();
+    $('#tituloTabela').text('Selecione os filtros e gere o relatório');
+    $('#cabecalhoTabela').empty();
+    $('#tabelaRelatorios').html('<tr><td class="text-center text-muted py-5"><p>Selecione os filtros acima e clique em "Gerar Relatório"</p></td></tr>');
+    if (graficoDist) graficoDist.destroy();
+    if (graficoPresenca) graficoPresenca.destroy();
+    graficoDist = null;
+    graficoPresenca = null;
+    $('#tituloGraficoDistribuicao, #tituloGraficoPresenca').empty();
+    $('#secaoGraficos').hide();
 }
 
 function atualizarFiltros(tipoRelatorio) {
     $('#filtroModalidade, #filtroAluno, #filtroTurma, #filtroPeriodo, #filtroDataFim, #filtroStatus, #filtroCargo').hide();
     $('#btnExportar').hide();
     configurarStatus(tipoRelatorio);
+    atualizarFiltroAluno(tipoRelatorio);
+    atualizarFiltroTurma(tipoRelatorio);
 
     switch (tipoRelatorio) {
         case 'alunos':
             $('#filtroStatus').show();
-            $('#btnExportar').show();
+
             break;
         case 'presenca':
-            $('#filtroModalidade, #filtroTurma, #filtroPeriodo, #filtroDataFim').show();
-            $('#btnExportar').show();
+            $('#filtroAluno, #filtroModalidade, #filtroTurma, #filtroPeriodo, #filtroDataFim').show();
+
             break;
         case 'avaliacoes':
             $('#filtroAluno, #filtroPeriodo, #filtroDataFim').show();
-            $('#btnExportar').show();
+
             break;
         case 'turmas':
             $('#filtroModalidade').show();
-            $('#btnExportar').show();
+
             break;
         case 'funcionarios':
             $('#filtroStatus, #filtroCargo').show();
-            $('#btnExportar').show();
+
             break;
         case 'treinos':
             $('#filtroTurma, #filtroPeriodo, #filtroDataFim, #filtroStatus').show();
-            $('#btnExportar').show();
+
             break;
     }
 }
@@ -162,11 +245,19 @@ function configurarStatus(tipoRelatorio) {
 
 function gerarRelatorio() {
     const tipoRelatorio = $('#tipoRelatorio').val();
+    if (!validarTurmaRelatorio(tipoRelatorio)) return;
     if (!tipoRelatorio) {
         Swal.fire('Atenção', 'Selecione um tipo de relatório', 'warning');
         return;
     }
 
+    if (['avaliacoes', 'presenca'].includes(tipoRelatorio) && !$('#aluno').val()) {
+        const nomeRelatorio = tipoRelatorio === 'presenca' ? 'presença' : 'avaliações físicas';
+        Swal.fire('Atenção', `Selecione um aluno para o relatório de ${nomeRelatorio}.`, 'warning');
+        return;
+    }
+
+    const versaoConsulta = ++versaoRelatorio;
     const params = {
         tipo: tipoRelatorio,
         modalidade: $('#modalidade').val(),
@@ -184,15 +275,19 @@ function gerarRelatorio() {
         data: params,
         dataType: 'json',
         beforeSend: () => {
+            $('#btnExportar').hide();
             $('#tabelaRelatorios').html('<tr><td colspan="6"><div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div></div></td></tr>');
         },
         success: (data) => {
+            if (versaoConsulta !== versaoRelatorio) return;
             data = data.data || data;
             renderizarRelatorio(data, tipoRelatorio);
             renderizarGraficos(data, tipoRelatorio);
+            $('#btnExportar').show();
         },
-        error: () => {
-            Swal.fire('Erro', 'Erro ao gerar relatório', 'error');
+        error: (xhr) => {
+            if (versaoConsulta !== versaoRelatorio) return;
+            Swal.fire('Erro', xhr.responseJSON?.message || 'Erro ao gerar relatório', 'error');
         }
     });
 }
@@ -205,7 +300,7 @@ function renderizarRelatorio(data, tipoRelatorio) {
         case 'alunos':
             cabecalho = '<tr><th>Matrícula</th><th>Nome</th><th>CPF</th><th>Email</th><th>Data</th><th>Status</th></tr>';
             data.registros.forEach(a => {
-                const status = a.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>';
+                const status = a.ativo ? '<span class="badge bg-success-subtle text-success-emphasis">Ativo</span>' : '<span class="badge bg-danger-subtle text-danger-emphasis">Inativo</span>';
                 html += `<tr><td>${escapeHtml(a.codigo_matricula)}</td><td>${escapeHtml(a.nome)} ${escapeHtml(a.sobrenome)}</td><td>${escapeHtml(mascararCpf(a.cpf))}</td><td>${escapeHtml(a.email)}</td><td>${escapeHtml(new Date(a.data_matricula).toLocaleDateString('pt-BR'))}</td><td>${status}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Alunos');
@@ -215,20 +310,20 @@ function renderizarRelatorio(data, tipoRelatorio) {
             cabecalho = '<tr><th>Data</th><th>Turma</th><th>Modalidade</th><th>Aluno</th><th>Situação</th></tr>';
             data.registros.forEach(p => {
                 let badge = '';
-                if (p.situacao === 'presente') badge = '<span class="badge bg-success">Presente</span>';
-                else if (p.situacao === 'ausente') badge = '<span class="badge bg-danger">Ausente</span>';
-                else badge = '<span class="badge bg-warning">Justificado</span>';
+                if (p.situacao === 'presente') badge = '<span class="badge bg-success-subtle text-success-emphasis">Presente</span>';
+                else if (p.situacao === 'ausente') badge = '<span class="badge bg-danger-subtle text-danger-emphasis">Ausente</span>';
+                else badge = '<span class="badge bg-warning-subtle text-warning-emphasis">Justificado</span>';
                 html += `<tr><td>${escapeHtml(new Date(p.data_treino).toLocaleDateString('pt-BR'))}</td><td>${escapeHtml(p.turma || '-')}</td><td>${escapeHtml(p.modalidade || '-')}</td><td>${escapeHtml(p.aluno)}</td><td>${badge}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Presença');
             break;
 
         case 'avaliacoes':
-            cabecalho = '<tr><th>Data</th><th>Modalidade</th><th>Aluno</th><th>Avaliador</th><th>Peso (kg)</th><th>Altura (m)</th><th>% Gordura</th></tr>';
-            data.registros.forEach(av => {
-                html += `<tr><td>${escapeHtml(new Date(av.data_avaliacao).toLocaleDateString('pt-BR'))}</td><td>${escapeHtml(av.modalidade || '-')}</td><td>${escapeHtml(av.aluno)}</td><td>${escapeHtml(av.avaliador)}</td><td>${escapeHtml(av.peso)}</td><td>${escapeHtml(av.altura)}</td><td>${escapeHtml(av.percentual_gordura)}%</td></tr>`;
+            cabecalho = '<tr><th>Data</th><th>Aluno</th><th>Avaliador</th><th>Peso (kg)</th><th>IMC</th><th>% Gordura</th><th>% Músculo</th></tr>';
+            [...data.registros].reverse().forEach(av => {
+                html += `<tr><td>${escapeHtml(formatarData(av.data_avaliacao))}</td><td>${escapeHtml(av.aluno)}</td><td>${escapeHtml(av.avaliador)}</td><td>${escapeHtml(formatarNumero(av.peso))}</td><td>${escapeHtml(formatarNumero(av.imc))}</td><td>${escapeHtml(formatarPercentual(av.percentual_gordura))}</td><td>${escapeHtml(formatarPercentual(av.percentual_musculo))}</td></tr>`;
             });
-            $('#tituloTabela').text('Relatório de Avaliações');
+            $('#tituloTabela').text(data.registros[0]?.aluno ? `Evolução de ${data.registros[0].aluno}` : 'Relatório de Avaliações');
             break;
 
         case 'turmas':
@@ -242,7 +337,7 @@ function renderizarRelatorio(data, tipoRelatorio) {
         case 'funcionarios':
             cabecalho = '<tr><th>Nome</th><th>CPF</th><th>Email</th><th>Cargo</th><th>Registro</th><th>Status</th></tr>';
             data.registros.forEach(f => {
-                const status = f.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>';
+                const status = f.ativo ? '<span class="badge bg-success-subtle text-success-emphasis">Ativo</span>' : '<span class="badge bg-danger-subtle text-danger-emphasis">Inativo</span>';
                 html += `<tr><td>${escapeHtml(f.nome)} ${escapeHtml(f.sobrenome)}</td><td>${escapeHtml(mascararCpf(f.cpf))}</td><td>${escapeHtml(f.email)}</td><td>${escapeHtml(f.cargo)}</td><td>${escapeHtml(f.registro_profissional || '-')}</td><td>${status}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Funcionários');
@@ -271,6 +366,8 @@ function renderizarGraficos(data, tipoRelatorio) {
     if (graficoDist) graficoDist.destroy();
     if (graficoPresenca) graficoPresenca.destroy();
     $('#secaoGraficos').hide();
+    graficoDist = null;
+    graficoPresenca = null;
 
     const registros = data.registros || [];
     if (!registros.length) return;
@@ -285,20 +382,29 @@ function renderizarGraficos(data, tipoRelatorio) {
             dados2: agruparStatus(registros)
         },
         presenca: {
-            titulo1: 'Presença por turma',
-            titulo2: 'Registros por modalidade',
-            tipo1: 'bar',
+            titulo1: 'Evolução Temporal da Taxa de Presença',
+            titulo2: 'Distribuição de Presenças, Ausências e Justificativas',
+            tipo1: 'line',
             tipo2: 'doughnut',
-            dados1: agruparPresencaPorTurma(registros),
-            dados2: agruparCampo(registros, 'modalidade', 'Sem modalidade')
+            dados1: serieTaxaPresenca(registros),
+            dados2: {
+                labels: ['Presenças', 'Ausências', 'Justificativas'],
+                valores: ['presente', 'ausente', 'justificado'].map(situacao =>
+                    registros.filter(registro => registro.situacao === situacao).length)
+            }
         },
         avaliacoes: {
-            titulo1: 'Peso médio por aluno',
-            titulo2: 'Gordura corporal por aluno',
-            tipo1: 'bar',
-            tipo2: 'bar',
-            dados1: agruparMedia(registros, 'aluno', 'peso'),
-            dados2: agruparMedia(registros, 'aluno', 'percentual_gordura')
+            titulo1: 'Peso ao longo do tempo',
+            titulo2: 'Composição corporal ao longo do tempo',
+            tipo1: 'line',
+            tipo2: 'line',
+            dados1: serieTemporal(registros, [
+                { campo: 'peso', rotulo: 'Peso (kg)', cor: 'rgba(54, 162, 235, 1)' }
+            ]),
+            dados2: serieTemporal(registros, [
+                { campo: 'percentual_gordura', rotulo: '% Gordura', cor: 'rgba(255, 99, 132, 1)' },
+                { campo: 'percentual_musculo', rotulo: '% Músculo', cor: 'rgba(75, 192, 192, 1)' }
+            ])
         },
         turmas: {
             titulo1: 'Alunos por turma',
@@ -349,10 +455,83 @@ function criarGrafico(elementId, tipo, dados) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: tipo === 'doughnut' } },
-            scales: tipo === 'bar' ? { y: { beginAtZero: true } } : undefined
+            plugins: {
+                legend: { display: tipo !== 'bar' },
+                tooltip: dados.percentual ? {
+                    callbacks: {
+                        label: contexto => `${contexto.dataset.label}: ${formatarPercentual(contexto.parsed.y)}`
+                    }
+                } : undefined
+            },
+            scales: tipo === 'doughnut' ? undefined : {
+                y: dados.percentual ? {
+                    min: 0,
+                    max: 100,
+                    ticks: { callback: valor => `${valor}%` }
+                } : { beginAtZero: tipo !== 'line' }
+            }
         }
     });
+}
+
+function serieTaxaPresenca(registros) {
+    const dias = {};
+    registros.forEach(registro => {
+        const dia = String(registro.data_treino || '').slice(0, 10);
+        if (!dia || !['presente', 'ausente', 'justificado'].includes(registro.situacao)) return;
+        dias[dia] ??= { presentes: 0, total: 0 };
+        dias[dia].total++;
+        if (registro.situacao === 'presente') dias[dia].presentes++;
+    });
+    const datas = Object.keys(dias).sort();
+    return {
+        percentual: true,
+        labels: datas.map(formatarData),
+        datasets: [{
+            label: 'Presenças / registros do dia (%) — inclui ausências justificadas no total',
+            data: datas.map(dia => dias[dia].presentes / dias[dia].total * 100),
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.15)',
+            tension: 0,
+            pointRadius: 4,
+            fill: false
+        }]
+    };
+}
+
+function formatarData(valor) {
+    if (!valor) return '-';
+    const data = new Date(`${String(valor).slice(0, 10)}T00:00:00`);
+    return Number.isNaN(data.getTime()) ? String(valor) : data.toLocaleDateString('pt-BR');
+}
+
+function formatarNumero(valor) {
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : '-';
+}
+
+function formatarPercentual(valor) {
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? `${numero.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%` : '-';
+}
+
+function serieTemporal(registros, series) {
+    const ordenados = [...registros].sort((a, b) => String(a.data_avaliacao).localeCompare(String(b.data_avaliacao)));
+    return {
+        labels: ordenados.map(registro => formatarData(registro.data_avaliacao)),
+        datasets: series.map(serie => ({
+            label: serie.rotulo,
+            data: ordenados.map(registro => {
+                const valor = Number(registro[serie.campo]);
+                return Number.isFinite(valor) ? valor : null;
+            }),
+            borderColor: serie.cor,
+            backgroundColor: serie.cor.replace('1)', '0.15)'),
+            spanGaps: true,
+            tension: 0.25,
+            fill: false
+        }))
+    };
 }
 
 function coresGrafico(tamanho) {
@@ -439,6 +618,13 @@ function agruparPresencaPorTurma(registros) {
 }
 
 function exportarRelatorio(formato) {
+    if (!validarTurmaRelatorio($('#tipoRelatorio').val())) return;
+    if (['avaliacoes', 'presenca'].includes($('#tipoRelatorio').val()) && !$('#aluno').val()) {
+        const nomeRelatorio = $('#tipoRelatorio').val() === 'presenca' ? 'presença' : 'avaliações físicas';
+        Swal.fire('Atenção', `Selecione um aluno para exportar o relatório de ${nomeRelatorio}.`, 'warning');
+        return;
+    }
+
     const params = new URLSearchParams({
         tipo: $('#tipoRelatorio').val(),
         modalidade: $('#modalidade').val(),

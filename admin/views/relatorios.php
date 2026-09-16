@@ -70,14 +70,14 @@
                 </div>
 
                 <div class="col-md-6" id="filtroAluno" style="display: none;">
-                  <label for="aluno" class="form-label">Aluno</label>
+                  <label for="aluno" class="form-label">Aluno <span class="text-danger d-none" id="alunoObrigatorio">*</span></label>
                   <select class="form-select select2" id="aluno" name="aluno">
-                    <option value="">Todos os alunos</option>
+                    <option value="">Selecione um aluno</option>
                   </select>
                 </div>
 
                 <div class="col-md-6" id="filtroTurma" style="display: none;">
-                  <label for="turma" class="form-label">Turma</label>
+                  <label for="turma" class="form-label">Turma <span class="text-danger d-none" id="turmaObrigatoria">*</span></label>
                   <select class="form-select select2" id="turma" name="turma">
                     <option value="">Todas as turmas</option>
                   </select>
@@ -137,7 +137,7 @@
         <div class="col-12">
           <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-              <h5 class="section-title mb-0" id="tituloTabela">Selecione um relatório</h5>
+              <h5 class="section-title mb-0" id="tituloTabela">Selecione os filtros e gere o relatório</h5>
               <div class="dropdown" id="btnExportar" style="display: none;">
                 <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
                   aria-expanded="false">

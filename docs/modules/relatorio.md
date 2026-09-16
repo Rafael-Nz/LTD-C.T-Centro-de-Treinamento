@@ -71,7 +71,7 @@ Os filtros são opcionais e podem ser enviados tanto para `gerar` quanto para `e
 | Parâmetro | Formato | Aplicação |
 | --- | --- | --- |
 | `modalidade` | ID numérico | Alunos, presença e turmas. |
-| `aluno` | ID numérico | Avaliações. |
+| `aluno` | ID numérico | Avaliações. Obrigatório neste relatório: não é permitido gerar evolução de todos os alunos ao mesmo tempo. |
 | `turma` | ID numérico | Presença e treinos. |
 | `cargo` | ID numérico | Funcionários. |
 | `dataInicio` | `dd/mm/YYYY` ou `YYYY-mm-dd` | Presença, avaliações e treinos; inclui a partir da data informada. |
@@ -92,7 +92,9 @@ Retorna `data_treino`, `turma`, `modalidade`, `aluno`, `situacao` e `checkin_tim
 
 ### Avaliações
 
-Retorna `id`, `data_avaliacao`, `peso`, `altura`, `imc`, `percentual_gordura`, `modalidade`, `aluno` e `avaliador`.
+Exige o filtro `aluno`. Sem um aluno selecionado, a API responde `422` com a mensagem `Selecione um aluno para o relatorio de avaliacoes fisicas.`.
+
+Retorna `id`, `data_avaliacao`, `peso`, `altura`, `imc`, `percentual_gordura`, `percentual_musculo`, `gordura_visceral`, `modalidade`, `aluno` e `avaliador`, ordenados da avaliação mais antiga para a mais recente, para montar a evolução do aluno (peso, gordura e IMC ao longo do tempo).
 
 ### Turmas
 
@@ -146,6 +148,7 @@ Responsável por:
 
 - O módulo não cria, altera ou exclui dados.
 - Tipos de relatório fora da lista suportada geram erro `422` com a mensagem `Tipo de relatorio invalido.`.
+- O relatório de avaliações físicas é individual: o parâmetro `aluno` é obrigatório.
 - Formatos de exportação diferentes de `csv` e `xlsx` geram erro `422`.
 - O CPF é mascarado nas exportações, preservando somente os quatro últimos dígitos.
 - Filtros de data inválidos são ignorados pelo repositório; datas válidas podem ser informadas em formato brasileiro ou ISO.

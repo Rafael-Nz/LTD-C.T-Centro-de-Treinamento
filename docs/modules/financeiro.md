@@ -18,9 +18,9 @@ Em banco existente, aplicar **uma vez**, usando uma conta administradora, `docs/
 
 O preflight rejeita referencias bancarias duplicadas e uma migracao ja aplicada/parcial. Revisar duplicidades manualmente; nao apagar historico para forcar o indice. A conta `ctt_app` continua restrita: nao conceder ALTER/CREATE/TRIGGER a ela. A API informa atualizacao pendente enquanto os campos novos nao existem.
 
-Depois, executar `php tools/financeiro_status.php` e `powershell -File tools/instalar_rotina_financeiro.ps1` no computador que executa o XAMPP. O instalador cria/atualiza a tarefa **CTT - Gerar cobrancas**, diariamente as 06:00, no usuario atual, sem janela visivel. A tarefa depende desse usuario estar conectado e de MySQL estar disponivel; para servidor permanente, configurar o agendador com uma conta de servico apropriada. A saida fica em `tools/financeiro_rotina.log`. O instalador recusa ativacao antes da migracao.
+Depois, executar `php tools/financeiro/financeiro_status.php` e `powershell -File tools/financeiro/instalar_rotina_financeiro.ps1` no computador que executa o XAMPP. O instalador cria/atualiza a tarefa **CTT - Gerar cobrancas**, diariamente as 06:00, no usuario atual, sem janela visivel. A tarefa depende desse usuario estar conectado e de MySQL estar disponivel; para servidor permanente, configurar o agendador com uma conta de servico apropriada. A saida fica em `tools/financeiro/financeiro_rotina.log`. O instalador recusa ativacao antes da migracao.
 
-Tambem e possivel executar `php tools/gerar_cobrancas.php`, inclusive por cron em Linux. A tela de cobrancas nao possui botao de geracao manual: a geracao fica a cargo da tarefa agendada. A rotina nao envia mensagens nem movimenta dinheiro em bancos.
+Tambem e possivel executar `php tools/financeiro/gerar_cobrancas.php`, inclusive por cron em Linux. A tela de cobrancas nao possui botao de geracao manual: a geracao fica a cargo da tarefa agendada. A rotina nao envia mensagens nem movimenta dinheiro em bancos.
 
 ## Recebimentos e correcoes
 
@@ -33,25 +33,23 @@ Tambem e possivel executar `php tools/gerar_cobrancas.php`, inclusive por cron e
 - Estorno e um registro interno: eventual devolucao via Pix/cartao deve ser efetuada fora deste modulo. Nao ha estorno parcial nesta implementacao.
 - Os gatilhos registram `payment_reversed` e os motivos de estorno/cancelamento na auditoria. A lista de cobrancas mostra total recebido e saldo liquidos de estornos.
 
-## Geracao automatica
+## Geração automática
 
-### Ações nas tabelas
+### Catálogo e contratos
 
-Serviços e planos possuem edição em formulário separado e ativação/desativação. Editar preserva o status atual, os itens do plano e os valores já copiados para contratos e cobranças. Alterações de status e edição são transacionais e seguem a auditoria do banco.
+Serviços e planos podem ser editados, ativados ou desativados. Essas alterações não modificam valores já registrados em contratos e cobranças, preservando o histórico financeiro.
 
-Contratos ativos e pausados permitem alterar o status. Retomar contrato com vigência vencida é recusado. Encerrado e cancelado são estados finais: para continuar, cadastrar outro contrato. Pausar, encerrar ou cancelar não cancela cobranças nem estorna pagamentos. Ao retomar, a rotina pode gerar competências faltantes do período de pausa; a confirmação informa esse comportamento.
+Contratos podem assumir os estados `ativo`, `pausado`, `encerrado` ou `cancelado`. Contratos encerrados ou cancelados não podem ser reabertos, e contratos com vigência expirada não podem ser retomados. Alterar o estado do contrato não cancela cobranças nem estorna pagamentos existentes.
 
-Rotas de manutenção: `GET /financeiro/servicos/{id}`, `GET /financeiro/planos/{id}`, `PUT /financeiro/servicos/{id}`, `PUT /financeiro/planos/{id}`, `PUT /financeiro/servicos/{id}/status`, `PUT /financeiro/planos/{id}/status` (booleano `ativo`) e `PUT /financeiro/contratos/{id}/status` (`status`).
+Ao retomar um contrato pausado, a rotina pode gerar cobranças referentes ao período da pausa, pois o sistema não mantém intervalos de suspensão para conceder isenções automáticas.
 
-A geração automática é obrigatória em todos os contratos; não há opção de desligamento no formulário ou na API. A periodicidade do plano e copiada para o contrato, para que mudancas futuras no plano nao alterem seu calendario. Sem plano, escolher mensal, trimestral, semestral, anual ou avulso.
+### Calendário de cobranças
 
-A primeira data e o primeiro dia de vencimento escolhido igual ou posterior ao inicio. Exemplo: inicio 15/01, vencimento dia 10, trimestral: 10/02, 10/05, 10/08. Avulso gera uma unica cobranca. Nao existe rateio proporcional automatico.
+Todo contrato ativo participa da geração automática. A periodicidade (`mensal`, `trimestral`, `semestral`, `anual` ou `avulso`) é copiada para o contrato, garantindo que alterações posteriores no plano não modifiquem seu calendário.
 
-A rotina completa competencias faltantes desde o inicio ate o mes atual, inclusive vencimentos futuros dentro desse mes, respeitando a data final. Contratos pausados, encerrados ou cancelados são ignorados. Reexecutar nao duplica competencias. Uma cobranca cancelada continua ocupando sua competencia.
+O primeiro vencimento é a primeira ocorrência do dia escolhido igual ou posterior ao início da vigência. Por exemplo, um contrato trimestral iniciado em 15/01, com vencimento no dia 10, gera cobranças em 10/02, 10/05 e 10/08. Contratos avulsos geram uma única cobrança e não há rateio proporcional automático.
 
-Para atualizar o indicador legado dos contratos existentes, executar `php tools/ativar_cobranca_obrigatoria.php`: a atualização é transacional e auditada, preservando cobranças e pagamentos. A rotina considera todos os contratos ativos independentemente desse indicador. Competências passadas faltantes podem ser geradas; não há histórico de intervalos de pausa para conceder isenções automáticas.
-
-Rotas novas: `POST /financeiro/cobrancas/gerar-automaticas`, `POST /financeiro/cobrancas/{id}/cancelar`, `POST /financeiro/cobrancas/{id}/pagamentos/{pagamento_id}/estornar`. Cancelamento e estorno recebem `justificativa`.
+A rotina gera competências pendentes até o mês atual e respeita a data final do contrato. Contratos pausados, encerrados ou cancelados são ignorados. A operação é idempotente: executá-la novamente não duplica cobranças, e uma cobrança cancelada continua vinculada à sua competência.
 
 ## Testes
 
@@ -80,17 +78,26 @@ Todas as rotas exigem `AuthMiddleware`.
 | Metodo | Rota | Funcao |
 | --- | --- | --- |
 | GET | `/financeiro/servicos` | Lista servicos. Use `ativos=false` para incluir inativos. |
+| GET | `/financeiro/servicos/{id}` | Detalha um servico. |
 | POST | `/financeiro/servicos` | Cadastra servico. |
 | PUT | `/financeiro/servicos/{id}` | Atualiza servico. |
+| PUT | `/financeiro/servicos/{id}/status` | Ativa ou desativa um servico. |
 | GET | `/financeiro/planos` | Lista planos. |
+| GET | `/financeiro/planos/{id}` | Detalha um plano e seus itens. |
 | POST | `/financeiro/planos` | Cadastra plano e seus itens. |
+| PUT | `/financeiro/planos/{id}` | Atualiza um plano. |
+| PUT | `/financeiro/planos/{id}/status` | Ativa ou desativa um plano. |
 | GET | `/financeiro/contratos` | Lista contratos. Aceita `aluno_id`. |
 | GET | `/financeiro/contratos/{id}` | Detalha contrato e itens. |
 | POST | `/financeiro/contratos` | Contrata um plano ou servicos para um aluno. |
+| PUT | `/financeiro/contratos/{id}/status` | Altera o estado do contrato. |
 | POST | `/financeiro/contratos/{id}/cobrancas` | Gera cobranca de uma competencia. |
 | GET | `/financeiro/cobrancas` | Lista cobrancas. Aceita `aluno_id` e `status`. |
 | GET | `/financeiro/cobrancas/{id}` | Detalha cobranca, pagamentos e saldo. |
 | POST | `/financeiro/cobrancas/{id}/pagamentos` | Registra pagamento total ou parcial. |
+| POST | `/financeiro/cobrancas/{id}/cancelar` | Cancela uma cobranca mediante justificativa. |
+| POST | `/financeiro/cobrancas/{id}/pagamentos/{pagamento_id}/estornar` | Estorna integralmente um pagamento mediante justificativa. |
+| POST | `/financeiro/cobrancas/gerar-automaticas` | Gera competencias pendentes dos contratos ativos. |
 | POST | `/financeiro/cobrancas/atualizar-vencidas` | Marca cobrancas abertas vencidas. |
 
 ## Exemplos de payload

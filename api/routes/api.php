@@ -20,12 +20,39 @@ use Treino\TreinoController;
 use Turma\TurmaController;
 use Avaliacao\AvaliacaoFisicaController;
 use Relatorio\RelatorioController;
+use Financeiro\FinanceiroController;
 
 $auth = [AuthMiddleware::class];
 
 Router::get('/relatorios/metricas', [RelatorioController::class, 'metricas'], $auth);
 Router::get('/relatorios/gerar', [RelatorioController::class, 'gerar'], $auth);
 Router::get('/relatorios/exportar', [RelatorioController::class, 'exportar'], $auth);
+
+Router::get('/financeiro/servicos', [FinanceiroController::class, 'servicos'], $auth);
+Router::get('/financeiro/servicos/{id}', [FinanceiroController::class, 'servico'], $auth);
+Router::put('/financeiro/servicos/{id}/status', [FinanceiroController::class, 'statusServico'], $auth);
+Router::get('/financeiro/planos/{id}', [FinanceiroController::class, 'plano'], $auth);
+Router::put('/financeiro/planos/{id}', [FinanceiroController::class, 'atualizarPlano'], $auth);
+Router::put('/financeiro/planos/{id}/status', [FinanceiroController::class, 'statusPlano'], $auth);
+Router::put('/financeiro/contratos/{id}/status', [FinanceiroController::class, 'statusContrato'], $auth);
+Router::post('/financeiro/servicos', [FinanceiroController::class, 'criarServico'], $auth);
+Router::put('/financeiro/servicos/{id}', [FinanceiroController::class, 'atualizarServico'], $auth);
+
+Router::get('/financeiro/planos', [FinanceiroController::class, 'planos'], $auth);
+Router::post('/financeiro/planos', [FinanceiroController::class, 'criarPlano'], $auth);
+
+Router::get('/financeiro/contratos', [FinanceiroController::class, 'contratos'], $auth);
+Router::get('/financeiro/contratos/{id}', [FinanceiroController::class, 'contrato'], $auth);
+Router::post('/financeiro/contratos', [FinanceiroController::class, 'criarContrato'], $auth);
+Router::post('/financeiro/contratos/{id}/cobrancas', [FinanceiroController::class, 'gerarCobranca'], $auth);
+
+Router::get('/financeiro/cobrancas', [FinanceiroController::class, 'cobrancas'], $auth);
+Router::get('/financeiro/cobrancas/{id}', [FinanceiroController::class, 'cobranca'], $auth);
+Router::post('/financeiro/cobrancas/atualizar-vencidas', [FinanceiroController::class, 'atualizarVencidas'], $auth);
+Router::post('/financeiro/cobrancas/{id}/pagamentos', [FinanceiroController::class, 'registrarPagamento'], $auth);
+Router::post('/financeiro/cobrancas/gerar-automaticas', [FinanceiroController::class, 'gerarAutomaticas'], $auth);
+Router::post('/financeiro/cobrancas/{id}/cancelar', [FinanceiroController::class, 'cancelarCobranca'], $auth);
+Router::post('/financeiro/cobrancas/{id}/pagamentos/{pagamento_id}/estornar', [FinanceiroController::class, 'estornarPagamento'], $auth);
 
 Router::post('/auth/login', [AuthController::class, 'login']);
 Router::post('/auth/logout', [AuthController::class, 'logout'], $auth);

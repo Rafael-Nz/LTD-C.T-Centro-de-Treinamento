@@ -60,13 +60,13 @@ $(document).ready(function () {
 
                         const isAtivo = data.ativo == 1 || data.ativo === true;
                         const btnStatus = isAtivo
-                            ? `<button class="btn btn-sm btn-danger btn-toggle-status-cargo" data-id="${data.id}" data-ativo="1" title="Desativar"><i class="ph ph-x"></i></button>`
-                            : `<button class="btn btn-sm btn-success btn-toggle-status-cargo" data-id="${data.id}" data-ativo="0" title="Reativar"><i class="ph ph-check"></i></button>`;
+                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status-cargo" data-id="${data.id}" data-ativo="1" title="Desativar cargo" aria-label="Desativar cargo"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status-cargo" data-id="${data.id}" data-ativo="0" title="Reativar cargo" aria-label="Reativar cargo"><i class="ph ph-check" aria-hidden="true"></i></button>`;
 
                         return `
-                            <div class="d-flex gap-2 justify-content-center">
-                                <a href="/ctt/admin/cargos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar">
-                                    <i class="ph ph-pencil"></i>
+                            <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                <a href="/ctt/admin/cargos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar cargo" aria-label="Editar cargo">
+                                    <i class="ph ph-pencil" aria-hidden="true"></i>
                                 </a>
                                 ${btnStatus}
                             </div>

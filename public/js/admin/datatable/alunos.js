@@ -46,16 +46,16 @@ $(document).ready(function () {
                     if (!data) return '';
                     const isAtivo = (data.ativo == 1 || data.ativo === true);
                     const btnStatus = isAtivo 
-                        ? `<button class=\"btn btn-sm btn-danger btn-toggle-status\" data-id=\"${data.id}\" data-ativo=\"1\" title=\"Desativar\"><i class=\"ph ph-x\"></i></button>`
-                        : `<button class=\"btn btn-sm btn-success btn-toggle-status\" data-id=\"${data.id}\" data-ativo=\"0\" title=\"Reativar\"><i class=\"ph ph-check\"></i></button>`;
+                        ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar aluno" aria-label="Desativar aluno"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                        : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar aluno" aria-label="Reativar aluno"><i class="ph ph-check" aria-hidden="true"></i></button>`;
 
                     return `
-                        <div class=\"d-flex gap-2 justify-content-center\">
-                            <a href=\"/ctt/admin/alunos/editar/${data.id}\" class=\"btn btn-sm btn-primary\">
-                                <i class=\"ph ph-pencil\"></i>
+                        <div class="d-flex gap-1 justify-content-center flex-wrap">
+                            <a href="/ctt/admin/alunos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar aluno" aria-label="Editar aluno">
+                                <i class="ph ph-pencil" aria-hidden="true"></i>
                             </a>
-                            <a href=\"/ctt/admin/alunos/visualizar/${data.id}\" class=\"btn btn-sm btn-secondary\">
-                                <i class=\"ph ph-eye\"></i>
+                            <a href="/ctt/admin/alunos/visualizar/${data.id}" class="btn btn-sm btn-secondary" title="Visualizar aluno" aria-label="Visualizar aluno">
+                                <i class="ph ph-eye" aria-hidden="true"></i>
                             </a>
                             ${btnStatus}
                         </div>

@@ -35,14 +35,14 @@
             <div class="d-flex" role="search">
               <div class="input-group">
                 <input id="campoBusca" class="form-control" type="search" placeholder="Buscar turma..." aria-label="Buscar">
-                <button class="btn border border-start-0" type="button" id="botaoBuscar">
-                  <i class="ph ph-magnifying-glass"></i>
+                <button class="btn border border-start-0" type="button" id="botaoBuscar" title="Buscar turmas" aria-label="Buscar turmas">
+                  <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar Turmas">
-                <i class="ph ph-funnel me-1"></i>
+              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar turmas" aria-label="Filtrar turmas">
+                <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
               <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton" style="min-width: 300px;">
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
@@ -65,8 +65,8 @@
               </ul>
             </div>
           </div>
-          <a href="/ctt/admin/turmas/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Adicionar Nova Turma">
-            <i class="ph ph-plus me-1"></i> Nova Turma
+          <a href="/ctt/admin/turmas/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar turma" aria-label="Cadastrar turma">
+            <i class="ph ph-plus me-1" aria-hidden="true"></i> Nova Turma
           </a>
         </div>
         <div class="card-body">

@@ -33,15 +33,15 @@
             <div class="d-flex" role="search">
               <div class="input-group">
                 <input id="campoBusca" class="form-control" type="search" placeholder="Buscar local..." aria-label="Buscar">
-                <button class="btn border border-start-0" type="button" id="botaoBuscar">
-                  <i class="ph ph-magnifying-glass"></i>
+                <button class="btn border border-start-0" type="button" id="botaoBuscar" title="Buscar locais" aria-label="Buscar locais">
+                  <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
 
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar Locais">
-                <i class="ph ph-funnel me-1"></i>
+              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar locais" aria-label="Filtrar locais">
+                <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
               <ul class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px;">
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
@@ -65,8 +65,8 @@
             </div>
           </div>
 
-          <a href="/ctt/admin/locais/cadastrar" class="btn btn-red d-flex align-items-center color border border-white">
-            <i class="ph ph-plus me-1"></i>Novo Local
+          <a href="/ctt/admin/locais/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar local" aria-label="Cadastrar local">
+            <i class="ph ph-plus me-1" aria-hidden="true"></i>Novo Local
           </a>
         </div>
 

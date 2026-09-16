@@ -82,8 +82,8 @@ $(document).ready(function () {
 
                         const isAtivo = data.ativo == 1 || data.ativo === true;
                         return isAtivo
-                            ? `<button class="btn btn-sm btn-danger btn-toggle-status-perfil" data-id="${data.id}" data-ativo="1" title="Desativar"><i class="ph ph-x"></i></button>`
-                            : `<button class="btn btn-sm btn-success btn-toggle-status-perfil" data-id="${data.id}" data-ativo="0" title="Reativar"><i class="ph ph-check"></i></button>`;
+                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status-perfil" data-id="${data.id}" data-ativo="1" title="Desativar perfil" aria-label="Desativar perfil"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status-perfil" data-id="${data.id}" data-ativo="0" title="Reativar perfil" aria-label="Reativar perfil"><i class="ph ph-check" aria-hidden="true"></i></button>`;
                     }
                 }
             ]

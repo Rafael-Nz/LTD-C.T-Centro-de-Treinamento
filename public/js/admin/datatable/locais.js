@@ -38,13 +38,13 @@ $(document).ready(function () {
                 render: function (data) {
                     const isAtivo = (data.ativo == 1 || data.ativo === true);
                     const btnStatus = isAtivo
-                        ? `<button class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar"><i class="ph ph-x"></i></button>`
-                        : `<button class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar"><i class="ph ph-check"></i></button>`;
+                        ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar local" aria-label="Desativar local"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                        : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar local" aria-label="Reativar local"><i class="ph ph-check" aria-hidden="true"></i></button>`;
 
                     return `
-                        <div class="d-flex gap-2 justify-content-center flex-wrap">
-                            <a href="/ctt/admin/locais/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar local">
-                                <i class="ph ph-pencil"></i>
+                        <div class="d-flex gap-1 justify-content-center flex-wrap flex-wrap">
+                            <a href="/ctt/admin/locais/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar local" aria-label="Editar local">
+                                <i class="ph ph-pencil" aria-hidden="true"></i>
                             </a>
                             ${btnStatus}
                         </div>

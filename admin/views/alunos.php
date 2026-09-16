@@ -37,15 +37,15 @@
               <div class="input-group">
                 <input id="campoBusca" class="form-control" type="search" placeholder="Buscar aluno..."
                   aria-label="Buscar">
-                <button class="btn border border-start-0" type="button" id="botaoBuscar">
-                  <i class="ph ph-magnifying-glass"></i>
+                <button class="btn border border-start-0" type="button" id="botaoBuscar" title="Buscar alunos" aria-label="Buscar alunos">
+                  <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
             <div class="dropdown-center">
               <button class="btn btn-red dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown"
-                data-bs-auto-close="outside" aria-expanded="false" title="Filtrar Alunos">
-                <i class="ph ph-funnel me-1"></i>
+                data-bs-auto-close="outside" aria-expanded="false" title="Filtrar alunos" aria-label="Filtrar alunos">
+                <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
 
               <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton" style="min-width: 250px;">
@@ -74,8 +74,8 @@
               </ul>
             </div>
           </div>
-          <a href="alunos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Adicionar Novo Aluno">
-            <i class="ph ph-plus me-1"></i> Novo Aluno
+          <a href="alunos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar aluno" aria-label="Cadastrar aluno">
+            <i class="ph ph-plus me-1" aria-hidden="true"></i> Novo Aluno
           </a>
         </div>
 

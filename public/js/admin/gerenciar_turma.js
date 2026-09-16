@@ -947,7 +947,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const treino = getTreinoById(state.selectedTreinoId);
         if (!treino || !presencasTableBody) return;
 
-        const selects = Array.from(presencasTableBody.querySelectorAll('select[data-aluno-id]'));
+        const selects = Array.from(presencasTableBody.querySelectorAll('select[data-aluno-id]:not(:disabled)'));
         const payload = {
             presencas: selects.map((select) => ({
                 aluno_id: Number(select.dataset.alunoId),

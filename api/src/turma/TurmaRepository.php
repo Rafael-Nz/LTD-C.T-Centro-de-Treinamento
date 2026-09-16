@@ -290,10 +290,22 @@ class TurmaRepository extends Repository implements DataTablesRepositoryInterfac
         ", [$turmaId]);
     }
 
-    public function syncPresencasTreino(int $treinoId, array $presencas): void {
+    public function syncPresencasTreino(int $treinoId, array $presencas, array $alunoIdsEditaveis): void {
+        $alunoIdsEditaveis = array_values(array_unique(array_map('intval', $alunoIdsEditaveis)));
+        if (empty($alunoIdsEditaveis)) {
+            return;
+        }
+
+        foreach ($presencas as $presenca) {
+            if (!in_array((int) ($presenca['aluno_id'] ?? 0), $alunoIdsEditaveis, true)) {
+                throw new \InvalidArgumentException('Aluno fora do conjunto de presencas editaveis.');
+            }
+        }
+
         $existentes = $this->fetchAll("
             SELECT
                 aluno_id,
+                situacao,
                 checkin_time
             FROM presenca_treino
             WHERE treino_id = ?
@@ -304,7 +316,12 @@ class TurmaRepository extends Repository implements DataTablesRepositoryInterfac
             $checkinsExistentes[(int) $presenca['aluno_id']] = $presenca['checkin_time'];
         }
 
-        $this->execute("DELETE FROM presenca_treino WHERE treino_id = ?", [$treinoId]);
+        // Preserva o historico de alunos inativos ou que ja sairam da turma.
+        $placeholders = implode(',', array_fill(0, count($alunoIdsEditaveis), '?'));
+        $this->execute(
+            "DELETE FROM presenca_treino WHERE treino_id = ? AND aluno_id IN ($placeholders)",
+            array_merge([$treinoId], $alunoIdsEditaveis)
+        );
 
         foreach ($presencas as $presenca) {
             $alunoId = (int) ($presenca['aluno_id'] ?? 0);
@@ -324,6 +341,8 @@ class TurmaRepository extends Repository implements DataTablesRepositoryInterfac
                 VALUES (?, ?, ?, ?)
             ", [$treinoId, $alunoId, $situacao, $checkinTime]);
         }
+
+        // Os triggers de presenca_treino registram as mudancas na cadeia de auditoria.
     }
 
     public function markTreinoAsConcluido(int $treinoId): void {

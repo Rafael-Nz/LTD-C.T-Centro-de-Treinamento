@@ -189,7 +189,7 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
           <form id="agendarTreinoForm" novalidate>
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="agendarTreinoId" class="form-label">Treino base</label>
+                <label for="agendarTreinoId" class="form-label">Treino base <span class="text-danger">*</span></label>
                 <select id="agendarTreinoId" class="form-select" required>
                   <option value="">Selecione um treino...</option>
                 </select>
@@ -203,7 +203,7 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
               </div>
 
               <div class="col-md-6">
-                <label for="agendarInicio" class="form-label">Inicio</label>
+                <label for="agendarInicio" class="form-label">Inicio <span class="text-danger">*</span></label>
                 <div class="input-group" id="agendarInicioPicker" data-td-target-input="nearest" data-td-target-toggle="nearest">
                   <input type="text" id="agendarInicio" class="form-control" data-td-target="#agendarInicio" autocomplete="off" required>
                   <span class="input-group-text" data-td-target="#agendarInicio" data-td-toggle="datetimepicker">
@@ -213,7 +213,7 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
               </div>
 
               <div class="col-md-6">
-                <label for="agendarFim" class="form-label">Fim</label>
+                <label for="agendarFim" class="form-label">Fim <span class="text-danger">*</span></label>
                 <div class="input-group" id="agendarFimPicker" data-td-target-input="nearest" data-td-target-toggle="nearest">
                   <input type="text" id="agendarFim" class="form-control" data-td-target="#agendarFim" autocomplete="off" required>
                   <span class="input-group-text" data-td-target="#agendarFim" data-td-toggle="datetimepicker">
@@ -223,7 +223,7 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
               </div>
 
               <div class="col-md-6">
-                <label for="agendarEspacoId" class="form-label">Local de treino</label>
+                <label for="agendarEspacoId" class="form-label">Local de treino <span class="text-danger">*</span></label>
                 <select id="agendarEspacoId" class="form-select" required>
                   <option value="">Selecione um local...</option>
                 </select>

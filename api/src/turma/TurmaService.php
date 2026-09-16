@@ -90,7 +90,10 @@ class TurmaService extends Service {
                 'capacidade_maxima' => isset($turma['capacidade_maxima']) ? (int) $turma['capacidade_maxima'] : null,
                 'config_horarios' => $turma['config_horarios'] ?? [],
                 'horarios_resumo' => $turma['horarios_resumo'] ?? '',
-                'total_alunos' => count($turma['alunos'] ?? []),
+                'total_alunos' => count(array_filter(
+                    $turma['alunos'] ?? [],
+                    fn (array $aluno) => (int) ($aluno['ativo'] ?? 0) === 1
+                )),
             ],
             'alunos' => $turma['alunos'] ?? [],
             'metricas' => $metricas,
@@ -161,7 +164,7 @@ class TurmaService extends Service {
                 $situacao = isset($presenca['situacao']) ? trim((string) $presenca['situacao']) : '';
 
                 if ($alunoId < 1 || !in_array($alunoId, $alunoIdsValidos, true)) {
-                    throw new \InvalidArgumentException("Ha alunos informados que nao pertencem a turma.");
+                    throw new \InvalidArgumentException("Ha alunos informados sem vinculo ativo com esta turma. Atualize a pagina e tente novamente.");
                 }
 
                 if ($situacao === '') {
@@ -179,7 +182,7 @@ class TurmaService extends Service {
             }
 
             $presencasNormalizadas = array_values($presencasNormalizadas);
-            $this->repository->syncPresencasTreino($treinoId, $presencasNormalizadas);
+            $this->repository->syncPresencasTreino($treinoId, $presencasNormalizadas, $alunoIdsValidos);
 
             if (!empty($presencasNormalizadas)) {
                 $this->repository->markTreinoAsConcluido($treinoId);

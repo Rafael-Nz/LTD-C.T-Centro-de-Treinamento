@@ -99,6 +99,7 @@ ctt/
 
 ## Documentação
 
-- [Guia de instalação](docs/instalacao.md)
+- [Instalação](docs/instalacao.md)
+- [Setup da aplicação](docs/setup.md)
 - [Módulo de autenticação](docs/modules/auth.md)
 - [Configuração de e-mail e PHPMailer](docs/modules/auth-email.md)

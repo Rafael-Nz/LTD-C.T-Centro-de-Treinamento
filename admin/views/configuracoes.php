@@ -38,24 +38,20 @@ $tabInicial = $_GET['tab'] ?? '';
                 <div class="col-lg-3 col-md-4 mb-4 config-menu-container d-flex">
                     <div class="config-card border-0 config-menu-card p-3 w-100 h-100">
                         <div class="nav flex-column nav-pills config-menu" id="configTabs" role="tablist">
-                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#perfis" type="button">
-                                <i class="ph ph-users-three"></i>
-                                <span class="menu-text">Perfis de Usuario</span>
-                            </button>
-                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#cargos" type="button">
-                                <i class="ph ph-briefcase"></i>
+                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#cargos" type="button">
+                                <i class="ph ph-briefcase" aria-hidden="true"></i>
                                 <span class="menu-text">Cargos</span>
                             </button>
                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#modalidades" type="button">
-                                <i class="ph ph-barbell"></i>
+                                <i class="ph ph-barbell" aria-hidden="true"></i>
                                 <span class="menu-text">Modalidades</span>
                             </button>
                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#empresa" type="button">
-                                <i class="ph ph-buildings"></i>
+                                <i class="ph ph-buildings" aria-hidden="true"></i>
                                 <span class="menu-text">Dados da Empresa</span>
                             </button>
                             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sobre" type="button">
-                                <i class="ph ph-info"></i>
+                                <i class="ph ph-info" aria-hidden="true"></i>
                                 <span class="menu-text">Sobre o Sistema</span>
                             </button>
                         </div>
@@ -64,75 +60,7 @@ $tabInicial = $_GET['tab'] ?? '';
 
                 <div class="col-lg-9 col-md-8 d-flex config-content-container">
                     <div class="tab-content w-100 h-100" id="configContent">
-                        <div class="tab-pane fade show active h-100" id="perfis">
-                            <div class="config-card border-0 p-4 h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="section-title mb-0">Gestao de Perfis de Usuario</h5>
-                                </div>
-
-                                <div class="mb-4 d-flex gap-2 flex-wrap">
-                                    <div class="d-flex gap-2 align-items-center flex-wrap">
-                                        <form id="buscaPerfis" class="d-flex" role="search" onsubmit="return false;">
-                                            <div class="input-group">
-                                                <input id="campoBuscaPerfis" class="form-control" type="search" placeholder="Buscar perfis..." aria-label="Buscar">
-                                                <button class="btn border border-start-0" type="button" id="botaoBuscarPerfis">
-                                                    <i class="ph ph-magnifying-glass"></i>
-                                                </button>
-                                            </div>
-                                        </form>
-
-                                        <div class="dropdown-center">
-                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Status">
-                                                <i class="ph ph-funnel me-1"></i>
-                                            </button>
-
-                                            <ul class="dropdown-menu dropdown-menu-end p-3">
-                                                <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-
-                                                <li>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input filtro-status-perfil" type="checkbox" value="1" id="perfilAtivo">
-                                                        <label class="form-check-label" for="perfilAtivo">Ativo</label>
-                                                    </div>
-                                                </li>
-
-                                                <li>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input filtro-status-perfil" type="checkbox" value="0" id="perfilInativo">
-                                                        <label class="form-check-label" for="perfilInativo">Inativo</label>
-                                                    </div>
-                                                </li>
-
-                                                <li><hr class="dropdown-divider"></li>
-
-                                                <li class="d-grid">
-                                                    <button id="aplicarFiltrosPerfis" class="btn btn-sm btn-red color">
-                                                        Aplicar Filtros
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <a href="perfil_form" class="btn btn-red color d-flex align-items-center border border-white">
-                                        <i class="ph ph-plus me-1"></i> Novo Perfil
-                                    </a>
-                                </div>
-
-                                <table id="tabelaPerfis" class="table table-hover align-middle w-100">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-start">Perfil</th>
-                                            <th class="text-center">Status</th>
-                                            <th class="text-end">Acoes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane fade h-100" id="cargos">
+                        <div class="tab-pane fade show active h-100" id="cargos">
                             <div class="config-card border-0 p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h5 class="section-title mb-0">Gestao de Cargos</h5>
@@ -143,15 +71,15 @@ $tabInicial = $_GET['tab'] ?? '';
                                         <form id="buscaCargos" class="d-flex" role="search" onsubmit="return false;">
                                             <div class="input-group">
                                                 <input id="campoBuscaCargos" class="form-control" type="search" placeholder="Buscar cargos..." aria-label="Buscar">
-                                                <button class="btn border border-start-0" type="button" id="botaoBuscarCargos">
-                                                    <i class="ph ph-magnifying-glass"></i>
+                                                <button class="btn border border-start-0" type="button" id="botaoBuscarCargos" title="Buscar cargos" aria-label="Buscar cargos">
+                                                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
                                                 </button>
                                             </div>
                                         </form>
 
                                         <div class="dropdown-center">
-                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Status">
-                                                <i class="ph ph-funnel me-1"></i>
+                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar status" aria-label="Filtrar status">
+                                                <i class="ph ph-funnel me-1" aria-hidden="true"></i>
                                             </button>
 
                                             <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownMenuButton">
@@ -176,8 +104,8 @@ $tabInicial = $_GET['tab'] ?? '';
                                         </div>
                                     </div>
 
-                                    <a href="/ctt/admin/cargos/cadastrar" class="btn btn-red color d-flex align-items-center border border-white">
-                                        <i class="ph ph-plus me-1"></i> Novo Cargo
+                                    <a href="/ctt/admin/cargos/cadastrar" class="btn btn-red color d-flex align-items-center border border-white" title="Cadastrar cargo" aria-label="Cadastrar cargo">
+                                        <i class="ph ph-plus me-1" aria-hidden="true"></i> Novo Cargo
                                     </a>
                                 </div>
 
@@ -249,15 +177,15 @@ $tabInicial = $_GET['tab'] ?? '';
                                         <form id="buscaModalidades" class="d-flex" role="search" onsubmit="return false;">
                                             <div class="input-group">
                                                 <input id="campoBuscaModalidades" class="form-control" type="search" placeholder="Buscar modalidades..." aria-label="Buscar">
-                                                <button class="btn border border-start-0" type="button" id="botaoBuscarModalidades">
-                                                    <i class="ph ph-magnifying-glass"></i>
+                                                <button class="btn border border-start-0" type="button" id="botaoBuscarModalidades" title="Buscar modalidades" aria-label="Buscar modalidades">
+                                                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
                                                 </button>
                                             </div>
                                         </form>
 
                                         <div class="dropdown-center">
-                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar Status">
-                                                <i class="ph ph-funnel me-1"></i>
+                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar status" aria-label="Filtrar status">
+                                                <i class="ph ph-funnel me-1" aria-hidden="true"></i>
                                             </button>
 
                                             <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownMenuButton">
@@ -282,8 +210,8 @@ $tabInicial = $_GET['tab'] ?? '';
                                         </div>
                                     </div>
 
-                                    <a href="/ctt/admin/modalidades/cadastrar" class="btn btn-red color d-flex align-items-center border border-white">
-                                        <i class="ph ph-plus me-1"></i> Nova Modalidade
+                                    <a href="/ctt/admin/modalidades/cadastrar" class="btn btn-red color d-flex align-items-center border border-white" title="Cadastrar modalidade" aria-label="Cadastrar modalidade">
+                                        <i class="ph ph-plus me-1" aria-hidden="true"></i> Nova Modalidade
                                     </a>
                                 </div>
 
@@ -302,7 +230,38 @@ $tabInicial = $_GET['tab'] ?? '';
 
                         <div class="tab-pane fade h-100" id="sobre">
                             <div class="config-card border-0 p-4 h-100">
-                                <h5 class="section-title mb-3">Sobre</h5>
+                                <h5 class="section-title mb-3">Sobre o Sistema</h5>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <i class="ph ph-barbell fs-1 text-danger" aria-hidden="true"></i>
+                                    <div>
+                                        <h2 class="h5 mb-1">Cross C.T</h2>
+                                        <p class="text-body-secondary mb-0">Sistema de gestão do centro de treinamento</p>
+                                    </div>
+                                </div>
+                                <p class="text-body-secondary mb-4">
+                                    O Cross C.T reúne as informações e atividades do centro de treinamento em um só lugar,
+                                    facilitando a organização da equipe, o acompanhamento dos alunos e a rotina administrativa.
+                                </p>
+
+                                <h3 class="h6 mb-3">Principais funcionalidades</h3>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <h4 class="h6"><i class="ph ph-users-three me-2" aria-hidden="true"></i>Alunos e equipe</h4>
+                                        <p class="small text-body-secondary mb-0">Cadastro e gerenciamento de alunos, funcionários e cargos.</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h4 class="h6"><i class="ph ph-barbell me-2" aria-hidden="true"></i>Organização dos treinos</h4>
+                                        <p class="small text-body-secondary mb-0">Gestão de turmas, treinos, modalidades e locais de treino.</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h4 class="h6"><i class="ph ph-wallet me-2" aria-hidden="true"></i>Gestão financeira</h4>
+                                        <p class="small text-body-secondary mb-0">Organização de serviços, planos, contratos e cobranças.</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h4 class="h6"><i class="ph ph-chart-line me-2" aria-hidden="true"></i>Relatórios</h4>
+                                        <p class="small text-body-secondary mb-0">Consulta de informações para acompanhar as atividades e apoiar as decisões da gestão.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -351,7 +310,6 @@ $tabInicial = $_GET['tab'] ?? '';
             });
         });
     </script>
-    <script src="/ctt/js/admin/configuracoes/perfis.js"></script>
     <script src="/ctt/js/admin/configuracoes/cargos.js"></script>
     <script src="/ctt/js/admin/configuracoes/modalidades.js"></script>
 </body>

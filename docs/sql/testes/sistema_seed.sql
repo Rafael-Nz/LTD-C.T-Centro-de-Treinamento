@@ -2,8 +2,7 @@
 --
 -- Como usar:
 -- 1. Execute docs/sql/setup/banco.sql (apaga e recria o banco)
--- 2. Execute docs/sql/setup/anamnese_form.sql (formulario padrao)
--- 3. Execute este arquivo
+-- 2. Execute este arquivo
 --
 -- Pode ser rerodado sem duplicar os mesmos registros.
 --

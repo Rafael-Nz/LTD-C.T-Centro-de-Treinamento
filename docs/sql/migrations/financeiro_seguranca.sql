@@ -1,4 +1,6 @@
--- Aplicar uma vez em banco existente, antes de usar o novo modulo.
+-- SOMENTE PARA ATUALIZACAO DE BANCO EXISTENTE.
+-- Nao executar depois de docs/sql/setup/banco.sql: o setup novo ja inclui esta estrutura.
+-- Aplicar uma vez antes de usar o modulo financeiro na base atualizada.
 -- Se houver transacoes bancarias duplicadas, resolver manualmente antes de aplicar.
 -- Nenhum pagamento ou cobranca e excluido por esta migracao.
 DELIMITER $$

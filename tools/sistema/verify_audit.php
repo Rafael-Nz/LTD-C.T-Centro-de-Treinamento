@@ -1,10 +1,11 @@
 <?php
 // CLI somente. Usa .env sem iniciar sessao/roteamento HTTP.
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../api/core/Database/Database.php';
-require_once __DIR__ . '/../api/core/Audit/AuditIntegrity.php';
-Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
+$projectRoot = dirname(__DIR__, 2);
+require_once $projectRoot . '/vendor/autoload.php';
+require_once $projectRoot . '/api/core/Database/Database.php';
+require_once $projectRoot . '/api/core/Audit/AuditIntegrity.php';
+Dotenv\Dotenv::createImmutable($projectRoot)->load();
 $options = getopt('', ['anchor:', 'checkpoint:']);
 try {
     $anchor = null;

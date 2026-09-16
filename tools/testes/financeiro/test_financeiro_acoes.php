@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/financeiro_bootstrap.php';
+require_once dirname(__DIR__, 2) . '/financeiro/financeiro_bootstrap.php';
 
 // Teste unitário das regras; repositório em memória, sem acessar o banco real.
 class RepositorioAcoesTeste extends \Financeiro\FinanceiroRepository {

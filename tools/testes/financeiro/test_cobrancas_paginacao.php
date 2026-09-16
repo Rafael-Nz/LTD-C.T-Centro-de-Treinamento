@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/financeiro_bootstrap.php';
+require_once dirname(__DIR__, 2) . '/financeiro/financeiro_bootstrap.php';
 $db = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $db->sqliteCreateFunction('CONCAT', fn (...$values) => implode('', $values));
 $db->exec('CREATE TABLE usuario (id INTEGER PRIMARY KEY, nome TEXT, sobrenome TEXT);

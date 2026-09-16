@@ -8,4 +8,4 @@ $financeiroAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument 
 $financeiroTrigger = New-ScheduledTaskTrigger -Daily -At '06:00'
 $financeiroSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew
 $financeiroPrincipal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
-Register-ScheduledTask -TaskName $financeiroTaskName -Action $financeiroAction -Trigger $financeiroTrigger -Settings $financeiroSettings -Principal $financeiroPrincipal -Description 'Gera competencias faltantes de contratos habilitados e atualiza vencidas.' -Force | Select-Object TaskName, State
+Register-ScheduledTask -TaskName $financeiroTaskName -Action $financeiroAction -Trigger $financeiroTrigger -Settings $financeiroSettings -Principal $financeiroPrincipal -Description 'Gera competencias faltantes de contratos ativos e atualiza vencidas.' -Force | Select-Object TaskName, State

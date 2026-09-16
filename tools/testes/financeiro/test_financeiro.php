@@ -1,6 +1,6 @@
 <?php
 // Somente servidor isolado de testes na porta 33317, com datadir ctt-financeiro-*.
-require_once __DIR__ . '/financeiro_bootstrap.php';
+require_once dirname(__DIR__, 2) . '/financeiro/financeiro_bootstrap.php';
 use Financeiro\FinanceiroService as S;
 use Financeiro\FinanceiroRepository as R;
 use Financeiro\FinanceiroValidation as V;
@@ -22,8 +22,9 @@ function sqlFile(PDO $db, string $sql): void {
     }
 }
 if (in_array($argv[1] ?? '', ['--setup', '--migration'], true)) {
-    sqlFile($db, str_replace('db_centro_treinamento', 'ctt_financeiro_test', file_get_contents(__DIR__ . '/../docs/sql/setup/banco.sql')));
-    $seed = file_get_contents(__DIR__ . '/../docs/sql/testes/sistema_seed.sql');
+    $projectRoot = dirname(__DIR__, 3);
+    sqlFile($db, str_replace('db_centro_treinamento', 'ctt_financeiro_test', file_get_contents($projectRoot . '/docs/sql/setup/banco.sql')));
+    $seed = file_get_contents($projectRoot . '/docs/sql/testes/sistema_seed.sql');
     // O marcador INSERT SELECT legado exige id explicito nesta versao do MariaDB.
     $seed = preg_replace('/INSERT INTO audit_logs.*?;/s', '', $seed);
     sqlFile($db, str_replace('db_centro_treinamento', 'ctt_financeiro_test', $seed));
@@ -32,7 +33,7 @@ if (in_array($argv[1] ?? '', ['--setup', '--migration'], true)) {
         $db->exec('ALTER TABLE contrato DROP COLUMN periodicidade, DROP COLUMN geracao_automatica');
         $db->exec('ALTER TABLE cobranca DROP COLUMN cancelada_em, DROP COLUMN cancelada_por, DROP COLUMN motivo_cancelamento');
         $db->exec('ALTER TABLE pagamento DROP INDEX uq_pagamento_operacao, DROP INDEX uq_pagamento_transacao, DROP COLUMN transacao_unica, DROP COLUMN chave_idempotencia, DROP COLUMN requisicao_hash, DROP COLUMN estornado_em, DROP COLUMN estornado_por, DROP COLUMN motivo_estorno');
-        sqlFile($db, file_get_contents(__DIR__ . '/../docs/sql/migrations/financeiro_seguranca.sql'));
+        sqlFile($db, file_get_contents($projectRoot . '/docs/sql/migrations/financeiro_seguranca.sql'));
         check((int) $db->query('SELECT COUNT(*) FROM contrato WHERE geracao_automatica <> 0')->fetchColumn() === 0, 'Migracao habilitou contratos antigos');
     }
     echo "Banco isolado preparado.\n";

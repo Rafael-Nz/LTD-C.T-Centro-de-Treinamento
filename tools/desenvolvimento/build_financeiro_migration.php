@@ -1,7 +1,8 @@
 <?php
 // Mantem os gatilhos da instalacao e da migracao com os mesmos campos financeiros.
 if (PHP_SAPI !== 'cli') exit;
-$path = __DIR__ . '/../docs/sql/setup/banco.sql';
+$projectRoot = dirname(__DIR__, 2);
+$path = $projectRoot . '/docs/sql/setup/banco.sql';
 $sql = file_get_contents($path);
 $fields = [
     'contrato' => ['periodicidade', 'geracao_automatica'],
@@ -28,14 +29,14 @@ $sql = preg_replace_callback('/DROP TRIGGER IF EXISTS audit_(contrato|cobranca|p
     return $block;
 }, $sql);
 file_put_contents($path, $sql);
-$auditPath = __DIR__ . '/../docs/sql/auditoria_operacoes.sql';
+$auditPath = $projectRoot . '/docs/sql/auditoria_operacoes.sql';
 $auditSql = file_get_contents($auditPath);
 foreach ($blocks as $block) {
     preg_match('/DROP TRIGGER IF EXISTS (\w+)\$\$/', $block, $name);
     $auditSql = preg_replace_callback('/DROP TRIGGER IF EXISTS ' . $name[1] . '\$\$.*?END\$\$/s', fn () => $block, $auditSql);
 }
 file_put_contents($auditPath, $auditSql);
-$migration = __DIR__ . '/../docs/sql/migrations/financeiro_seguranca.sql';
+$migration = $projectRoot . '/docs/sql/migrations/financeiro_seguranca.sql';
 $base = explode('-- Gatilhos financeiros', file_get_contents($migration))[0];
 file_put_contents($migration, rtrim($base) . "\n\n-- Gatilhos financeiros\nDELIMITER $$\n" . implode("\n\n", $blocks) . "\nDELIMITER ;\n");
 echo "Gatilhos financeiros atualizados.\n";

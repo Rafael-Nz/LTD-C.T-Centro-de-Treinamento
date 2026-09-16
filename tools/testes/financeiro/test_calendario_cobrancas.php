@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/financeiro_bootstrap.php';
+require_once dirname(__DIR__, 2) . '/financeiro/financeiro_bootstrap.php';
 use Financeiro\FinanceiroService as S;
 $base = ['data_inicio' => '2026-01-15', 'dia_vencimento' => 10, 'data_fim' => null, 'periodicidade' => 'mensal'];
 $limite = new DateTimeImmutable('2026-12-31');

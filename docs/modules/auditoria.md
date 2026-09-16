@@ -32,7 +32,7 @@ Identificadores, nomes de arquivos, exemplos SQL e mensagens literais de erro s�
 - [`docs/sql/auditoria_operacoes.sql`](../sql/auditoria_operacoes.sql)
 - [`docs/sql/auditoria_permissoes.sql`](../sql/auditoria_permissoes.sql)
 - [`docs/sql/auditoria_leitura.sql`](../sql/auditoria_leitura.sql)
-- [`tools/verify_audit.php`](../../tools/verify_audit.php)
+- [`tools/sistema/verify_audit.php`](../../tools/sistema/verify_audit.php)
 
 ## Acesso
 
@@ -52,7 +52,7 @@ O módulo não possui rotas próprias, Controller, Repository ou DTO. Ele partic
 | `Controller::json()` | Encaminha o ID retornado, quando aplicável, para o evento final. |
 | `Service::transaction()` | Coordena o lock do `chain head` e o marcador de commit externo. |
 | Triggers das tabelas cobertas | Registram as alterações de negócio, inclusive SQL direto. |
-| `php tools/verify_audit.php` | Verifica a integridade do histórico via CLI. |
+| `php tools/sistema/verify_audit.php` | Verifica a integridade do histórico via CLI. |
 
 ## Fluxo de registro
 

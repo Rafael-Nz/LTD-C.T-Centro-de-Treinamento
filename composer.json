@@ -1,10 +1,10 @@
 {
     "scripts": {
         "test": "@test:financeiro",
-        "test:financeiro": "@php -d xdebug.mode=off tools/test_financeiro_rapido.php",
-        "test:financeiro:setup": "@php -d xdebug.mode=off tools/test_financeiro.php --setup",
-        "test:financeiro:integracao": "@php -d xdebug.mode=off tools/test_financeiro.php",
-        "test:financeiro:migracao": "@php -d xdebug.mode=off tools/test_financeiro.php --migration"
+        "test:financeiro": "@php -d xdebug.mode=off tools/testes/financeiro/test_financeiro_rapido.php",
+        "test:financeiro:setup": "@php -d xdebug.mode=off tools/testes/financeiro/test_financeiro.php --setup",
+        "test:financeiro:integracao": "@php -d xdebug.mode=off tools/testes/financeiro/test_financeiro.php",
+        "test:financeiro:migracao": "@php -d xdebug.mode=off tools/testes/financeiro/test_financeiro.php --migration"
     },
     "require": {
         "phpmailer/phpmailer": "^6.9",

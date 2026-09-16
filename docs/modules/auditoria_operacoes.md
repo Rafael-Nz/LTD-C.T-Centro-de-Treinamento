@@ -13,7 +13,7 @@ O [catálogo de eventos](auditoria_eventos.md) descreve a interpretação dos re
 - [`docs/sql/setup/banco.sql`](../sql/setup/banco.sql)
 - [`docs/sql/auditoria_leitura.sql`](../sql/auditoria_leitura.sql)
 - [`api/core/Audit/AuditIntegrity.php`](../../api/core/Audit/AuditIntegrity.php)
-- [`tools/verify_audit.php`](../../tools/verify_audit.php)
+- [`tools/sistema/verify_audit.php`](../../tools/sistema/verify_audit.php)
 
 ## Acesso e dependências
 
@@ -60,7 +60,7 @@ Depois de instalar o schema e os triggers com a conta administrativa:
 
 2. Execute `docs/sql/auditoria_permissoes.sql` como administrador. O script revoga os grants anteriores da conta e aplica somente as permissões explícitas; não o utilize com uma conta compartilhada com outros sistemas.
 3. Configure `DB_USERNAME=ctt_app` e a senha correspondente em `.env`. A senha não deve ser versionada nem exposta no navegador.
-4. Execute `php tools/verify_audit.php` usando essa configuração.
+4. Execute `php tools/sistema/verify_audit.php` usando essa configuração.
 
 O SQL usa `db_centro_treinamento` e a conta `ctt_app@localhost`. Ajuste banco/host explicitamente em outro ambiente. Uma instalação completa que recrie tabelas deve reaplicar os grants. Novas tabelas e novas colunas de envelope não recebem privilégios automaticamente. Não acrescente um GRANT amplo sobre `banco.*`, pois ele eliminaria a separação entre dados de negócio e auditoria.
 
@@ -75,7 +75,7 @@ No ambiente local, a conta restrita foi provisionada com senha aleatória de 256
 3. Execute a verificação pelo terminal:
 
 ```powershell
-php tools/verify_audit.php
+php tools/sistema/verify_audit.php
 ```
 
 O arquivo SQL contém `DELIMITER`; utilize um cliente que interprete essa diretiva ao criar os triggers.
@@ -115,7 +115,7 @@ A linha de auditoria e a atualização do `chain head` participam da mesma trans
 
 ### Verificador CLI
 
-[`verify_audit.php`](../../tools/verify_audit.php) carrega a configuração, chama `AuditIntegrity::verify()` e apresenta o resultado. Pode ler uma referência anterior e exportar um novo checkpoint.
+[`verify_audit.php`](../../tools/sistema/verify_audit.php) carrega a configuração, chama `AuditIntegrity::verify()` e apresenta o resultado. Pode ler uma referência anterior e exportar um novo checkpoint.
 
 Sua execução é manual. Não há tarefa agendada nem armazenamento externo configurado pelo módulo.
 
@@ -202,7 +202,7 @@ Alterar o nome de uma action, a representação de um valor ou a ordem dos campo
 ### Verificar o histórico
 
 ```powershell
-php tools/verify_audit.php
+php tools/sistema/verify_audit.php
 ```
 
 Retorna código de saída 0 em sucesso e 1 em falha. A saída de sucesso informa a quantidade de registros e apresenta `chain_id`, `last_id` e `last_hash`.
@@ -221,7 +221,7 @@ A execução tem custo O(n) registros e memória limitada ao lote e seus dados. 
 ### Criar checkpoint
 
 ```powershell
-php tools/verify_audit.php --checkpoint=caminho/ancora-001.json
+php tools/sistema/verify_audit.php --checkpoint=caminho/ancora-001.json
 ```
 
 O arquivo contém somente a identidade e a posição/hash verificados. O diretório deve existir. Um arquivo já existente não é sobrescrito.
@@ -231,7 +231,7 @@ Guarde o checkpoint fora do banco, em local protegido contra escrita por quem co
 ### Verificar contra checkpoint
 
 ```powershell
-php tools/verify_audit.php --anchor=caminho/ancora-001.json
+php tools/sistema/verify_audit.php --anchor=caminho/ancora-001.json
 ```
 
 Novos eventos posteriores ao ponto ancorado são aceitos se a `hash chain` continuar válida. Uma identidade de `hash chain` diferente, um hash divergente naquela posição ou a ausência da posição provocam falha.
@@ -239,7 +239,7 @@ Novos eventos posteriores ao ponto ancorado são aceitos se a `hash chain` conti
 É possível validar a referência anterior antes de exportar outra:
 
 ```powershell
-php tools/verify_audit.php --anchor=caminho/ancora-001.json --checkpoint=caminho/ancora-002.json
+php tools/sistema/verify_audit.php --anchor=caminho/ancora-001.json --checkpoint=caminho/ancora-002.json
 ```
 
 ## Consulta dos registros

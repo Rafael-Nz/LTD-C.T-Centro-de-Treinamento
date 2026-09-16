@@ -2,3 +2,4 @@
 .env
 /vendor/
 /tools/email/node_modules/
+/tools/financeiro_rotina.log

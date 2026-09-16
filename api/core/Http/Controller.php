@@ -5,6 +5,7 @@ use Core\Auth\Auth;
 
 abstract class Controller {
     protected function json($data = null, int $status = 200): void {
+        \Core\Audit\Audit::responseId($data, $status);
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
 

@@ -45,19 +45,38 @@ No painel do XAMPP, inicie Apache e MySQL. O Apache precisa atender a porta usad
 
 1. Abra o phpMyAdmin em `http://localhost/phpmyadmin`.
 2. Abra [`sql/setup/banco.sql`](sql/setup/banco.sql).
-3. Execute o script para criar o banco `db_centro_treinamento` e suas tabelas.
+3. Execute o script com uma conta administrativa para criar o banco `db_centro_treinamento`, suas tabelas e os triggers de auditoria. Essa conta será o `DEFINER` dos triggers e deve permanecer disponível com os privilégios necessários.
 
 > Atenção: esse script começa com `DROP DATABASE` e apaga o banco inteiro. Use-o somente em uma instalação nova ou depois de realizar um backup. Para uma atualização de cliente com dados existentes, use uma migration específica fornecida pelo desenvolvedor.
 
-A conexao padrao esta definida em [`api/core/Database/Database.php`](../api/core/Database/Database.php):
+### Configurar a conta com permissões limitadas
 
-```text
-Host: localhost
-Porta: 3306
-Banco: db_centro_treinamento
-Usuario: root
-Senha: vazia
+A aplicação deve usar uma conta exclusiva `ctt_app`, inclusive no desenvolvimento. Reserve a conta administrativa para instalar o schema, manter os triggers e aplicar permissões. Não instale os triggers usando `ctt_app` como `DEFINER`.
+
+1. No phpMyAdmin, conectado como administrador, execute o SQL abaixo. Substitua o marcador por uma senha forte gerada para esse ambiente:
+
+   ```sql
+   CREATE USER 'ctt_app'@'localhost' IDENTIFIED BY '<senha-forte-gerada-no-ambiente>';
+   ```
+
+2. Importe ou execute [`sql/auditoria_permissoes.sql`](sql/auditoria_permissoes.sql) com a conta administrativa. O arquivo revoga os grants anteriores de `ctt_app@localhost` e aplica as permissões por tabela e coluna. Use uma conta exclusiva, sem roles herdadas; não aplique esse procedimento a uma conta compartilhada.
+3. Ao configurar o `.env` na etapa seguinte, informe a mesma senha definida no CREATE USER:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=db_centro_treinamento
+DB_USERNAME=ctt_app
+DB_PASSWORD="<senha-definida-no-CREATE-USER>"
 ```
+
+Os marcadores entre `<...>` devem ser substituídos; não são senhas para uso real. Se a conta já existir, confirme que é exclusiva da aplicação e configure sua senha pelo administrador, sem executar novamente CREATE USER.
+
+A conta recebe SELECT, INSERT, UPDATE e DELETE nas tabelas de negócio. Em `audit_logs`, recebe SELECT e INSERT somente nas colunas dos eventos enviadas pela API; snapshots, IDs e hashes são preenchidos pelos triggers. Em `audit_chain_state`, recebe apenas SELECT. Ela não pode alterar/apagar logs, modificar o `chain head`, remover triggers ou executar DROP/TRUNCATE.
+
+O script usa o banco `db_centro_treinamento` e a conta `ctt_app@localhost`. Se o ambiente usar outro banco ou host de conexão, ajuste essas referências no SQL e no `.env`. Reaplique as permissões após recriar o schema e revise o script quando adicionar tabelas. Não conceda privilégios amplos sobre `banco.*`, pois isso removeria a restrição de acesso à auditoria.
+
+Consulte [Operação da auditoria](modules/auditoria_operacoes.md) para os detalhes dos grants, do `DEFINER` e da verificação de integridade.
 
 ### Instalar dependencias PHP
 
@@ -78,7 +97,7 @@ Crie `.env` a partir de `.env.example`:
 Copy-Item .env.example .env
 ```
 
-Preencha as credenciais SMTP no `.env`:
+Preencha as credenciais do banco conforme a etapa anterior e as credenciais SMTP no `.env`:
 
 ```env
 APP_URL=http://localhost/ctt
@@ -91,7 +110,7 @@ MAIL_FROM_ADDRESS=seu-email@gmail.com
 MAIL_FROM_NAME="Cross C.T"
 ```
 
-Em produção, altere `APP_ENV` para `production`, configure `APP_ALLOWED_ORIGIN` com a origem exata da aplicação e informe credenciais próprias do banco em `DB_USERNAME` e `DB_PASSWORD`. Não use o usuário `root` nem senha vazia fora do ambiente local.
+Em produção, altere `APP_ENV` para `production` e configure `APP_ALLOWED_ORIGIN` com a origem exata da aplicação. Mantenha a conta restrita em `DB_USERNAME` e sua senha em `DB_PASSWORD`. Fora de `APP_ENV=development`, a conexão recusa o usuário `root` ou senha vazia.
 
 As regras de senha, recuperação de acesso e limitação de tentativas estão documentadas em [`modules/auth.md`](modules/auth.md).
 
@@ -128,6 +147,14 @@ npm run email:watch --prefix tools/email
 
 O lint deve informar que nao ha erros e as duas classes devem existir.
 
+Valide também a conexão com a conta restrita e a integridade da auditoria:
+
+```powershell
+& 'D:\xampp\php\php.exe' tools/verify_audit.php
+```
+
+O verificador deve informar `OK: cadeia integra`. Uma instalação sem eventos pode retornar zero registros. Execute pelo terminal; o acesso HTTP a `/tools` é bloqueado.
+
 ### Acessar a aplicacao
 
 - Aplicacao: `http://localhost/ctt`
@@ -163,6 +190,9 @@ O pacote final deve incluir:
 - `package.json` somente se for útil para controle da versão do projeto;
 - `api/src/auth/password-reset.html` já compilado pelo MJML;
 - `.env.example` como referência.
+- `.htaccess`, com as regras de roteamento e bloqueio de arquivos internos;
+- `docs/sql/setup/banco.sql` e `docs/sql/auditoria_permissoes.sql`, para o responsável pela instalação;
+- `tools/verify_audit.php`, para verificação pelo terminal.
 
 O pacote final nao deve incluir:
 
@@ -177,9 +207,10 @@ O pacote final nao deve incluir:
 3. Copie a aplicacao para `D:\xampp\htdocs\ctt`.
 4. Abra o phpMyAdmin em `http://localhost/phpmyadmin`.
 5. Em uma instalação nova, crie o banco executando [`sql/setup/banco.sql`](sql/setup/banco.sql). Se o banco já existir e tiver dados, não execute esse script: solicite uma migration ao responsável pelo sistema.
-6. Copie `.env.example` para `.env`.
-7. Preencha o `.env` com as configuracoes fornecidas pelo responsavel pelo sistema.
-8. Acesse `http://localhost/ctt` pelo navegador.
+6. Com a conta administrativa, siga [Configurar a conta com permissões limitadas](#configurar-a-conta-com-permissões-limitadas): crie uma conta exclusiva para esse ambiente e execute `sql/auditoria_permissoes.sql`. Não reutilize a senha do desenvolvedor.
+7. Copie `.env.example` para `.env` e preencha `DB_USERNAME=ctt_app`, a senha criada, `APP_ENV=production` e as demais configurações fornecidas pelo responsável pelo sistema.
+8. Execute `D:\xampp\php\php.exe tools/verify_audit.php` na raiz do projeto e confirme `OK: cadeia integra`.
+9. Acesse `http://localhost/ctt` pelo navegador.
 
 O cliente final nao deve executar comandos NPM nem instalar Node.js. O arquivo HTML do e-mail ja deve estar compilado e ser usado pelo PHPMailer.
 
@@ -222,4 +253,6 @@ Execute `composer install` na raiz do projeto e confirme se `vendor/autoload.php
 
 ### Erro de conexao com o banco
 
-Confirme se o MySQL esta ativo e se os valores em [`Database.php`](../api/core/Database/Database.php) correspondem ao ambiente local.
+Confirme se o MySQL está ativo e se `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` e `DB_PASSWORD` no `.env` correspondem à conta criada. Não altere o código de `Database.php` para configurar credenciais.
+
+Se aparecer `access denied` ou uma operação for recusada por falta de privilégios, confira o banco e o host da conta e reaplique `sql/auditoria_permissoes.sql` como administrador. Confirme também que os triggers foram instalados com um `DEFINER` administrativo válido. Não contorne o problema colocando root no `.env` ou concedendo privilégios amplos à aplicação.

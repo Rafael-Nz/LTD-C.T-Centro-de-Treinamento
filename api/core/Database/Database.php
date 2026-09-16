@@ -10,7 +10,7 @@ class Database
     private static ?PDO $connection = null;
     private static string $host = 'localhost';
     private static string $db = 'db_centro_treinamento';
-    private static string $user = 'root';
+    private static string $user = 'ctt_app';
     private static string $pass = '';
     private static string $port = '3306';
     private static string $charset = 'utf8mb4';
@@ -32,6 +32,12 @@ class Database
             self::$user = $_ENV['DB_USERNAME'] ?? self::$user;
             self::$pass = $_ENV['DB_PASSWORD'] ?? self::$pass;
             self::$port = $_ENV['DB_PORT'] ?? self::$port;
+
+            // A aplicacao nao deve usar root nem senha vazia em producao.
+            if (($_ENV['APP_ENV'] ?? 'production') !== 'development'
+                && (strcasecmp(self::$user, 'root') === 0 || self::$pass === '')) {
+                throw new \RuntimeException('Configure uma conta de banco restrita com senha para a aplicacao.');
+            }
 
             $dsn = sprintf(
                 "mysql:host=%s;port=%s;dbname=%s;charset=%s",

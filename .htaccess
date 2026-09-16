@@ -2,6 +2,15 @@
 RewriteEngine On
 RewriteBase /ctt/
 
+# Arquivos de configuracao, SQL e ferramentas sao somente internos/CLI.
+Options -Indexes
+RewriteRule (^|/)\. - [F,L]
+RewriteRule ^(?:docs|tools|vendor)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:composer\.(?:json|lock)|README\.md)(?:/|$) - [F,L,NC]
+<FilesMatch "(?i)(^\.env(?:\..*)?$|\.(?:sql|bak|backup|old)$)">
+    Require all denied
+</FilesMatch>
+
 # 1. Ignorar a pasta de administração
 RewriteRule ^admin($|/) - [L]
 RewriteRule ^api($|/) - [L]

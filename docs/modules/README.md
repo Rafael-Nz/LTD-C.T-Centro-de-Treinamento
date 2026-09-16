@@ -16,10 +16,11 @@ Esta pasta reúne a documentação separada por módulo da API do projeto.
 - [Anamnese](./anamnese.md)
 - [Avaliacao](./avaliacao.md)
 - [Relatorio](./relatorio.md)
+- [Auditoria](./auditoria.md)
 
 ## Padrão arquitetural
 
-Cada módulo segue a mesma estrutura:
+Os módulos de negócio seguem a mesma estrutura:
 
 - Controller: recebe as requisições HTTP e responde em JSON.
 - Service: concentra a regra de negócio.
@@ -27,4 +28,9 @@ Cada módulo segue a mesma estrutura:
 - DTO: representa as estruturas de entrada/saída.
 - Validation rules: validam os dados antes de persistir.
 
-Essa organização é aplicada em toda a API, facilitando manutenção, testes e evolução do sistema.
+Essa organização facilita a manutenção e a evolução dos módulos de negócio. A auditoria é transversal: utiliza classes do núcleo e triggers, sem Controller, Repository ou DTO próprios.
+
+## Documentação complementar da auditoria
+
+- [Eventos da auditoria](./auditoria_eventos.md): catálogo, condições de emissão e dados registrados.
+- [Operação da auditoria](./auditoria_operacoes.md): instalação, verificação da cadeia e checkpoints.

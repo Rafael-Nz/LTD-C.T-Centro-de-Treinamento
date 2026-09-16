@@ -56,6 +56,15 @@ class Router {
                 if (preg_match($pattern, $uri, $matches)) {
                     $params = array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
 
+                    try {
+                        \Core\Audit\Audit::begin($method, $route['path'], $params);
+                    } catch (\Throwable $e) {
+                        http_response_code(503);
+                        header('Content-Type: application/json; charset=utf-8');
+                        echo json_encode(['success' => false, 'message' => 'Auditoria indisponivel. Tente novamente em instantes.']);
+                        return;
+                    }
+
                     foreach ($route['middlewares'] as $middleware) {
                         $middlewareInstance = new $middleware();
                         if ($middlewareInstance->handle() === false) {

@@ -51,6 +51,7 @@ spl_autoload_register(function ($class) {
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+header('Access-Control-Expose-Headers: X-Request-ID, X-Correlation-ID');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');

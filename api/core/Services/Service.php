@@ -23,19 +23,23 @@ abstract class Service {
         }
 
         try {
+            if (!$inTransaction) {
+                \Core\Audit\Audit::lockChain($db);
+            }
             $result = $callback();
 
             if ($inTransaction) {
                 $db->exec("RELEASE SAVEPOINT {$savepoint}");
             } else {
+                \Core\Audit\Audit::transaction($db);
                 $db->commit();
             }
 
             return $result;
         } catch (Throwable $e) {
-            if ($inTransaction) {
+            if ($inTransaction && $db->inTransaction()) {
                 $db->exec("ROLLBACK TO SAVEPOINT {$savepoint}");
-            } else {
+            } elseif ($db->inTransaction()) {
                 $db->rollBack();
             }
             throw $e;

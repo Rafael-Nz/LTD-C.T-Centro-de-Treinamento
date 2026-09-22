@@ -18,7 +18,7 @@ if (preg_match('/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|pdf|map)$
 
 $partes = explode('/', $url);
 $pagina = $partes[0];
-$caminhoView = $publicDir . $pagina . '.php';
+$caminhoView = $publicDir . 'view/' . $pagina . '.php';
 
 if (file_exists($caminhoView)) {
     include $caminhoView;

@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Cross C.T - Mensalidade'; $currentPage = 'mensalidade'; ?>
+<?php $pageTitle = 'Cross C.T - Mensalidade'; $currentPage = 'mensalidade'; $pageCss = 'mensalidade.css'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <?php include __DIR__ . '/partials/head.php'; ?>

@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Cross C.T - Painel'; $currentPage = 'dashboard'; ?>
+<?php $pageTitle = 'Cross C.T - Painel'; $currentPage = 'dashboard'; $pageCss = 'visao-geral.css'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <?php include __DIR__ . '/partials/head.php'; ?>

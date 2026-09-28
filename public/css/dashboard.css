@@ -61,6 +61,8 @@ body {
 
 .sidebar.collapsed {
     width: 64px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .sidebar.collapsed .sidebar-logo span,
@@ -92,8 +94,9 @@ body {
 
 .sidebar.collapsed .sidebar-user {
     justify-content: center;
-    padding: 12px 0;
+    padding: 10px;
     gap: 0;
+    width: 100%;
 }
 
 .sidebar.collapsed .sidebar-dropdown {
@@ -251,10 +254,9 @@ body {
     border: none;
     color: var(--text-dark);
     font-size: 24px;
-    padding: 12px 16px;
+    padding: 0;
     line-height: 1;
     cursor: pointer;
-    align-self: flex-start;
 }
 
 /* =========================================================
@@ -262,6 +264,9 @@ body {
    ========================================================= */
 
 .greeting {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
 }
 
@@ -737,6 +742,222 @@ body {
     font-size: 20px;
     font-weight: 700;
     color: var(--text-dark);
+}
+
+/* =========================================================
+   PLANO ATUAL (MENSALIDADE)
+   ========================================================= */
+
+.plan-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.plan-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.plan-subtitle {
+    font-size: 13px;
+    color: var(--text-dimmed);
+    margin-bottom: 20px;
+}
+
+.plan-detail {
+    margin-bottom: 16px;
+}
+
+.plan-detail:last-child {
+    margin-bottom: 0;
+}
+
+.plan-label {
+    font-size: 12px;
+    color: var(--text-dimmed);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.plan-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-badge--green {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge--yellow {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge--red {
+    background-color: #fde8e8;
+    color: #991b1b;
+}
+
+/* =========================================================
+   HISTÓRICO DE PAGAMENTOS
+   ========================================================= */
+
+.history-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.history-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.history-subtitle {
+    font-size: 13px;
+    color: var(--text-dimmed);
+    margin-bottom: 20px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-item:first-child {
+    padding-top: 0;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.history-month {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.history-info {
+    font-size: 12px;
+    color: var(--text-dimmed);
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* =========================================================
+   PAGAR MENSALIDADE
+   ========================================================= */
+
+.payment-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.payment-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.payment-ref {
+    font-size: 13px;
+    color: var(--text-dimmed);
+    margin-bottom: 16px;
+}
+
+.payment-choose {
+    font-size: 13px;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+}
+
+.payment-option {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 12px;
+}
+
+.payment-option:last-child {
+    margin-bottom: 0;
+}
+
+.payment-method {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 2px;
+}
+
+.payment-desc {
+    font-size: 12px;
+    color: var(--text-dimmed);
+    margin-bottom: 12px;
+}
+
+.btn-pay {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.btn-pay:hover {
+    opacity: 0.85;
+}
+
+.btn-pay--pix {
+    background-color: #00b894;
+}
+
+.btn-pay--card {
+    background-color: var(--primary-red);
+}
+
+.btn-pay--boleto {
+    background-color: var(--dark);
 }
 
 /* =========================================================

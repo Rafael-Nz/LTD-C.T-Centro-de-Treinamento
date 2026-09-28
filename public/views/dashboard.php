@@ -1,70 +1,21 @@
+<?php $pageTitle = 'Cross C.T - Painel'; $currentPage = 'dashboard'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= PUBLIC_URL ?>css/dashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <title>Cross C.T - Painel</title>
-</head>
+<?php include __DIR__ . '/partials/head.php'; ?>
 <body>
     <div class="d-flex vh-100">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-logo">
-                <img src="<?= PUBLIC_URL ?>img/logo.png" alt="Cross C.T" class="sidebar-logo-img">
-                <span>Cross C.T</span>
-            </div>
-
-            <p class="sidebar-label">MENU</p>
-
-            <nav class="d-flex flex-column gap-1 flex-grow-1">
-                <a href="/ctt/dashboard" class="sidebar-link active">
-                    <i class="bi bi-house-door me-2"></i><span>Início</span>
-                </a>
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-person me-2"></i><span>Dados Pessoais</span>
-                </a>
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-card-checklist me-2"></i><span>Matrícula</span>
-                </a>
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-clipboard-data me-2"></i><span>Avaliações</span>
-                </a>
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-clock me-2"></i><span>Horários</span>
-                </a>
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-wallet2 me-2"></i><span>Mensalidade</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-user-wrap">
-                <div class="sidebar-dropdown" id="userDropdown">
-                    <a href="/ctt/login" class="sidebar-dropdown-item">
-                        <i class="bi bi-box-arrow-left me-2"></i><span>Sair</span>
-                    </a>
-                </div>
-                <div class="sidebar-user" id="userProfile">
-                    <div class="sidebar-avatar">CS</div>
-                    <div class="sidebar-user-info">
-                        <span class="sidebar-user-name">Carlos Silva</span>
-                        <span class="sidebar-user-role">Aluno</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
+        <?php include __DIR__ . '/partials/sidebar.php'; ?>
 
         <div class="d-flex flex-column flex-grow-1 min-width-0">
-            <button class="btn-menu d-lg-none" id="btnMenu">
-                <i class="bi bi-list"></i>
-            </button>
-
             <main class="dashboard-main">
                 <div class="greeting">
-                    <p class="greeting-text">Bem vindo</p>
-                    <p class="greeting-date">Segunda-feira, 15 de Setembro de 2026</p>
+                    <button class="btn-menu d-lg-none" id="btnMenu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div>
+                        <p class="greeting-text">Bem vindo</p>
+                        <p class="greeting-date">Segunda-feira, 15 de Setembro de 2026</p>
+                    </div>
                 </div>
 
                 <div class="section-header">
@@ -197,8 +148,6 @@
             </main>
         </div>
     </div>
-
-    <div class="sidebar-overlay d-none" id="sidebarOverlay"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= PUBLIC_URL ?>js/sidebar.js"></script>

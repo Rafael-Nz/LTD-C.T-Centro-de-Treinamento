@@ -21,3 +21,15 @@ overlay.addEventListener('click', function() {
     sidebar.classList.remove('open');
     overlay.classList.add('d-none');
 });
+
+var userProfile = document.getElementById('userProfile');
+var userDropdown = document.getElementById('userDropdown');
+
+userProfile.addEventListener('click', function(e) {
+    e.stopPropagation();
+    userDropdown.classList.toggle('open');
+});
+
+document.addEventListener('click', function() {
+    userDropdown.classList.remove('open');
+});

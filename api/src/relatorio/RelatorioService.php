@@ -15,6 +15,11 @@ class RelatorioService
         return $this->repository->metricas();
     }
 
+    public function agenda(string $start = '', string $end = ''): array
+    {
+        return $this->repository->agenda($start, $end);
+    }
+
     public function gerar(string $tipo, array $filters): array
     {
         $relatorios = [

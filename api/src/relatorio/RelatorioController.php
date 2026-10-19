@@ -17,6 +17,19 @@ class RelatorioController extends Controller
         $this->json($this->service->metricas());
     }
 
+    public function agenda(): void
+    {
+        try {
+            $this->json($this->service->agenda(
+                (string) $this->input('start', ''),
+                (string) $this->input('end', '')
+            ));
+        } catch (\Throwable $e) {
+            error_log('[RelatorioController::agenda] ' . $e->getMessage());
+            $this->error('Erro ao carregar a agenda de treinos.', 500);
+        }
+    }
+
     public function gerar(): void
     {
         try {

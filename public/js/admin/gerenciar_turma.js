@@ -388,16 +388,32 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildCalendarEvents(payload) {
         const treinos = Array.isArray(payload?.treinos) ? payload.treinos : [];
 
-        return treinos.map((treino) => ({
-            id: `treino-${treino.id}`,
-            title: treino.treino?.nome || 'Treino',
-            start: String(treino.data_hora_inicio || '').replace(' ', 'T'),
-            end: String(treino.data_hora_fim || '').replace(' ', 'T'),
-            classNames: [`fc-event-${treino.status || 'agendado'}`],
-            extendedProps: {
-                treinoId: Number(treino.id)
+        return treinos.map((treino) => {
+            const status = treino.status || 'agendado';
+            let bg = '#dbeafe', border = '#2563eb', text = '#0f172a';
+            if (status === 'concluido') {
+                bg = '#dcfce7'; border = '#16a34a'; text = '#064e3b';
+            } else if (status === 'cancelado') {
+                bg = '#fee2e2'; border = '#dc2626'; text = '#7f1d1d';
             }
-        }));
+
+            return {
+                id: `treino-${treino.id}`,
+                title: treino.treino?.nome || 'Treino',
+                start: String(treino.data_hora_inicio || '').replace(' ', 'T'),
+                end: String(treino.data_hora_fim || '').replace(' ', 'T'),
+                backgroundColor: bg,
+                borderColor: border,
+                textColor: text,
+                classNames: [`fc-event-${status}`],
+                extendedProps: {
+                    treinoId: Number(treino.id),
+                    status: status,
+                    espaco: treino.espaco || '',
+                    instrutor: treino.instrutor?.nome || ''
+                }
+            };
+        });
     }
 
     function renderHeader(payload) {
@@ -1030,18 +1046,25 @@ document.addEventListener('DOMContentLoaded', function () {
             locale: 'pt-br',
             initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
             height: 'auto',
+            nowIndicator: true,
+            allDaySlot: false,
+            slotMinTime: '06:00:00',
+            slotMaxTime: '23:00:00',
+            expandRows: true,
+            eventDisplay: 'block',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listWeek'
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             },
             buttonText: {
                 today: 'Hoje',
-                month: 'Mes',
+                month: 'Mês',
                 week: 'Semana',
+                day: 'Dia',
                 list: 'Lista'
             },
-            noEventsContent: 'Nenhum treino agendado para este periodo.',
+            noEventsContent: 'Nenhum treino agendado para este período.',
             datesSet(info) {
                 const start = info.startStr.slice(0, 19).replace('T', ' ');
                 const end = info.endStr.slice(0, 19).replace('T', ' ');

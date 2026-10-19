@@ -25,6 +25,45 @@ class RelatorioRepository extends Repository
         return $row;
     }
 
+    public function agenda(string $start = '', string $end = ''): array
+    {
+        $where = [];
+        $params = [];
+
+        foreach ([['valor' => $start, 'operador' => '>='], ['valor' => $end, 'operador' => '<']] as $periodo) {
+            $data = trim($periodo['valor']);
+            if ($data === '') {
+                continue;
+            }
+
+            $data = str_replace('T', ' ', $data);
+            if (strtotime($data) === false) {
+                continue;
+            }
+
+            $where[] = "ta.data_hora_inicio {$periodo['operador']} ?";
+            $params[] = $data;
+        }
+
+        $sql = "SELECT ta.id, ta.data_hora_inicio, ta.data_hora_fim, ta.status,
+                    tr.nome AS treino, t.id AS turma_id, t.nome AS turma,
+                    et.nome AS espaco,
+                    CONCAT(u.nome, ' ', u.sobrenome) AS instrutor
+                FROM treino_agenda ta
+                INNER JOIN treino tr ON tr.id = ta.treino_id
+                LEFT JOIN turma t ON t.id = ta.turma_id
+                INNER JOIN espaco_treino et ON et.id = ta.espaco_id
+                LEFT JOIN funcionario f ON f.usuario_id = ta.instrutor_id
+                LEFT JOIN usuario u ON u.id = f.usuario_id";
+
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql .= ' ORDER BY ta.data_hora_inicio ASC';
+        return $this->fetchAll($sql, $params);
+    }
+
     public function alunos(array $filters): array
     {
         $where = [];

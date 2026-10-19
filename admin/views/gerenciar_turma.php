@@ -41,12 +41,16 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
           <a href="/ctt/admin/turmas" class="btn btn-secondary btn-sm">
             <i class="ph ph-arrow-left me-1"></i>Voltar
           </a>
+          <?php if (\Core\Auth\Auth::canAny(['turmas.gerenciar', 'treinos.criar'])): ?>
           <button type="button" class="btn btn-primary btn-sm" id="abrirAgendarTreinoBtn">
             <i class="ph ph-calendar-plus me-1"></i>Agendar treino
           </button>
+          <?php endif; ?>
+          <?php if (\Core\Auth\Auth::can('turmas.editar')): ?>
           <a href="<?= htmlspecialchars($editarUrl, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-red btn-sm" id="editarTurmaBtn">
             <i class="ph ph-pencil-simple me-1"></i>Editar turma
           </a>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -115,17 +119,21 @@ $editarUrl = $turmaId > 0 ? "/ctt/admin/turmas/editar/{$turmaId}" : '/ctt/admin/
         </div>
       </div>
 
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <h2 class="h5 mb-1">Calendario da turma</h2>
-            <small class="text-muted" id="calendarPeriodLabel">Carregando periodo...</small>
+      <!-- Calendário da turma -->
+      <div class="card dashboard-card mb-4">
+        <div class="dashboard-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="ph ph-calendar-check fs-5 text-danger"></i>
+            <div>
+              <h5 class="card-title mb-0 fw-bold fs-6 text-body">Calendário da Turma</h5>
+              <small class="text-body-secondary" id="calendarPeriodLabel">Carregando período...</small>
+            </div>
           </div>
-          <span class="badge rounded-pill text-bg-light border" id="calendarLegend">
-            Clique em um treino para ver as presencas
+          <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2 fw-semibold" id="calendarLegend">
+            <i class="ph ph-info me-1"></i>Clique em um treino para ver as presenças
           </span>
         </div>
-        <div class="card-body">
+        <div class="card-body p-3 p-md-4">
           <div id="calendar"></div>
         </div>
       </div>

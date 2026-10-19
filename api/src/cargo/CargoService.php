@@ -11,22 +11,27 @@ class CargoService extends Service {
         $this->cargoRepo = new CargoRepository();
     }
 
-    public function create(CargoDTO $dto): int {
+    public function create(CargoDTO $dto, array $permissoes = []): int {
         $this->validateData($dto, $this->rulesForSave(), $this->messages(), $this->attributes());
 
-        return $this->transaction(function () use ($dto) {
+        return $this->transaction(function () use ($dto, $permissoes) {
             if ($this->cargoRepo->findByNome($dto->nome)) {
                 throw new \RuntimeException('Ja existe um cargo com este nome.');
             }
 
-            return $this->cargoRepo->create($dto);
+            $id = $this->cargoRepo->create($dto);
+            if (!empty($permissoes)) {
+                $this->cargoRepo->syncPermissions($id, $permissoes);
+            }
+
+            return $id;
         });
     }
 
-    public function update(int $id, CargoDTO $dto): void {
+    public function update(int $id, CargoDTO $dto, ?array $permissoes = null): void {
         $this->validateData($dto, $this->rulesForSave(), $this->messages(), $this->attributes());
 
-        $this->transaction(function () use ($id, $dto) {
+        $this->transaction(function () use ($id, $dto, $permissoes) {
             $existing = $this->cargoRepo->findById($id);
             if (!$existing) {
                 throw new \RuntimeException('Cargo nao encontrado.');
@@ -38,6 +43,10 @@ class CargoService extends Service {
             }
 
             $this->cargoRepo->update($id, $dto);
+
+            if ($permissoes !== null) {
+                $this->cargoRepo->syncPermissions($id, $permissoes);
+            }
         });
     }
 

@@ -50,7 +50,24 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
                 <div class="mb-3">
                   <label for="descricao" class="form-label">Descricao</label>
-                  <textarea class="form-control" id="descricao" name="descricao" rows="4" maxlength="255" placeholder="Descreva rapidamente a responsabilidade principal do cargo."></textarea>
+                  <textarea class="form-control" id="descricao" name="descricao" rows="3" maxlength="255" placeholder="Descreva rapidamente a responsabilidade principal do cargo."></textarea>
+                </div>
+
+                <div class="mt-4">
+                  <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-1 pb-2 flex-wrap gap-2">
+                    <div>
+                      <h3 class="h6 mb-0 section-title">Permissões de Acesso do Cargo</h3>
+                      <small class="text-muted">Defina exatamente o que este cargo pode visualizar e executar no sistema.</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" id="btnMarcarTodas">Marcar Todas</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" id="btnDesmarcarTodas">Desmarcar Todas</button>
+                    </div>
+                  </div>
+
+                  <div id="containerPermissoes" class="row g-3">
+                    <div class="col-12 text-muted small"><i class="ph ph-spinner fa-spin me-2"></i>Carregando permissões do sistema...</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -73,7 +90,7 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
   <script src="/ctt/plugins/popper/popper.min.js"></script>
   <script src="/ctt/plugins/bootstrap/js/bootstrap.min.js"></script>
   <script defer src="/ctt/plugins/overlayscrollbars/js/overlayscrollbars.browser.es6.min.js"></script>
-  <script defer src="/ctt/js/admin/sidebar.js"></script>
-  <script src="/ctt/js/admin/form/cargo_form.js"></script>
+  <script defer src="/ctt/js/admin/sidebar.js?v=<?= filemtime(__DIR__ . '/../../public/js/admin/sidebar.js') ?>"></script>
+  <script src="/ctt/js/admin/form/cargo_form.js?v=<?= filemtime(__DIR__ . '/../../public/js/admin/form/cargo_form.js') ?>"></script>
 </body>
 </html>

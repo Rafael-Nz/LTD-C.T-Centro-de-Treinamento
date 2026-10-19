@@ -157,4 +157,75 @@ class CargoRepository extends Repository implements DataTablesRepositoryInterfac
     public function reactivate(int $id): bool {
         return $this->execute('UPDATE cargo SET ativo = 1 WHERE id = ?', [$id]);
     }
+
+    public function listAllPermissions(): array {
+        return $this->fetchAll("
+            SELECT id, slug, modulo, nome, descricao
+            FROM permissao
+            ORDER BY modulo ASC, nome ASC
+        ");
+    }
+
+    public function findPermissionIds(int $cargoId): array {
+        $rows = $this->fetchAll("
+            SELECT permissao_id
+            FROM cargo_permissao
+            WHERE cargo_id = ?
+        ", [$cargoId]);
+
+        return array_map('intval', array_column($rows, 'permissao_id'));
+    }
+
+    public function findPermissionSlugs(int $cargoId): array {
+        $rows = $this->fetchAll("
+            SELECT p.slug
+            FROM permissao p
+            INNER JOIN cargo_permissao cp ON cp.permissao_id = p.id
+            WHERE cp.cargo_id = ?
+        ", [$cargoId]);
+
+        return array_column($rows, 'slug');
+    }
+
+    public function syncPermissions(int $cargoId, array $permissionIdentifiers): void {
+        $this->execute("DELETE FROM cargo_permissao WHERE cargo_id = ?", [$cargoId]);
+
+        if (empty($permissionIdentifiers)) {
+            return;
+        }
+
+        $validIds = [];
+        $slugsToLookup = [];
+        foreach ($permissionIdentifiers as $identifier) {
+            if (is_numeric($identifier) && (int) $identifier > 0) {
+                $validIds[] = (int) $identifier;
+            } elseif (is_string($identifier) && trim($identifier) !== '') {
+                $slugsToLookup[] = trim($identifier);
+            }
+        }
+
+        if (!empty($slugsToLookup)) {
+            $inPlaceholders = implode(',', array_fill(0, count($slugsToLookup), '?'));
+            $rows = $this->fetchAll("SELECT id FROM permissao WHERE slug IN ({$inPlaceholders})", $slugsToLookup);
+            foreach ($rows as $r) {
+                $validIds[] = (int) $r['id'];
+            }
+        }
+
+        $validIds = array_unique($validIds);
+        if (empty($validIds)) {
+            return;
+        }
+
+        $placeholders = [];
+        $params = [];
+        foreach ($validIds as $pId) {
+            $placeholders[] = "(?, ?)";
+            $params[] = $cargoId;
+            $params[] = $pId;
+        }
+
+        $sql = "INSERT INTO cargo_permissao (cargo_id, permissao_id) VALUES " . implode(', ', $placeholders);
+        $this->execute($sql, $params);
+    }
 }

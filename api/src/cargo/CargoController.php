@@ -40,14 +40,23 @@ class CargoController extends Controller {
             return;
         }
 
+        $cargo['permissoes'] = $this->repo->findPermissionIds($id);
+        $cargo['permissoes_slugs'] = $this->repo->findPermissionSlugs($id);
+
         $this->json($cargo);
     }
 
+    public function permissoes(): void {
+        $this->json($this->repo->listAllPermissions());
+    }
+
     public function store(): void {
-        $dto = CargoDTO::fromArray($this->body());
+        $body = $this->body();
+        $dto = CargoDTO::fromArray($body);
+        $permissoes = isset($body['permissoes']) && is_array($body['permissoes']) ? $body['permissoes'] : [];
 
         try {
-            $id = $this->service->create($dto);
+            $id = $this->service->create($dto, $permissoes);
             $this->json(['id' => $id, 'message' => 'Cargo cadastrado com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);
@@ -60,10 +69,12 @@ class CargoController extends Controller {
     }
 
     public function update(int $id): void {
-        $dto = CargoDTO::fromArray($this->body());
+        $body = $this->body();
+        $dto = CargoDTO::fromArray($body);
+        $permissoes = isset($body['permissoes']) && is_array($body['permissoes']) ? $body['permissoes'] : null;
 
         try {
-            $this->service->update($id, $dto);
+            $this->service->update($id, $dto, $permissoes);
             $this->json(['message' => 'Cargo atualizado com sucesso.']);
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);

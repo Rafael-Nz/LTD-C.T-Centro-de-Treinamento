@@ -97,9 +97,18 @@ ctt/
 - A conexão com banco utiliza PDO e banco MySQL `db_centro_treinamento`.
 - A estrutura da API segue uma divisão por responsabilidade para facilitar manutenção e evolução.
 
-## Documentação
+## 📚 Documentação & Wiki do Projeto
 
-- [Instalação](docs/instalacao.md)
-- [Setup da aplicação](docs/setup.md)
-- [Módulo de autenticação](docs/modules/auth.md)
-- [Configuração de e-mail e PHPMailer](docs/modules/auth-email.md)
+A documentação do sistema está organizada na pasta [`docs/`](docs/) e formatada para ser utilizada como a **Wiki oficial do repositório**.
+
+- 🏠 **[Página Inicial da Wiki (Home)](docs/Home.md)**: Índice completo, mapa de navegação e fluxos do sistema.
+- 📖 **[Guia de Publicação da Wiki](docs/wiki_guia.md)**: Como ativar e sincronizar a documentação com a Wiki do GitHub/GitLab.
+- 🚀 **Primeiros Passos**: [Instalação](docs/instalacao.md) • [Setup Inicial](docs/setup.md) • [Configuração de E-mail](docs/modules/auth-email.md)
+- 🏗️ **Arquitetura & Design**: [Arquitetura Geral](docs/arquitetura.md) • [Core da API](docs/core/README.md)
+- 🖥️ **Painel Administrativo**: [Rotas, Views e Sessão](docs/admin/README.md)
+- 📦 **Módulos da API**: [Catálogo Geral](docs/modules/README.md) • [Financeiro](docs/modules/financeiro.md) • [Alunos](docs/modules/aluno.md) • [Turmas](docs/modules/turma.md)
+- 🛡️ **Auditoria & Segurança**: [Cadeia de Auditoria](docs/modules/auditoria.md) • [Catálogo de Eventos](docs/modules/auditoria_eventos.md)
+- 🗄️ **Banco de Dados**: [Modelagem & Dicionário de Tabelas](docs/database/README.md) • [Scripts SQL](docs/sql/)
+- 🛠️ **Ferramentas & Automação**: [Rotinas Agendadas & CLI](docs/tools/README.md)
+- ⚡ **Swagger / OpenAPI**: Interface viva acessível em `http://localhost/ctt/api/docs` (consulte [Módulo Docs](docs/modules/docs.md))
+

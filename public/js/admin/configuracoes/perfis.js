@@ -53,8 +53,8 @@ $(document).ready(function () {
 
                         return `
                             <div class="d-flex flex-column">
-                                <span>${nomeCompleto}</span>
-                                <small class="text-muted">${tipoUsuario}</small>
+                                <span>${escapeHtml(nomeCompleto)}</span>
+                                <small class="text-muted">${escapeHtml(tipoUsuario)}</small>
                             </div>
                         `;
                     }

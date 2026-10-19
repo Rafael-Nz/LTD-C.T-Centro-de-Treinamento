@@ -1,5 +1,16 @@
 const tabelas = {};
 
+function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escapeHtml = escapeHtml;
+
 function extrairListaApi(payload) {
     if (!payload) return [];
     if (Array.isArray(payload)) return payload;
@@ -136,7 +147,8 @@ function inicializarTabela(config) {
 
 function formatarData(dataString) {
     if (!dataString) return '—';
-    const data = new Date(dataString);
+    const [ano, mes, dia] = String(dataString).slice(0, 10).split('-').map(Number);
+    const data = ano && mes && dia ? new Date(ano, mes - 1, dia) : new Date(dataString);
     return data.toLocaleDateString('pt-BR');
 }
 

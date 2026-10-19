@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (!isset($catalogo, $formulario) || !in_array($catalogo, ['servicos', 'planos'], true)) {
     http_response_code(404);
     exit;
@@ -19,20 +19,20 @@ $opcoes = $servico
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T | <?= $formulario ? $tituloForm : $titulo ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/ctt/css/admin-styles.css">
+    <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/ctt/css/admin-styles.css">
     <link rel="stylesheet" href="/ctt/css/sidebar.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/ctt/plugins/phosphor-icons/src/regular/style.css">
+    <link href="/ctt/plugins/fonts/manrope.css" rel="stylesheet">
+  <link rel="stylesheet" href="/ctt/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="/ctt/plugins/select2/css/select2-bootstrap-5-theme.min.css">
     <?php if ($formulario): ?>
     <link rel="stylesheet" href="/ctt/css/form.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css">
     <?php else: ?>
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.7/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="/ctt/plugins/datatables/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="/ctt/plugins/datatables/css/responsive.bootstrap5.min.css">
     <?php endif; ?>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/ctt/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php include __DIR__ . '/sidebar.php'; ?>
@@ -117,16 +117,16 @@ $opcoes = $servico
         </div>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script defer src="/ctt/js/admin/sidebar.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/ctt/plugins/jquery/jquery-3.7.1.min.js"></script>
     <?php if ($formulario): ?>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="/ctt/plugins/select2/js/select2.min.js"></script>
     <?php else: ?>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/3.0.7/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/3.0.7/js/responsive.bootstrap5.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/dataTables.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/dataTables.responsive.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/responsive.bootstrap5.min.js"></script>
     <script src="/ctt/js/admin/tabelas.js"></script>
     <?php endif; ?>
     <script src="/ctt/js/admin/financeiro_catalogo.js"></script>

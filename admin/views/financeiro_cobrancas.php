@@ -1,20 +1,20 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T | Cobranças</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/ctt/css/admin-styles.css">
+    <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/ctt/css/admin-styles.css">
     <link rel="stylesheet" href="/ctt/css/sidebar.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.7/css/responsive.bootstrap5.min.css">
+  <link rel="stylesheet" href="/ctt/plugins/phosphor-icons/src/regular/style.css">
+    <link href="/ctt/plugins/fonts/manrope.css" rel="stylesheet">
+    <script src="/ctt/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="/ctt/plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="/ctt/plugins/select2/css/select2-bootstrap-5-theme.min.css">
+    <link rel="stylesheet" href="/ctt/plugins/datatables/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="/ctt/plugins/datatables/css/responsive.bootstrap5.min.css">
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -74,14 +74,14 @@
         </div>
     </main>
     <?php include __DIR__ . '/partials/footer.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script defer src="/ctt/js/admin/sidebar.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/3.0.7/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/3.0.7/js/responsive.bootstrap5.min.js"></script>
+    <script src="/ctt/plugins/jquery/jquery-3.7.1.min.js"></script>
+    <script src="/ctt/plugins/select2/js/select2.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/dataTables.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/dataTables.responsive.min.js"></script>
+    <script src="/ctt/plugins/datatables/js/responsive.bootstrap5.min.js"></script>
     <script src="/ctt/js/admin/tabelas.js"></script>
     <script src="/ctt/js/admin/datatable/financeiro_cobrancas.js"></script>
     <script src="/ctt/js/admin/financeiro.js"></script>

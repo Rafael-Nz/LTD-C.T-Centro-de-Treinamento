@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     // Máscaras
     function applyMasks() {
         if (typeof IMask !== 'undefined') {

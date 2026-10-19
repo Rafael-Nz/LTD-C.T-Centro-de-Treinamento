@@ -1,14 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= PUBLIC_URL ?>css/home-login.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="<?= PUBLIC_URL ?>css/home-login.css">
+    <link href="/ctt/plugins/fonts/inter.css" rel="stylesheet">
+  <link href="/ctt/plugins/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/ctt/plugins/phosphor-icons/src/regular/style.css">
 </head>
+
 <body>
     <div class="login-wrapper">
         <div class="login-split">

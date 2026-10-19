@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Cross C.T - Painel'; $currentPage = 'dashboard'; $pageCss = 'visao-geral.css'; ?>
+﻿<?php $pageTitle = 'Cross C.T - Painel'; $currentPage = 'dashboard'; $pageCss = 'visao-geral.css'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <?php include __DIR__ . '/partials/head.php'; ?>
@@ -149,7 +149,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="<?= PUBLIC_URL ?>js/sidebar.js"></script>
 </body>
 </html>

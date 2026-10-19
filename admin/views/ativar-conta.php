@@ -1,4 +1,4 @@
-<?php $token = $_GET['token'] ?? ''; ?>
+﻿<?php $token = $_GET['token'] ?? ''; ?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="dark">
 
@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T | Ativar conta</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIlFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="/ctt/css/login.css">
+    <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/ctt/css/login.css">
 </head>
 
 <body>

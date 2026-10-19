@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
     const api = '/ctt/api/financeiro';
     const request = async (url, options = {}) => {
         const csrf = document.cookie.split('; ').find(item => item.startsWith('CTT_CSRF_TOKEN='))?.split('=').slice(1).join('=');

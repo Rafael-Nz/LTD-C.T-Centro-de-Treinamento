@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     const resetRequestForm = document.getElementById('password-reset-request-form');
     const resetSubmit = document.getElementById('reset-submit');
     const resetError = document.getElementById('reset-error');

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('account-activation-form');
     const token = form?.dataset.token || '';
     const error = document.getElementById('activation-error');

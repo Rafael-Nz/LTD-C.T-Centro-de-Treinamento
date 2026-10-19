@@ -1,4 +1,4 @@
-let graficoDist = null;
+﻿let graficoDist = null;
 let graficoPresenca = null;
 let versaoRelatorio = 0;
 let versaoListaAlunos = 0;

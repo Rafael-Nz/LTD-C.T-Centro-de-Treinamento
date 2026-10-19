@@ -42,7 +42,8 @@ $(document).ready(function () {
             },
             columns: [
                 {
-                    data: 'nome'
+                    data: 'nome',
+                    render: data => escapeHtml(data)
                 },
                 {
                     data: 'ativo',
@@ -57,17 +58,22 @@ $(document).ready(function () {
                     orderable: false,
                     render: function (data) {
                         if (!data) return '';
+                        const canManage = typeof window.can === 'function' ? window.can('cargos.gerenciar') : true;
 
                         const isAtivo = data.ativo == 1 || data.ativo === true;
-                        const btnStatus = isAtivo
-                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status-cargo" data-id="${data.id}" data-ativo="1" title="Desativar cargo" aria-label="Desativar cargo"><i class="ph ph-x" aria-hidden="true"></i></button>`
-                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status-cargo" data-id="${data.id}" data-ativo="0" title="Reativar cargo" aria-label="Reativar cargo"><i class="ph ph-check" aria-hidden="true"></i></button>`;
+                        const btnStatus = canManage
+                            ? (isAtivo
+                                ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status-cargo" data-id="${data.id}" data-ativo="1" title="Desativar cargo" aria-label="Desativar cargo"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                                : `<button type="button" class="btn btn-sm btn-success btn-toggle-status-cargo" data-id="${data.id}" data-ativo="0" title="Reativar cargo" aria-label="Reativar cargo"><i class="ph ph-check" aria-hidden="true"></i></button>`)
+                            : '';
+
+                        const btnEdit = canManage
+                            ? `<a href="/ctt/admin/cargos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar cargo" aria-label="Editar cargo"><i class="ph ph-pencil" aria-hidden="true"></i></a>`
+                            : '';
 
                         return `
                             <div class="d-flex gap-1 justify-content-center flex-wrap">
-                                <a href="/ctt/admin/cargos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar cargo" aria-label="Editar cargo">
-                                    <i class="ph ph-pencil" aria-hidden="true"></i>
-                                </a>
+                                ${btnEdit}
                                 ${btnStatus}
                             </div>
                         `;
@@ -78,6 +84,17 @@ $(document).ready(function () {
 
         $('#aplicarFiltrosCargos').on('click', function (e) {
             e.preventDefault();
+            recarregarTabela(tableId);
+            esconderDropdown($(this));
+        });
+
+        $('#limparFiltrosCargos').on('click', function (e) {
+            e.preventDefault();
+            $('.filtro-status-cargo').prop('checked', false);
+            $('#campoBuscaCargos').val('');
+            if (tabelas[tableId]) {
+                tabelas[tableId].search('');
+            }
             recarregarTabela(tableId);
             esconderDropdown($(this));
         });

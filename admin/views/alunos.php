@@ -40,40 +40,36 @@
               </div>
             </div>
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown"
+              <button class="btn btn-red dropdown-toggle color border border-white" id="filtrosAlunosBtn" type="button" data-bs-toggle="dropdown"
                 data-bs-auto-close="outside" aria-expanded="false" title="Filtrar alunos" aria-label="Filtrar alunos">
                 <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
 
-              <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton" style="min-width: 250px;">
-
+              <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px">
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-                <li>
-                  <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="Ativo" id="alunoAtivo">
-                    <label class="form-check-label" style="font-size: 0.975rem" for="alunoAtivo">Ativo</label>
-                  </div>
-                </li>
-                <li>
-                  <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="Inativo" id="alunoInativo">
-                    <label class="form-check-label" style="font-size: 0.975rem" for="alunoInativo">Inativo</label>
-                  </div>
-                </li>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status" type="checkbox" value="Ativo" id="alunoAtivo">
+                  <label class="form-check-label" for="alunoAtivo">Ativo</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status" type="checkbox" value="Inativo" id="alunoInativo">
+                  <label class="form-check-label" for="alunoInativo">Inativo</label>
+                </div>
 
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+                <hr class="dropdown-divider">
 
-                <li class="d-grid">
-                  <button id="aplicarFiltros" class="btn btn-sm btn-red">Aplicar Filtros</button>
-                </li>
-              </ul>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-sm btn-red" id="aplicarFiltros" type="button">Aplicar Filtros</button>
+                  <button class="btn btn-sm btn-red" id="limparFiltros" type="button">Limpar</button>
+                </div>
+              </div>
             </div>
           </div>
+          <?php if (\Core\Auth\Auth::can('alunos.criar')): ?>
           <a href="alunos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar aluno" aria-label="Cadastrar aluno">
             <i class="ph ph-plus me-1" aria-hidden="true"></i> Novo Aluno
           </a>
+          <?php endif; ?>
         </div>
 
         <div class="card-body">
@@ -105,7 +101,7 @@
   <script src="/ctt/plugins/bootstrap/js/bootstrap.min.js"></script>
   <script defer src="/ctt/plugins/overlayscrollbars/js/overlayscrollbars.browser.es6.min.js"></script>
   <script src="/ctt/js/admin/sidebar.js"></script>
-  <script src="/ctt/js/admin/tabelas.js"></script>
+  <script src="/ctt/js/admin/tabelas.js?v=2"></script>
   <script src="/ctt/js/admin/datatable/alunos.js"></script>
 </body>
 </html>

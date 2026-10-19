@@ -1,18 +1,16 @@
 $(document).ready(function () {
     const $modalidadeSelect = $('#filtroModalidadeSelect');
-    const $statusSelect = $('#filtroStatusSelect');
 
     function initSelect2() {
-        [$modalidadeSelect, $statusSelect].forEach($select => {
-            if (!$select.length) return;
-
-            $select.select2({
+        if ($modalidadeSelect.length) {
+            $modalidadeSelect.select2({
                 theme: 'bootstrap-5',
                 width: '100%',
-                dropdownParent: $select.closest('.dropdown-menu'),
-                allowClear: true
+                dropdownParent: $modalidadeSelect.closest('.dropdown-menu'),
+                allowClear: true,
+                placeholder: 'Todas as modalidades'
             });
-        });
+        }
     }
 
     async function loadModalidades() {
@@ -43,19 +41,20 @@ $(document).ready(function () {
         searchInput: '#campoBusca',
         searchButton: '#botaoBuscar',
         getFilters: function () {
+            const statusSelecionados = $('.filtro-status-treino:checked').map((_, el) => el.value).get();
             return {
-                modalidade_id: $('#filtroModalidadeSelect').val() || '',
-                ativo: $('#filtroStatusSelect').val() || ''
+                modalidade_id: $modalidadeSelect.val() || '',
+                ativo: statusSelecionados.length ? statusSelecionados.join(',') : ''
             };
         },
         columns: [
             {
                 data: 'nome',
-                render: data => data || '—'
+                render: data => data ? escapeHtml(data) : '—'
             },
             {
                 data: 'modalidade_nome',
-                render: data => data || '—'
+                render: data => data ? escapeHtml(data) : '—'
             },
             {
                 data: 'ativo',
@@ -67,16 +66,23 @@ $(document).ready(function () {
                 className: 'text-center',
                 orderable: false,
                 render: function (data) {
+                    const canEdit = typeof window.can === 'function' ? window.can('treinos.editar') : true;
+                    const canStatus = typeof window.can === 'function' ? window.can('treinos.desativar') : true;
+
                     const isAtivo = data.ativo == 1 || data.ativo === true;
-                    const btnStatus = isAtivo
-                        ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar treino" aria-label="Desativar treino"><i class="ph ph-x" aria-hidden="true"></i></button>`
-                        : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar treino" aria-label="Reativar treino"><i class="ph ph-check" aria-hidden="true"></i></button>`;
+                    const btnStatus = canStatus
+                        ? (isAtivo
+                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar treino" aria-label="Desativar treino"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar treino" aria-label="Reativar treino"><i class="ph ph-check" aria-hidden="true"></i></button>`)
+                        : '';
+
+                    const btnEdit = canEdit
+                        ? `<a href="/ctt/admin/treinos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar treino" aria-label="Editar treino"><i class="ph ph-pencil" aria-hidden="true"></i></a>`
+                        : '';
 
                     return `
-                        <div class="d-flex gap-1 justify-content-center flex-wrap flex-wrap">
-                            <a href="/ctt/admin/treinos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar treino" aria-label="Editar treino">
-                                <i class="ph ph-pencil" aria-hidden="true"></i>
-                            </a>
+                        <div class="d-flex gap-1 justify-content-center flex-wrap">
+                            ${btnEdit}
                             ${btnStatus}
                         </div>
                     `;
@@ -87,13 +93,23 @@ $(document).ready(function () {
 
     inicializarTabela(configTreinos);
 
+    const reloadTreinos = () => {
+        tabelas[configTreinos.tableId].ajax.reload();
+        bootstrap.Dropdown.getInstance(document.getElementById('filtrosTreinosBtn'))?.hide();
+    };
+
     $('#aplicarFiltrosTreinos').on('click', function (e) {
         e.preventDefault();
-        tabelas[configTreinos.tableId].ajax.reload();
-        const dropdownButton = $('.dropdown-toggle[data-bs-toggle="dropdown"]');
-        if (dropdownButton.length) {
-            bootstrap.Dropdown.getInstance(dropdownButton[0])?.hide();
-        }
+        reloadTreinos();
+    });
+
+    $('#limparFiltrosTreinos').on('click', function (e) {
+        e.preventDefault();
+        $modalidadeSelect.val('').trigger('change');
+        $('.filtro-status-treino').prop('checked', false);
+        $('#campoBusca').val('');
+        tabelas[configTreinos.tableId].search('');
+        reloadTreinos();
     });
 
     configurarToggleStatus({

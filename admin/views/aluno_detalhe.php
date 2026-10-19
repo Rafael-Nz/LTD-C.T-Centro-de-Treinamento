@@ -51,16 +51,20 @@ $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 Dados Gerais
               </button>
             </li>
+            <?php if (\Core\Auth\Auth::can('avaliacoes.visualizar')): ?>
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="avaliacoes-tab" data-bs-toggle="tab" data-bs-target="#avaliacoes-pane" type="button" role="tab" aria-controls="avaliacoes-pane" aria-selected="false">
                 Avaliações Físicas
               </button>
             </li>
+            <?php endif; ?>
+            <?php if (\Core\Auth\Auth::can('anamnese.visualizar')): ?>
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="anamnese-tab" data-bs-toggle="tab" data-bs-target="#anamnese-pane" type="button" role="tab" aria-controls="anamnese-pane" aria-selected="false">
                 Anamnese
               </button>
             </li>
+            <?php endif; ?>
           </ul>
         </div>
         <div class="card-body pt-3">
@@ -69,6 +73,7 @@ $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
               <div class="detail-grid detail-grid-expanded" id="alunoDadosGrid"></div>
             </div>
 
+            <?php if (\Core\Auth\Auth::can('avaliacoes.visualizar')): ?>
             <div class="tab-pane fade" id="avaliacoes-pane" role="tabpanel" aria-labelledby="avaliacoes-tab" tabindex="0">
               <div class="d-flex justify-content-start align-items-center gap-3 flex-wrap mb-3">
                 <div class="d-flex" role="search">
@@ -79,9 +84,11 @@ $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     </button>
                   </div>
                 </div>
+                <?php if (\Core\Auth\Auth::can('avaliacoes.criar')): ?>
                 <a href="/ctt/admin/alunos/<?= $alunoId ?>/avaliacoes/cadastrar" class="btn btn-red" id="novaAvaliacaoBtn">
                   <i class="ph ph-clipboard-text me-1"></i>Nova avaliacao
                 </a>
+                <?php endif; ?>
               </div>
               <table id="tabelaAvaliacoes" class="table table-hover align-middle w-100" aria-label="Lista de Avaliacoes">
                 <thead>
@@ -100,7 +107,9 @@ $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <tbody></tbody>
               </table>
             </div>
+            <?php endif; ?>
 
+            <?php if (\Core\Auth\Auth::can('anamnese.visualizar')): ?>
             <div class="tab-pane fade" id="anamnese-pane" role="tabpanel" aria-labelledby="anamnese-tab" tabindex="0">
               <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
                 <div>
@@ -110,6 +119,7 @@ $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
               </div>
               <div id="anamneseList" class="d-flex flex-column gap-3"></div>
             </div>
+            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -127,7 +137,7 @@ $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
   <script src="/ctt/plugins/bootstrap/js/bootstrap.min.js"></script>
   <script defer src="/ctt/plugins/overlayscrollbars/js/overlayscrollbars.browser.es6.min.js"></script>
   <script src="/ctt/js/admin/sidebar.js"></script>
-  <script src="/ctt/js/admin/tabelas.js"></script>
-  <script src="/ctt/js/admin/aluno_detalhe.js"></script>
+  <script src="/ctt/js/admin/tabelas.js?v=2"></script>
+  <script src="/ctt/js/admin/aluno_detalhe.js?v=2"></script>
 </body>
 </html>

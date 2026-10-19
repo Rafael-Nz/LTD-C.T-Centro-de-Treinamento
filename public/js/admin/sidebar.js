@@ -5,23 +5,38 @@ function getCsrfToken() {
     return cookie ? decodeURIComponent(cookie.split('=').slice(1).join('=')) : '';
 }
 
+function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escapeHtml = window.escapeHtml || escapeHtml;
+
+
 if (window.fetch) {
     const originalFetch = window.fetch.bind(window);
     window.fetch = (input, init = {}) => {
-        const method = String(init.method || 'GET').toUpperCase();
-        if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-            return originalFetch(input, init);
+        const headers = new Headers(init.headers || {});
+        if (!headers.has('X-Auth-Area')) {
+            headers.set('X-Auth-Area', 'admin');
         }
 
-        const headers = new Headers(init.headers || {});
-        const token = getCsrfToken();
-        if (token) headers.set('X-CSRF-Token', token);
+        const method = String(init.method || 'GET').toUpperCase();
+        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            const token = getCsrfToken();
+            if (token) headers.set('X-CSRF-Token', token);
+        }
         return originalFetch(input, { ...init, headers, credentials: init.credentials || 'same-origin' });
     };
 }
 
 if (window.jQuery) {
     $.ajaxPrefilter((options, originalOptions, jqXHR) => {
+        jqXHR.setRequestHeader('X-Auth-Area', 'admin');
         const method = String(options.type || options.method || 'GET').toUpperCase();
         if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             const token = getCsrfToken();
@@ -105,7 +120,11 @@ document.addEventListener('DOMContentLoaded', function () {
         event.preventDefault();
         sessionStorage.removeItem(PROFILE_SUMMARY_KEY);
         try {
-            await fetch('/ctt/api/auth/logout', { method: 'POST' });
+            await fetch('/ctt/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Auth-Area': 'admin' },
+                body: JSON.stringify({ area: 'admin' })
+            });
         } finally {
             window.location.href = '/ctt/admin/login';
         }

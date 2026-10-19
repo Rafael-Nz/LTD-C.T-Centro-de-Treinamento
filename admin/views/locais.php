@@ -37,34 +37,33 @@
             </div>
 
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar locais" aria-label="Filtrar locais">
+              <button class="btn btn-red dropdown-toggle color border border-white" id="filtrosLocaisBtn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar locais" aria-label="Filtrar locais">
                 <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
-              <ul class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px;">
+              <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px">
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-                <li>
-                  <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="1" id="localAtivo">
-                    <label class="form-check-label" for="localAtivo">Ativo</label>
-                  </div>
-                </li>
-                <li>
-                  <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="0" id="localInativo">
-                    <label class="form-check-label" for="localInativo">Inativo</label>
-                  </div>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li class="d-grid">
-                  <button id="aplicarFiltrosLocais" class="btn btn-sm btn-red">Aplicar Filtros</button>
-                </li>
-              </ul>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status" type="checkbox" value="1" id="localAtivo">
+                  <label class="form-check-label" for="localAtivo">Ativo</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status" type="checkbox" value="0" id="localInativo">
+                  <label class="form-check-label" for="localInativo">Inativo</label>
+                </div>
+                <hr class="dropdown-divider">
+                <div class="d-grid gap-2">
+                  <button id="aplicarFiltrosLocais" class="btn btn-sm btn-red" type="button">Aplicar Filtros</button>
+                  <button id="limparFiltrosLocais" class="btn btn-sm btn-red" type="button">Limpar</button>
+                </div>
+              </div>
             </div>
           </div>
 
+          <?php if (\Core\Auth\Auth::can('locais.gerenciar')): ?>
           <a href="/ctt/admin/locais/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar local" aria-label="Cadastrar local">
             <i class="ph ph-plus me-1" aria-hidden="true"></i>Novo Local
           </a>
+          <?php endif; ?>
         </div>
 
         <div class="card-body">

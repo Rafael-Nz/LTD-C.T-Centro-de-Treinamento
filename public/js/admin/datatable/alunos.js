@@ -22,11 +22,12 @@ $(document).ready(function () {
         columns: [
             { 
                 data: null,
-                render: data => `${data.nome} ${data.sobrenome}`
+                render: data => `${escapeHtml(data.nome)} ${escapeHtml(data.sobrenome)}`
             },
             { 
                 data: 'codigo_matricula',
                 className: 'text-center',
+                render: data => escapeHtml(data)
             },
             { 
                 data: 'data_matricula',
@@ -44,19 +45,29 @@ $(document).ready(function () {
                 orderable: false,
                 render: function (data) {
                     if (!data) return '';
+                    const canEdit = typeof window.can === 'function' ? window.can('alunos.editar') : true;
+                    const canView = typeof window.can === 'function' ? window.can('alunos.visualizar') : true;
+                    const canStatus = typeof window.can === 'function' ? window.can('alunos.desativar') : true;
+
                     const isAtivo = (data.ativo == 1 || data.ativo === true);
-                    const btnStatus = isAtivo 
-                        ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar aluno" aria-label="Desativar aluno"><i class="ph ph-x" aria-hidden="true"></i></button>`
-                        : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar aluno" aria-label="Reativar aluno"><i class="ph ph-check" aria-hidden="true"></i></button>`;
+                    const btnStatus = canStatus
+                        ? (isAtivo 
+                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar aluno" aria-label="Desativar aluno"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar aluno" aria-label="Reativar aluno"><i class="ph ph-check" aria-hidden="true"></i></button>`)
+                        : '';
+
+                    const btnEdit = canEdit
+                        ? `<a href="/ctt/admin/alunos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar aluno" aria-label="Editar aluno"><i class="ph ph-pencil" aria-hidden="true"></i></a>`
+                        : '';
+
+                    const btnView = canView
+                        ? `<a href="/ctt/admin/alunos/visualizar/${data.id}" class="btn btn-sm btn-secondary" title="Visualizar aluno" aria-label="Visualizar aluno"><i class="ph ph-eye" aria-hidden="true"></i></a>`
+                        : '';
 
                     return `
                         <div class="d-flex gap-1 justify-content-center flex-wrap">
-                            <a href="/ctt/admin/alunos/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar aluno" aria-label="Editar aluno">
-                                <i class="ph ph-pencil" aria-hidden="true"></i>
-                            </a>
-                            <a href="/ctt/admin/alunos/visualizar/${data.id}" class="btn btn-sm btn-secondary" title="Visualizar aluno" aria-label="Visualizar aluno">
-                                <i class="ph ph-eye" aria-hidden="true"></i>
-                            </a>
+                            ${btnEdit}
+                            ${btnView}
                             ${btnStatus}
                         </div>
                     `;
@@ -67,14 +78,24 @@ $(document).ready(function () {
 
     inicializarTabela(configAlunos);
 
+    const reloadAlunos = () => {
+        tabelas[configAlunos.tableId].ajax.reload();
+        bootstrap.Dropdown.getInstance(document.getElementById('filtrosAlunosBtn'))?.hide();
+    };
+
     // Ação do Botão "Aplicar Filtros"
     $('#aplicarFiltros').on('click', function (e) {
         e.preventDefault();
-        // Recarrega os dados da tabela chamando o getFilters() novamente
-        tabelas[configAlunos.tableId].ajax.reload();
-        
-        // Opcional: fechar o dropdown após clicar
-        bootstrap.Dropdown.getInstance($('.dropdown-toggle')).hide();
+        reloadAlunos();
+    });
+
+    // Ação do Botão "Limpar Filtros"
+    $('#limparFiltros').on('click', function (e) {
+        e.preventDefault();
+        $('.filtro-status').prop('checked', false);
+        $('#campoBusca').val('');
+        tabelas[configAlunos.tableId].search('');
+        reloadAlunos();
     });
     
     $('#campoBusca').on('keyup', function () {

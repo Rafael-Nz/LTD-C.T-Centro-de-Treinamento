@@ -1,5 +1,36 @@
 ﻿<?php
+$canCargos = \Core\Auth\Auth::canAny(['cargos.visualizar', 'cargos.gerenciar']);
+$canModalidades = \Core\Auth\Auth::canAny(['modalidades.visualizar', 'modalidades.gerenciar']);
+$canEmpresa = \Core\Auth\Auth::can('configuracoes.gerenciar');
+$canConfiguracoes = $canCargos || $canModalidades || $canEmpresa || \Core\Auth\Auth::can('usuarios.gerenciar');
+
+if (!$canConfiguracoes) {
+    header('Location: /ctt/admin/inicio?error=sem_permissao');
+    exit;
+}
+
 $tabInicial = $_GET['tab'] ?? '';
+
+$activeTab = 'sobre';
+if ($canCargos) {
+    $activeTab = 'cargos';
+} elseif ($canModalidades) {
+    $activeTab = 'modalidades';
+} elseif ($canEmpresa) {
+    $activeTab = 'empresa';
+}
+
+if ($tabInicial) {
+    if ($tabInicial === 'cargos' && $canCargos) {
+        $activeTab = 'cargos';
+    } elseif ($tabInicial === 'modalidades' && $canModalidades) {
+        $activeTab = 'modalidades';
+    } elseif ($tabInicial === 'empresa' && $canEmpresa) {
+        $activeTab = 'empresa';
+    } elseif ($tabInicial === 'sobre') {
+        $activeTab = 'sobre';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
@@ -36,19 +67,25 @@ $tabInicial = $_GET['tab'] ?? '';
                 <div class="col-lg-3 col-md-4 mb-4 config-menu-container d-flex">
                     <div class="config-card border-0 config-menu-card p-3 w-100 h-100">
                         <div class="nav flex-column nav-pills config-menu" id="configTabs" role="tablist">
-                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#cargos" type="button">
+                            <?php if ($canCargos): ?>
+                            <button class="nav-link <?= $activeTab === 'cargos' ? 'active' : '' ?>" data-bs-toggle="pill" data-bs-target="#cargos" type="button">
                                 <i class="ph ph-briefcase" aria-hidden="true"></i>
                                 <span class="menu-text">Cargos</span>
                             </button>
-                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#modalidades" type="button">
+                            <?php endif; ?>
+                            <?php if ($canModalidades): ?>
+                            <button class="nav-link <?= $activeTab === 'modalidades' ? 'active' : '' ?>" data-bs-toggle="pill" data-bs-target="#modalidades" type="button">
                                 <i class="ph ph-barbell" aria-hidden="true"></i>
                                 <span class="menu-text">Modalidades</span>
                             </button>
-                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#empresa" type="button">
+                            <?php endif; ?>
+                            <?php if ($canEmpresa): ?>
+                            <button class="nav-link <?= $activeTab === 'empresa' ? 'active' : '' ?>" data-bs-toggle="pill" data-bs-target="#empresa" type="button">
                                 <i class="ph ph-buildings" aria-hidden="true"></i>
                                 <span class="menu-text">Dados da Empresa</span>
                             </button>
-                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sobre" type="button">
+                            <?php endif; ?>
+                            <button class="nav-link <?= $activeTab === 'sobre' ? 'active' : '' ?>" data-bs-toggle="pill" data-bs-target="#sobre" type="button">
                                 <i class="ph ph-info" aria-hidden="true"></i>
                                 <span class="menu-text">Sobre o Sistema</span>
                             </button>
@@ -58,7 +95,8 @@ $tabInicial = $_GET['tab'] ?? '';
 
                 <div class="col-lg-9 col-md-8 d-flex config-content-container">
                     <div class="tab-content w-100 h-100" id="configContent">
-                        <div class="tab-pane fade show active h-100" id="cargos">
+                        <?php if ($canCargos): ?>
+                        <div class="tab-pane fade <?= $activeTab === 'cargos' ? 'show active' : '' ?> h-100" id="cargos">
                             <div class="config-card border-0 p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h5 class="section-title mb-0">Gestao de Cargos</h5>
@@ -76,35 +114,34 @@ $tabInicial = $_GET['tab'] ?? '';
                                         </form>
 
                                         <div class="dropdown-center">
-                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar status" aria-label="Filtrar status">
+                                            <button class="btn btn-red color dropdown-toggle border border-white" id="filtrosCargosBtn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar status" aria-label="Filtrar status">
                                                 <i class="ph ph-funnel me-1" aria-hidden="true"></i>
                                             </button>
 
-                                            <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownMenuButton">
+                                            <div class="dropdown-menu dropdown-menu-end p-3 dropdown-menu-lg" style="min-width: 250px">
                                                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-                                                <li>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input filtro-status-cargo" type="checkbox" value="Ativo" id="statusCargoAtivo">
-                                                        <label class="form-check-label" for="statusCargoAtivo">Ativo</label>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input filtro-status-cargo" type="checkbox" value="Inativo" id="statusCargoInativo">
-                                                        <label class="form-check-label" for="statusCargoInativo">Inativo</label>
-                                                    </div>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li class="d-grid">
-                                                    <button id="aplicarFiltrosCargos" class="btn btn-sm btn-red color">Aplicar Filtros</button>
-                                                </li>
-                                            </ul>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-status-cargo" type="checkbox" value="Ativo" id="statusCargoAtivo">
+                                                    <label class="form-check-label" for="statusCargoAtivo">Ativo</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-status-cargo" type="checkbox" value="Inativo" id="statusCargoInativo">
+                                                    <label class="form-check-label" for="statusCargoInativo">Inativo</label>
+                                                </div>
+                                                <hr class="dropdown-divider">
+                                                <div class="d-grid gap-2">
+                                                    <button id="aplicarFiltrosCargos" class="btn btn-sm btn-red" type="button">Aplicar Filtros</button>
+                                                    <button id="limparFiltrosCargos" class="btn btn-sm btn-red" type="button">Limpar</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
+                                    <?php if (\Core\Auth\Auth::can('cargos.gerenciar')): ?>
                                     <a href="/ctt/admin/cargos/cadastrar" class="btn btn-red color d-flex align-items-center border border-white" title="Cadastrar cargo" aria-label="Cadastrar cargo">
                                         <i class="ph ph-plus me-1" aria-hidden="true"></i> Novo Cargo
                                     </a>
+                                    <?php endif; ?>
                                 </div>
 
                                 <table id="tabelaCargos" class="table table-hover align-middle w-100">
@@ -119,8 +156,10 @@ $tabInicial = $_GET['tab'] ?? '';
                                 </table>
                             </div>
                         </div>
+                        <?php endif; ?>
 
-                        <div class="tab-pane fade h-100" id="empresa">
+                        <?php if ($canEmpresa): ?>
+                        <div class="tab-pane fade <?= $activeTab === 'empresa' ? 'show active' : '' ?> h-100" id="empresa">
                             <div class="config-card border-0 p-4 h-100">
                                 <h5 class="section-title">Dados da Empresa</h5>
 
@@ -163,8 +202,10 @@ $tabInicial = $_GET['tab'] ?? '';
                                 </form>
                             </div>
                         </div>
+                        <?php endif; ?>
 
-                        <div class="tab-pane fade h-100" id="modalidades">
+                        <?php if ($canModalidades): ?>
+                        <div class="tab-pane fade <?= $activeTab === 'modalidades' ? 'show active' : '' ?> h-100" id="modalidades">
                             <div class="config-card border-0 p-4 h-100">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h5 class="section-title mb-0">Gestao de Modalidades</h5>
@@ -182,35 +223,34 @@ $tabInicial = $_GET['tab'] ?? '';
                                         </form>
 
                                         <div class="dropdown-center">
-                                            <button class="btn btn-red color dropdown-toggle border border-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filtrar status" aria-label="Filtrar status">
+                                            <button class="btn btn-red color dropdown-toggle border border-white" id="filtrosModalidadesBtn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar status" aria-label="Filtrar status">
                                                 <i class="ph ph-funnel me-1" aria-hidden="true"></i>
                                             </button>
 
-                                            <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownMenuButton">
+                                            <div class="dropdown-menu dropdown-menu-end p-3 dropdown-menu-lg" style="min-width: 250px">
                                                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-                                                <li>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input filtro-status-modalidade" type="checkbox" value="Ativo" id="statusModalidadeAtivo">
-                                                        <label class="form-check-label" for="statusModalidadeAtivo">Ativo</label>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input filtro-status-modalidade" type="checkbox" value="Inativo" id="statusModalidadeInativo">
-                                                        <label class="form-check-label" for="statusModalidadeInativo">Inativo</label>
-                                                    </div>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li class="d-grid">
-                                                    <button id="aplicarFiltrosModalidades" class="btn btn-sm btn-red color">Aplicar Filtros</button>
-                                                </li>
-                                            </ul>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-status-modalidade" type="checkbox" value="Ativo" id="statusModalidadeAtivo">
+                                                    <label class="form-check-label" for="statusModalidadeAtivo">Ativo</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input filtro-status-modalidade" type="checkbox" value="Inativo" id="statusModalidadeInativo">
+                                                    <label class="form-check-label" for="statusModalidadeInativo">Inativo</label>
+                                                </div>
+                                                <hr class="dropdown-divider">
+                                                <div class="d-grid gap-2">
+                                                    <button id="aplicarFiltrosModalidades" class="btn btn-sm btn-red" type="button">Aplicar Filtros</button>
+                                                    <button id="limparFiltrosModalidades" class="btn btn-sm btn-red" type="button">Limpar</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
+                                    <?php if (\Core\Auth\Auth::can('modalidades.gerenciar')): ?>
                                     <a href="/ctt/admin/modalidades/cadastrar" class="btn btn-red color d-flex align-items-center border border-white" title="Cadastrar modalidade" aria-label="Cadastrar modalidade">
                                         <i class="ph ph-plus me-1" aria-hidden="true"></i> Nova Modalidade
                                     </a>
+                                    <?php endif; ?>
                                 </div>
 
                                 <table id="tabelaModalidades" class="table table-hover align-middle w-100">
@@ -225,15 +265,16 @@ $tabInicial = $_GET['tab'] ?? '';
                                 </table>
                             </div>
                         </div>
+                        <?php endif; ?>
 
-                        <div class="tab-pane fade h-100" id="sobre">
+                        <div class="tab-pane fade <?= $activeTab === 'sobre' ? 'show active' : '' ?> h-100" id="sobre">
                             <div class="config-card border-0 p-4 h-100">
                                 <h5 class="section-title mb-3">Sobre o Sistema</h5>
                                 <div class="d-flex align-items-center gap-3 mb-3">
                                     <i class="ph ph-barbell fs-1 text-danger" aria-hidden="true"></i>
                                     <div>
                                         <h2 class="h5 mb-1">Cross C.T</h2>
-                                        <p class="text-body-secondary mb-0">Sistema de gestão do centro de treinamento</p>
+                                        <p class="text-body-secondary mb-0">Sistema de gestão do centro de treinamento: Sempre em forma</p>
                                     </div>
                                 </div>
                                 <p class="text-body-secondary mb-4">
@@ -282,7 +323,7 @@ $tabInicial = $_GET['tab'] ?? '';
     <script src="/ctt/js/admin/tabelas.js"></script>
     <script src="/ctt/plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const tabInicial = <?= json_encode($tabInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
             const tabSalva = localStorage.getItem('abaConfigAtiva');
             const tabDesejada = tabInicial || tabSalva;
@@ -299,7 +340,7 @@ $tabInicial = $_GET['tab'] ?? '';
             }
 
             document.querySelectorAll('#configTabs [data-bs-toggle="pill"]').forEach((botao) => {
-                botao.addEventListener('shown.bs.tab', function (event) {
+                botao.addEventListener('shown.bs.tab', function(event) {
                     const destino = event.target.getAttribute('data-bs-target');
                     if (destino) {
                         localStorage.setItem('abaConfigAtiva', destino.replace('#', ''));
@@ -308,8 +349,8 @@ $tabInicial = $_GET['tab'] ?? '';
             });
         });
     </script>
-    <script src="/ctt/js/admin/configuracoes/cargos.js"></script>
-    <script src="/ctt/js/admin/configuracoes/modalidades.js"></script>
+    <?php if ($canCargos): ?><script src="/ctt/js/admin/configuracoes/cargos.js"></script><?php endif; ?>
+    <?php if ($canModalidades): ?><script src="/ctt/js/admin/configuracoes/modalidades.js"></script><?php endif; ?>
 </body>
 
 </html>

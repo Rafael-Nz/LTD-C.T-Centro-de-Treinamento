@@ -40,51 +40,45 @@
               </div>
             </div>
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown"
+              <button class="btn btn-red dropdown-toggle color border border-white" id="filtrosFuncionariosBtn" type="button" data-bs-toggle="dropdown"
                 data-bs-auto-close="outside" aria-expanded="false" title="Filtrar funcionários" aria-label="Filtrar funcionários">
                 <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
 
-              <ul class="dropdown-menu p-3 dropdown-menu-lg" aria-labelledby="dropdownMenuButton"
-                style="min-width: 250px;">
+              <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px">
                 <p class="h6 text-start" style="font-size: 0.875rem">Cargo</p>
-                <li>
+                <div class="mb-3">
                   <select class="form-select" id="filtroCargosSelect">
                     <option></option>
                   </select>
-                </li>
+                </div>
 
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+                <hr class="dropdown-divider">
 
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-                <li>
-                  <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="ativo" id="funcAtivo">
-                    <label class="form-check-label" style="font-size: 0.975rem" for="funcAtivo">Ativo</label>
-                  </div>
-                </li>
-                <li>
-                  <div class="form-check">
-                    <input class="form-check-input filtro-status" type="checkbox" value="inativo" id="funcInativo">
-                    <label class="form-check-label" style="font-size: 0.975rem" for="funcInativo">Inativo</label>
-                  </div>
-                </li>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status" type="checkbox" value="ativo" id="funcAtivo">
+                  <label class="form-check-label" for="funcAtivo">Ativo</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status" type="checkbox" value="inativo" id="funcInativo">
+                  <label class="form-check-label" for="funcInativo">Inativo</label>
+                </div>
 
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+                <hr class="dropdown-divider">
 
-                <li class="d-grid">
-                  <button id="aplicarFiltros" class="btn btn-sm btn-red">Aplicar Filtros</button>
-                </li>
-              </ul>
+                <div class="d-grid gap-2">
+                  <button id="aplicarFiltros" class="btn btn-sm btn-red" type="button">Aplicar Filtros</button>
+                  <button id="limparFiltros" class="btn btn-sm btn-red" type="button">Limpar</button>
+                </div>
+              </div>
             </div>
           </div>
+          <?php if (\Core\Auth\Auth::can('funcionarios.gerenciar')): ?>
           <a href="funcionarios/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar funcionário" aria-label="Cadastrar funcionário">
             <i class="ph ph-plus me-1" aria-hidden="true"></i> Novo Funcionário
           </a>
+          <?php endif; ?>
         </div>
 
         <div class="card-body">

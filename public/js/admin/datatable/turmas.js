@@ -27,11 +27,11 @@ $(document).ready(function () {
         columns: [
             {
                 data: 'nome',
-                render: data => data || '—'
+                render: data => data ? escapeHtml(data) : '—'
             },
             {
                 data: 'instrutor_nome',
-                render: data => data || '—'
+                render: data => data ? escapeHtml(data) : '—'
             },
             {
                 data: 'total_alunos',
@@ -59,19 +59,29 @@ $(document).ready(function () {
                 orderable: false,
                 render: function (data) {
                     if (!data) return '';
+                    const canEdit = typeof window.can === 'function' ? window.can('turmas.editar') : true;
+                    const canManage = typeof window.can === 'function' ? (window.can('turmas.gerenciar') || window.can('turmas.visualizar')) : true;
+                    const canStatus = typeof window.can === 'function' ? window.can('turmas.desativar') : true;
+
                     const isAtivo = data.ativo == 1 || data.ativo === true;
-                    const btnStatus = isAtivo
-                        ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar turma" aria-label="Desativar turma"><i class="ph ph-x" aria-hidden="true"></i></button>`
-                        : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar turma" aria-label="Reativar turma"><i class="ph ph-check" aria-hidden="true"></i></button>`;
+                    const btnStatus = canStatus
+                        ? (isAtivo
+                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar turma" aria-label="Desativar turma"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar turma" aria-label="Reativar turma"><i class="ph ph-check" aria-hidden="true"></i></button>`)
+                        : '';
+
+                    const btnEdit = canEdit
+                        ? `<a href="/ctt/admin/turmas/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar turma" aria-label="Editar turma"><i class="ph ph-pencil" aria-hidden="true"></i></a>`
+                        : '';
+
+                    const btnManage = canManage
+                        ? `<a href="/ctt/admin/turmas/${data.id}/gerenciar" class="btn btn-sm btn-secondary" title="Gerenciar turma" aria-label="Gerenciar turma"><i class="ph ph-users" aria-hidden="true"></i></a>`
+                        : '';
 
                     return `
                         <div class="d-flex gap-1 justify-content-center flex-wrap">
-                            <a href="/ctt/admin/turmas/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar turma" aria-label="Editar turma">
-                                <i class="ph ph-pencil" aria-hidden="true"></i>
-                            </a>
-                            <a href="/ctt/admin/turmas/${data.id}/gerenciar" class="btn btn-sm btn-secondary" title="Gerenciar turma" aria-label="Gerenciar turma">
-                                <i class="ph ph-users" aria-hidden="true"></i>
-                            </a>
+                            ${btnEdit}
+                            ${btnManage}
                             ${btnStatus}
                         </div>
                     `;
@@ -82,13 +92,22 @@ $(document).ready(function () {
 
     inicializarTabela(configTurmas);
 
+    const reloadTurmas = () => {
+        tabelas[configTurmas.tableId].ajax.reload();
+        bootstrap.Dropdown.getInstance(document.getElementById('filtrosTurmasBtn'))?.hide();
+    };
+
     $('#aplicarFiltros').on('click', function (e) {
         e.preventDefault();
-        tabelas[configTurmas.tableId].ajax.reload();
-        const dropdownButton = $('.dropdown-toggle[data-bs-toggle="dropdown"]');
-        if (dropdownButton.length) {
-            bootstrap.Dropdown.getInstance(dropdownButton[0])?.hide();
-        }
+        reloadTurmas();
+    });
+
+    $('#limparFiltros').on('click', function (e) {
+        e.preventDefault();
+        $('.filtro-status').prop('checked', false);
+        $('#campoBusca').val('');
+        tabelas[configTurmas.tableId].search('');
+        reloadTurmas();
     });
 
     configurarToggleStatus({

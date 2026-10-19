@@ -33,7 +33,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function formatDate(value) {
         if (!value) return '--';
-        const date = new Date(String(value).replace(' ', 'T'));
+        const normalized = String(value).replace(' ', 'T');
+        const [ano, mes, dia] = normalized.slice(0, 10).split('-').map(Number);
+        const date = ano && mes && dia ? new Date(ano, mes - 1, dia) : new Date(normalized);
         return Number.isNaN(date.getTime()) ? '--' : date.toLocaleDateString('pt-BR');
     }
 
@@ -205,11 +207,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: null,
                     className: 'text-center',
                     orderable: false,
-                    render: row => `
-                        <a href="/ctt/admin/alunos/${alunoId}/avaliacoes/editar/${row.id}" class="btn btn-sm btn-primary" title="Editar Avaliacao">
-                            <i class="ph ph-pencil"></i>
-                        </a>
-                    `
+                    render: row => {
+                        const canEdit = typeof window.can === 'function' ? window.can('avaliacoes.editar') : true;
+                        if (!canEdit) {
+                            return '<span class="text-muted">—</span>';
+                        }
+                        return `
+                            <a href="/ctt/admin/alunos/${alunoId}/avaliacoes/editar/${row.id}" class="btn btn-sm btn-primary" title="Editar Avaliacao">
+                                <i class="ph ph-pencil"></i>
+                            </a>
+                        `;
+                    }
                 }
             ]
         });

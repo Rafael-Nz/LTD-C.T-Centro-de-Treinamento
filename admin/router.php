@@ -1,5 +1,8 @@
 <?php
 // admin/router.php
+require_once dirname(__DIR__) . '/autoload.php';
+\Core\Auth\Auth::setContext(\Core\Auth\Auth::GUARD_ADMIN);
+
 class AdminRouter {
     private array $routes = [];
     private string $baseDir;

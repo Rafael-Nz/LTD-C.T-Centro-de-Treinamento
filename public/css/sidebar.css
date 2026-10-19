@@ -13,7 +13,9 @@
 }
 
 .sidebar-initializing #submenuUsuarios,
-.sidebar-initializing #submenuUsuarios.collapsing {
+.sidebar-initializing #submenuUsuarios.collapsing,
+.sidebar-initializing #submenuFinanceiro,
+.sidebar-initializing #submenuFinanceiro.collapsing {
   transition: none !important;
 }
 
@@ -147,18 +149,21 @@
 /* =======================================================
     SUBMENUS (Bootstrap Collapse)
 ======================================================= */
-#submenuUsuarios {
+#submenuUsuarios,
+#submenuFinanceiro {
   margin-top: 0.25rem;
   padding-left: 0 !important;
 }
 
-#submenuUsuarios .nav-link {
+#submenuUsuarios .nav-link,
+#submenuFinanceiro .nav-link {
   font-size: 1rem;
   display: flex;
   align-items: left;
 }
 
-#submenuUsuarios .nav-link i {
+#submenuUsuarios .nav-link i,
+#submenuFinanceiro .nav-link i {
     font-size: 1rem; /* Ícones menores no submenu */
     width: 25px; /* Mantém a largura do wrapper do ícone principal */
     display: inline-flex;

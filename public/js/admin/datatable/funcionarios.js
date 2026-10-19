@@ -76,13 +76,16 @@ $(document).ready(function () {
         columns: [
             { 
                 data: null,
-                render: data => `${data.nome} ${data.sobrenome}`  // Nome completo
+                render: data => `${escapeHtml(data.nome)} ${escapeHtml(data.sobrenome)}`
             },
             { 
                 data: null,
-                render: data => data.cargo_nome || (data.cargo ? data.cargo.nome : '—')
+                render: data => escapeHtml(data.cargo_nome || (data.cargo ? data.cargo.nome : '—'))
             },
-            { data: 'email' },                                   // Email
+            { 
+                data: 'email',
+                render: data => escapeHtml(data)
+            },
             { 
                 data: 'ativo',
                 className: 'text-center',
@@ -94,16 +97,22 @@ $(document).ready(function () {
                 orderable: false,
                 render: function (data) {
                     if (!data) return '';
+                    const canManage = typeof window.can === 'function' ? window.can('funcionarios.gerenciar') : true;
+
                     const isAtivo = (data.ativo == 1 || data.ativo === true);
-                    const btnStatus = isAtivo 
-                        ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar funcionário" aria-label="Desativar funcionário"><i class="ph ph-x" aria-hidden="true"></i></button>`
-                        : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar funcionário" aria-label="Reativar funcionário"><i class="ph ph-check" aria-hidden="true"></i></button>`;
+                    const btnStatus = canManage
+                        ? (isAtivo 
+                            ? `<button type="button" class="btn btn-sm btn-danger btn-toggle-status" data-id="${data.id}" data-ativo="1" title="Desativar funcionário" aria-label="Desativar funcionário"><i class="ph ph-x" aria-hidden="true"></i></button>`
+                            : `<button type="button" class="btn btn-sm btn-success btn-toggle-status" data-id="${data.id}" data-ativo="0" title="Reativar funcionário" aria-label="Reativar funcionário"><i class="ph ph-check" aria-hidden="true"></i></button>`)
+                        : '';
+
+                    const btnEdit = canManage
+                        ? `<a href="/ctt/admin/funcionarios/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar funcionário" aria-label="Editar funcionário"><i class="ph ph-pencil" aria-hidden="true"></i></a>`
+                        : '';
 
                     return `
                         <div class="d-flex gap-1 justify-content-center flex-wrap">
-                            <a href="/ctt/admin/funcionarios/editar/${data.id}" class="btn btn-sm btn-primary" title="Editar funcionário" aria-label="Editar funcionário">
-                                <i class="ph ph-pencil" aria-hidden="true"></i>
-                            </a>
+                            ${btnEdit}
                             ${btnStatus}
                         </div>
                     `;
@@ -116,15 +125,25 @@ $(document).ready(function () {
     inicializarTabela(configFuncionarios);
 
     // ========================================
-    // 3. BOTÃO APLICAR FILTROS
+    // 3. FILTROS (APLICAR E LIMPAR)
     // ========================================
+    const reloadFuncionarios = () => {
+        tabelas[configFuncionarios.tableId].ajax.reload();
+        bootstrap.Dropdown.getInstance(document.getElementById('filtrosFuncionariosBtn'))?.hide();
+    };
+
     $('#aplicarFiltros').on('click', function (e) {
         e.preventDefault();
-        tabelas[configFuncionarios.tableId].ajax.reload();
-        const dropdownButton = $('.dropdown-toggle[data-bs-toggle="dropdown"]');
-        if (dropdownButton.length) {
-            bootstrap.Dropdown.getInstance(dropdownButton[0])?.hide();
-        }
+        reloadFuncionarios();
+    });
+
+    $('#limparFiltros').on('click', function (e) {
+        e.preventDefault();
+        $cargoSelect.val(null).trigger('change');
+        $('.filtro-status').prop('checked', false);
+        $('#campoBusca').val('');
+        tabelas[configFuncionarios.tableId].search('');
+        reloadFuncionarios();
     });
 
     // ========================================

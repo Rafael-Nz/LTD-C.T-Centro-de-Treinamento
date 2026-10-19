@@ -38,41 +38,45 @@
             </div>
 
             <div class="dropdown-center">
-              <button class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar treinos" aria-label="Filtrar treinos">
+              <button class="btn btn-red dropdown-toggle color border border-white" id="filtrosTreinosBtn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filtrar treinos" aria-label="Filtrar treinos">
                 <i class="ph ph-funnel me-1" aria-hidden="true"></i>
               </button>
 
-              <ul class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 320px;">
+              <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 320px">
                 <p class="h6 text-start" style="font-size: 0.875rem">Modalidade</p>
-                <li>
+                <div class="mb-3">
                   <select id="filtroModalidadeSelect" class="form-select">
                     <option value="">Todas as modalidades</option>
                   </select>
-                </li>
+                </div>
 
-                <li><hr class="dropdown-divider"></li>
+                <hr class="dropdown-divider">
 
                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
-                <li>
-                  <select id="filtroStatusSelect" class="form-select">
-                    <option value="">Todos os status</option>
-                    <option value="1">Ativo</option>
-                    <option value="0">Inativo</option>
-                  </select>
-                </li>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status-treino" type="checkbox" value="1" id="treinoAtivo">
+                  <label class="form-check-label" for="treinoAtivo">Ativo</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input filtro-status-treino" type="checkbox" value="0" id="treinoInativo">
+                  <label class="form-check-label" for="treinoInativo">Inativo</label>
+                </div>
 
-                <li><hr class="dropdown-divider"></li>
+                <hr class="dropdown-divider">
 
-                <li class="d-grid">
-                  <button id="aplicarFiltrosTreinos" class="btn btn-sm btn-red">Aplicar Filtros</button>
-                </li>
-              </ul>
+                <div class="d-grid gap-2">
+                  <button id="aplicarFiltrosTreinos" class="btn btn-sm btn-red" type="button">Aplicar Filtros</button>
+                  <button id="limparFiltrosTreinos" class="btn btn-sm btn-red" type="button">Limpar</button>
+                </div>
+              </div>
             </div>
           </div>
 
+          <?php if (\Core\Auth\Auth::can('treinos.criar')): ?>
           <a href="/ctt/admin/treinos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white" title="Cadastrar treino" aria-label="Cadastrar treino">
             <i class="ph ph-plus me-1" aria-hidden="true"></i>Novo Treino
           </a>
+          <?php endif; ?>
         </div>
 
         <div class="card-body">

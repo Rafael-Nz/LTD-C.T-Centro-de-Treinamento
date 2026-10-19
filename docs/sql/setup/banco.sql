@@ -34,6 +34,7 @@ CREATE TABLE usuario (
     endereco_id INT,
     tipo_usuario ENUM('admin', 'funcionario', 'aluno') NOT NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    conta_ativada BOOLEAN NOT NULL DEFAULT TRUE,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
@@ -42,6 +43,7 @@ CREATE TABLE usuario (
 CREATE TABLE password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
+    perfil ENUM('admin', 'aluno', 'funcionario') NOT NULL DEFAULT 'admin',
     token_hash CHAR(64) NOT NULL UNIQUE,
     expires_at DATETIME NOT NULL,
     used_at DATETIME NULL,
@@ -66,6 +68,7 @@ CREATE TABLE auth_rate_limits (
 CREATE TABLE student_account_activations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
+    perfil ENUM('aluno', 'funcionario') NOT NULL,
     token_hash CHAR(64) NOT NULL UNIQUE,
     expires_at DATETIME NOT NULL,
     used_at DATETIME NULL,
@@ -80,6 +83,8 @@ CREATE TABLE funcionario (
     cargo_id INT NOT NULL,
     registro_profissional VARCHAR(50),
     observacoes TEXT,
+    senha VARCHAR(300) NOT NULL,
+    conta_ativada BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
     FOREIGN KEY (cargo_id) REFERENCES cargo(id)
 );
@@ -89,6 +94,8 @@ CREATE TABLE aluno (
     data_matricula DATE NOT NULL,
     cadastrado_por INT,
     codigo_matricula VARCHAR(20) UNIQUE NOT NULL, -- AAAAMM000001
+    senha VARCHAR(300) NOT NULL,
+    conta_ativada BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
     FOREIGN KEY (cadastrado_por) REFERENCES funcionario(usuario_id)
 );
@@ -429,13 +436,44 @@ CREATE TABLE pagamento (
 CREATE TABLE permissao (
     id INT AUTO_INCREMENT PRIMARY KEY,
     slug VARCHAR(50) UNIQUE NOT NULL, -- ex: 'relatorios.financeiro'
+    modulo VARCHAR(50) NOT NULL DEFAULT 'Geral',
+    nome VARCHAR(100) NOT NULL DEFAULT '',
     descricao VARCHAR(255)
 );
 
-INSERT INTO permissao (slug, descricao) VALUES
-('financeiro.visualizar', 'Visualizar dados financeiros'),
-('financeiro.gerenciar', 'Gerenciar servicos, contratos e cobrancas'),
-('financeiro.registrar_pagamento', 'Registrar pagamentos financeiros');
+INSERT INTO permissao (slug, modulo, nome, descricao) VALUES
+('alunos.visualizar', 'Alunos', 'Visualizar Alunos', 'Permite listar e visualizar o perfil completo dos alunos'),
+('alunos.criar', 'Alunos', 'Cadastrar Alunos', 'Permite cadastrar novos alunos no sistema'),
+('alunos.editar', 'Alunos', 'Editar Alunos', 'Permite editar dados cadastrais de alunos'),
+('alunos.desativar', 'Alunos', 'Desativar/Reativar Alunos', 'Permite desativar ou reativar alunos'),
+('turmas.visualizar', 'Turmas', 'Visualizar Turmas', 'Permite listar e visualizar turmas cadastradas'),
+('turmas.gerenciar', 'Turmas', 'Gerenciar Turmas e Presenças', 'Permite gerenciar treinos da turma e lista de chamada/presenças'),
+('turmas.criar', 'Turmas', 'Criar Turmas', 'Permite criar novas turmas e definir horários'),
+('turmas.editar', 'Turmas', 'Editar Turmas', 'Permite alterar configurações de turmas existentes'),
+('turmas.desativar', 'Turmas', 'Desativar/Reativar Turmas', 'Permite desativar ou reativar turmas'),
+('treinos.visualizar', 'Treinos', 'Visualizar Treinos', 'Permite consultar treinos cadastrados'),
+('treinos.criar', 'Treinos', 'Criar Treinos', 'Permite cadastrar novos treinos e fichas'),
+('treinos.editar', 'Treinos', 'Editar Treinos', 'Permite editar treinos existentes'),
+('treinos.desativar', 'Treinos', 'Desativar/Reativar Treinos', 'Permite desativar ou reativar treinos'),
+('avaliacoes.visualizar', 'Avaliações', 'Visualizar Avaliações', 'Permite visualizar histórico e detalhes das avaliações físicas'),
+('avaliacoes.criar', 'Avaliações', 'Realizar Avaliação Física', 'Permite cadastrar novas avaliações físicas para alunos'),
+('avaliacoes.editar', 'Avaliações', 'Editar Avaliação Física', 'Permite editar dados de avaliações físicas existentes'),
+('anamnese.visualizar', 'Anamnese', 'Visualizar Anamnese', 'Permite consultar o questionário e respostas de anamnese dos alunos'),
+('anamnese.preencher', 'Anamnese', 'Preencher Anamnese', 'Permite responder questionário de anamnese para alunos'),
+('locais.visualizar', 'Locais e Modalidades', 'Visualizar Locais', 'Permite consultar os espaços e locais de treino'),
+('locais.gerenciar', 'Locais e Modalidades', 'Gerenciar Locais', 'Permite cadastrar, editar e desativar locais de treino'),
+('modalidades.visualizar', 'Locais e Modalidades', 'Visualizar Modalidades', 'Permite consultar as modalidades cadastradas'),
+('modalidades.gerenciar', 'Locais e Modalidades', 'Gerenciar Modalidades', 'Permite cadastrar, editar e desativar modalidades'),
+('financeiro.visualizar', 'Financeiro', 'Visualizar Financeiro', 'Visualizar dados financeiros, servicos, planos e cobrancas'),
+('financeiro.gerenciar', 'Financeiro', 'Gerenciar Financeiro', 'Cadastrar e editar servicos, planos, contratos e gerar cobrancas'),
+('financeiro.registrar_pagamento', 'Financeiro', 'Registrar Pagamento', 'Registrar e estornar pagamentos de mensalidades e servicos'),
+('relatorios.visualizar', 'Relatórios', 'Visualizar Relatórios', 'Permite consultar métricas gerais, frequências e relatórios'),
+('relatorios.exportar', 'Relatórios', 'Exportar Relatórios', 'Permite exportar dados de relatórios em CSV e PDF'),
+('cargos.visualizar', 'Configurações', 'Visualizar Cargos', 'Permite listar os cargos existentes'),
+('cargos.gerenciar', 'Configurações', 'Gerenciar Cargos e Permissões', 'Permite criar, alterar cargos e atribuir permissões'),
+('funcionarios.visualizar', 'Configurações', 'Visualizar Funcionários', 'Permite listar e visualizar colaboradores'),
+('funcionarios.gerenciar', 'Configurações', 'Gerenciar Funcionários', 'Permite cadastrar, alterar e desativar funcionários'),
+('usuarios.gerenciar', 'Configurações', 'Gerenciar Usuários Centrais', 'Permite gerenciar as contas gerais de usuário');
 
 CREATE TABLE cargo_permissao (
     cargo_id INT NOT NULL,
@@ -455,20 +493,19 @@ INSERT INTO cargo (nome, descricao, salario_base, ativo) VALUES
 ('Gerente', 'Gerencia operações e equipes', 0.00, TRUE),
 ('Atendente', 'Atendimento ao cliente e secretaria', 0.00, TRUE);
 
--- INSERINDO O PRIMEIRO ADMIN (Exemplo)
-INSERT INTO endereco (logradouro, numero, cidade, bairro, cep)
-VALUES ('Av. Central', '100', 'São Luís', 'Centro', '01010000');
+-- DADOS INICIAIS DE ENDERECO
+INSERT INTO endereco (id, logradouro, numero, cidade, bairro, cep)
+VALUES (1, 'Av. Central', '100', 'São Luís', 'Centro', '01010000');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, tipo_usuario, endereco_id)
-VALUES ('Admin', 'Master', '00000000000', 'admin@centrotreinamento.com', '$argon2id$v=19$m=65536,t=4,p=1$enBzQTh6a3NuRTAwWVFFNg$D1fBTREiUz8MPOsv4hl6WI7EgKRbK4+9nl7wf6+U1Sw', '1990-01-01', 'admin', 1);
-
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional)
-VALUES (1, 1, 'ADM-01');
+-- NOTA DE INSTALACAO:
+-- O usuario administrador principal NAO e inserido de forma estatica neste script.
+-- Apos a criacao das tabelas, defina as credenciais seguras do administrador executando:
+--   php tools/sistema/criar_admin.php (ou .\tools\sistema\criar_admin.ps1)
 
 -- FORMULARIO INICIAL DE ANAMNESE
 
 INSERT INTO anamnese_formulario (id, nome, descricao, versao, ativo, criado_por)
-VALUES (1, 'Anamnese Padrão', 'Formulário padrão de avaliação de saúde para novos alunos', 1, TRUE, 1);
+VALUES (1, 'Anamnese Padrão', 'Formulário padrão de avaliação de saúde para novos alunos', 1, TRUE, NULL);
 
 INSERT INTO anamnese_pergunta
 (formulario_id, slug, pergunta, tipo_input, obrigatoria, ordem, config, regra_exibicao)

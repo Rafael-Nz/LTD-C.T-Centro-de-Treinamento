@@ -14,9 +14,13 @@ A pasta `tools/financeiro/` faz parte da instalacao e da operacao normal:
 - `ativar_cobranca_obrigatoria.php`: ajusta uma vez o indicador legado dos contratos;
 - `financeiro_rotina.log`: arquivo local criado pela rotina e ignorado pelo Git.
 
-## Verificacao do sistema
+## Administracao e verificacao do sistema
 
-`tools/sistema/verify_audit.php` valida a cadeia de auditoria usando a conta configurada no `.env`.
+A pasta `tools/sistema/` concentra rotinas de inicializacao e checagem:
+
+- `criar_admin.php`: define de forma interativa ou via CLI o e-mail e a senha mestra do administrador inicial (ou redefine senha existente);
+- `criar_admin.ps1`: wrapper PowerShell para execucao simplificada no Windows;
+- `verify_audit.php`: valida a cadeia criptografica de auditoria usando a conta configurada no `.env`.
 
 ## Testes
 

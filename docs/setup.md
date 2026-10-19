@@ -61,7 +61,27 @@ MAIL_FROM_NAME="Cross C.T"
 Em desenvolvimento, `APP_ENV` deve ser `development`. Nunca versione o `.env`. Consulte [Configuração de e-mail](modules/auth-email.md) para preparar o SMTP.
 
 
-## 5. Ativar a operação financeira
+## 5. Definir o Administrador inicial
+
+Por segurança, o banco de dados não contém credenciais de administrador pré-definidas. Execute o script de configuração para definir o e-mail e a senha mestra do sistema:
+
+```powershell
+& .\tools\sistema\criar_admin.ps1
+```
+*(Ou via PHP puro: `& 'D:\xampp\php\php.exe' tools/sistema/criar_admin.php`)*
+
+O assistente solicitará:
+- **Nome do Administrador**;
+- **E-mail de acesso** (será o login de acesso);
+- **Senha forte** (mínimo de 12 caracteres, contendo maiúscula, minúscula, número e símbolo especial).
+
+> [!TIP]
+> Para instalações automatizadas ou scripts CI/CD, é possível passar os parâmetros diretamente na linha de comando:
+> ```powershell
+> & .\tools\sistema\criar_admin.ps1 -Email "admin@meudominio.com" -Senha "SuaSenhaForte!123"
+> ```
+
+## 6. Ativar a operação financeira
 
 Revise os contratos ativos e faça uma primeira geração controlada:
 

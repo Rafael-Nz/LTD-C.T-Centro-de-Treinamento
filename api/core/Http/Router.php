@@ -61,14 +61,27 @@ class Router {
                     } catch (\Throwable $e) {
                         http_response_code(503);
                         header('Content-Type: application/json; charset=utf-8');
-                        echo json_encode(['success' => false, 'message' => 'Auditoria indisponivel. Tente novamente em instantes.']);
+                        echo json_encode([
+                            'success' => false,
+                            'message' => 'O sistema está temporariamente indisponível. Tente novamente em instantes.'
+                        ], JSON_UNESCAPED_UNICODE);
                         return;
                     }
 
                     foreach ($route['middlewares'] as $middleware) {
-                        $middlewareInstance = new $middleware();
-                        if ($middlewareInstance->handle() === false) {
-                            return;
+                        if (is_object($middleware) && method_exists($middleware, 'handle')) {
+                            if ($middleware->handle() === false) {
+                                return;
+                            }
+                        } elseif (is_callable($middleware)) {
+                            if ($middleware() === false) {
+                                return;
+                            }
+                        } elseif (is_string($middleware) && class_exists($middleware)) {
+                            $middlewareInstance = new $middleware();
+                            if ($middlewareInstance->handle() === false) {
+                                return;
+                            }
                         }
                     }
 

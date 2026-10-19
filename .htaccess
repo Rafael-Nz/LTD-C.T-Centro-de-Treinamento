@@ -2,10 +2,13 @@
 RewriteEngine On
 RewriteBase /ctt/
 
+# Redireciona /ctt/docs para a documentação Swagger da API
+RewriteRule ^docs/?$ api/docs [R=301,L,NC]
+
 # Arquivos de configuracao, SQL e ferramentas sao somente internos/CLI.
 Options -Indexes
 RewriteRule (^|/)\. - [F,L]
-RewriteRule ^(?:docs|tools|vendor)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:docs|tools|vendor)/ - [F,L,NC]
 RewriteRule ^(?:composer\.(?:json|lock)|README\.md)(?:/|$) - [F,L,NC]
 <FilesMatch "(?i)(^\.env(?:\..*)?$|\.(?:sql|bak|backup|old)$)">
     Require all denied

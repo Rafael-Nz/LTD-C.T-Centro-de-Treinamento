@@ -4,6 +4,9 @@ RewriteEngine On
 <FilesMatch "\.(env|log|ini|yaml|yml|json)$">
     Require all denied
 </FilesMatch>
+<Files "openapi.json">
+    Require all granted
+</Files>
 
 # Authorization header (JWT, etc)
 RewriteCond %{HTTP:Authorization} .

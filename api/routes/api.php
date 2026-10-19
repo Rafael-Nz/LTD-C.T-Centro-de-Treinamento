@@ -23,6 +23,7 @@ use Turma\TurmaController;
 use Avaliacao\AvaliacaoFisicaController;
 use Relatorio\RelatorioController;
 use Financeiro\FinanceiroController;
+use Docs\DocsController;
 
 // Helpers de autorização
 $auth   = [AuthMiddleware::class];
@@ -52,6 +53,10 @@ $canOrStudent = fn(string ...$perms) => [new class($perms) {
     }
 }];
 
+// Documentação da API (Swagger UI / OpenAPI)
+Router::get('/docs', [DocsController::class, 'ui']);
+Router::get('/openapi.json', [DocsController::class, 'openapi']);
+Router::get('/docs/openapi.json', [DocsController::class, 'openapi']);
 
 // Relatórios e Agenda
 Router::get('/relatorios/metricas', [RelatorioController::class, 'metricas'], $can('relatorios.visualizar'));

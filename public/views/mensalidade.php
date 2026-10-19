@@ -1,4 +1,13 @@
-﻿<?php $pageTitle = 'Cross C.T - Mensalidade'; $currentPage = 'mensalidade'; $pageCss = 'mensalidade.css'; ?>
+﻿<?php
+$pageTitle = 'Cross C.T - Mensalidade';
+$currentPage = 'mensalidade';
+$pageCss = 'mensalidade.css';
+
+$diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+$meses = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$hojeTexto = $diasSemana[(int)date('w')] . ', ' . date('d') . ' de ' . $meses[(int)date('m')] . ' de ' . date('Y');
+$usuarioNome = htmlspecialchars(\Core\Auth\Auth::user('nome') ?? 'Aluno');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <?php include __DIR__ . '/partials/head.php'; ?>
@@ -9,12 +18,12 @@
         <div class="d-flex flex-column flex-grow-1 min-width-0">
             <main class="dashboard-main">
                 <div class="greeting">
-                    <button class="btn-menu d-lg-none" id="btnMenu">
+                    <button class="btn-menu d-lg-none" id="btnMenu" aria-label="Abrir menu">
                         <i class="bi bi-list"></i>
                     </button>
                     <div>
-                        <p class="greeting-text">Bem vindo</p>
-                        <p class="greeting-date">Segunda-feira, 15 de Setembro de 2026</p>
+                        <p class="greeting-text">Olá, <?= $usuarioNome ?></p>
+                        <p class="greeting-date"><?= $hojeTexto ?></p>
                     </div>
                 </div>
 
@@ -31,89 +40,35 @@
 
                             <div class="plan-detail">
                                 <span class="plan-label">Plano</span>
-                                <span class="plan-value">Trimestral</span>
+                                <span class="plan-value" id="alunoPlanoNome">Carregando plano...</span>
                             </div>
                             <div class="plan-detail">
-                                <span class="plan-label">Valor mensal</span>
-                                <span class="plan-value">R$ 119,90</span>
+                                <span class="plan-label">Valor contratado</span>
+                                <span class="plan-value" id="alunoPlanoValor">R$ 0,00</span>
                             </div>
                             <div class="plan-detail">
-                                <span class="plan-label">Próximo vencimento</span>
-                                <span class="plan-value">01/10/2026</span>
+                                <span class="plan-label">Vencimento</span>
+                                <span class="plan-value" id="alunoPlanoVencimento">—</span>
                             </div>
                             <div class="plan-detail">
-                                <span class="plan-label">Status</span>
-                                <span class="status-badge status-badge--green">Em dia</span>
+                                <span class="plan-label">Situação</span>
+                                <span class="status-badge status-badge--green" id="alunoPlanoStatus">Consultando...</span>
                             </div>
                         </div>
 
                         <div class="history-card">
-                            <h3 class="history-title">Histórico de Pagamentos</h3>
-                            <p class="history-subtitle">Últimos meses</p>
+                            <h3 class="history-title">Histórico de Cobranças</h3>
+                            <p class="history-subtitle">Faturas emitidas e pagamentos</p>
 
-                            <div class="history-list">
-                                <div class="history-item">
-                                    <div>
-                                        <span class="history-month">Outubro 2026</span>
-                                        <span class="history-info">01/10/2026 · R$ 119,90</span>
-                                    </div>
-                                    <span class="status-badge status-badge--yellow">A vencer</span>
-                                </div>
-                                <div class="history-item">
-                                    <div>
-                                        <span class="history-month">Setembro 2026</span>
-                                        <span class="history-info">01/09/2026 · R$ 119,90</span>
-                                    </div>
-                                    <span class="status-badge status-badge--green">Pago</span>
-                                </div>
-                                <div class="history-item">
-                                    <div>
-                                        <span class="history-month">Agosto 2026</span>
-                                        <span class="history-info">01/08/2026 · R$ 119,90</span>
-                                    </div>
-                                    <span class="status-badge status-badge--green">Pago</span>
-                                </div>
-                                <div class="history-item">
-                                    <div>
-                                        <span class="history-month">Julho 2026</span>
-                                        <span class="history-info">01/07/2026 · R$ 119,90</span>
-                                    </div>
-                                    <span class="status-badge status-badge--green">Pago</span>
-                                </div>
-                                <div class="history-item">
-                                    <div>
-                                        <span class="history-month">Junho 2026</span>
-                                        <span class="history-info">01/06/2026 · R$ 119,90</span>
-                                    </div>
-                                    <span class="status-badge status-badge--red">Vencido</span>
-                                </div>
+                            <div class="history-list" id="historicoPagamentos">
+                                <p class="text-muted small my-3">Carregando histórico financeiro...</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="content-right">
-                        <div class="payment-card">
-                            <h3 class="payment-title">Pagar Mensalidade</h3>
-                            <p class="payment-ref">Outubro 2026 · R$ 119,90</p>
-                            <p class="payment-choose">Escolha a forma de pagamento</p>
-
-                            <div class="payment-option">
-                                <h4 class="payment-method">PIX</h4>
-                                <p class="payment-desc">Aprovado na hora</p>
-                                <button class="btn-pay btn-pay--pix">Pagar com PIX</button>
-                            </div>
-
-                            <div class="payment-option">
-                                <h4 class="payment-method">Cartão de Crédito</h4>
-                                <p class="payment-desc">Visa, Mastercard, Elo</p>
-                                <button class="btn-pay btn-pay--card">Pagar com Cartão</button>
-                            </div>
-
-                            <div class="payment-option">
-                                <h4 class="payment-method">Boleto Bancário</h4>
-                                <p class="payment-desc">Vencimento em 3 dias úteis</p>
-                                <button class="btn-pay btn-pay--boleto">Gerar Boleto</button>
-                            </div>
+                        <div class="payment-card" id="cardPagarMensalidade">
+                            <p class="text-muted small py-3">Consultando cobranças em aberto...</p>
                         </div>
                     </div>
                 </div>
@@ -122,6 +77,8 @@
     </div>
 
     <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/ctt/plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <script src="<?= PUBLIC_URL ?>js/sidebar.js"></script>
+    <script src="<?= PUBLIC_URL ?>js/aluno/mensalidade.js"></script>
 </body>
 </html>

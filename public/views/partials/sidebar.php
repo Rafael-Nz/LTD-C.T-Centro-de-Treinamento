@@ -29,14 +29,14 @@
 
     <div class="sidebar-user-wrap">
         <div class="sidebar-dropdown" id="userDropdown">
-            <a href="/ctt/login" class="sidebar-dropdown-item">
+            <a href="/ctt/logout" class="sidebar-dropdown-item">
                 <i class="bi bi-box-arrow-left me-2"></i><span>Sair</span>
             </a>
         </div>
         <div class="sidebar-user" id="userProfile">
             <div class="sidebar-avatar">CS</div>
             <div class="sidebar-user-info">
-                <span class="sidebar-user-name">Carlos Silva</span>
+                <span class="sidebar-user-name"><?= htmlspecialchars(\Core\Auth\Auth::aluno()->user('nome') ?? $_SESSION['auth_aluno']['user_nome'] ?? $_SESSION['user_nome'] ?? 'Aluno', ENT_QUOTES, 'UTF-8') ?></span>
                 <span class="sidebar-user-role">Aluno</span>
             </div>
         </div>

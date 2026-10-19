@@ -33,3 +33,21 @@ userProfile.addEventListener('click', function(e) {
 document.addEventListener('click', function() {
     userDropdown.classList.remove('open');
 });
+
+document.querySelector('a[href="/ctt/logout"]')?.addEventListener('click', async function (event) {
+    event.preventDefault();
+    try {
+        await fetch('/ctt/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Auth-Area': 'aluno'
+            },
+            body: JSON.stringify({ area: 'aluno' })
+        });
+    } catch (_) {
+        // Prossegue com redirecionamento em caso de oscilação de rede
+    } finally {
+        window.location.href = '/ctt/login';
+    }
+});

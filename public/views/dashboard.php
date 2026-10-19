@@ -109,12 +109,13 @@
                     </div>
 
                     <div class="content-right">
-                        <div class="email-card">
+                        <div class="email-card d-none" id="activation-card">
                             <span class="email-label">AÇÃO NECESSÁRIA</span>
-                            <h4 class="email-title">Confirme seu e-mail</h4>
-                            <p class="email-text">Enviamos um link para</p>
-                            <p class="email-address">carlos.silva@email.com</p>
-                            <button class="btn-resend">Reenviar e-mail</button>
+                            <h4 class="email-title">Ative sua conta</h4>
+                            <p class="email-text">Sua senha inicial permite o acesso, mas sua conta ainda precisa ser ativada.</p>
+                            <p class="email-address" id="activation-email"></p>
+                            <button class="btn-resend" id="resend-activation">Enviar link de ativação</button>
+                            <p class="small mt-2 mb-0" id="activation-feedback"></p>
                         </div>
 
                         <div class="contact-card">
@@ -151,5 +152,6 @@
 
     <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="<?= PUBLIC_URL ?>js/sidebar.js"></script>
+    <script src="<?= PUBLIC_URL ?>js/dashboard.js"></script>
 </body>
 </html>

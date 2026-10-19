@@ -13,6 +13,12 @@ class AvaliacaoFisicaController extends Controller {
     }
 
     public function indexByAluno(int $alunoId): void {
+        $userTipo = Auth::user('tipo');
+        if ($userTipo === 'aluno' && (int) Auth::id() !== $alunoId) {
+            $this->error('Acesso negado às avaliações informadas.', 403);
+            return;
+        }
+
         try {
             $this->json($this->service->listByAlunoId($alunoId));
         } catch (\RuntimeException $e) {
@@ -27,6 +33,12 @@ class AvaliacaoFisicaController extends Controller {
         $avaliacao = $this->service->findById($id);
         if (!$avaliacao) {
             $this->error('Avaliacao nao encontrada.', 404);
+            return;
+        }
+
+        $userTipo = Auth::user('tipo');
+        if ($userTipo === 'aluno' && (int) ($avaliacao['aluno_id'] ?? 0) !== (int) Auth::id()) {
+            $this->error('Acesso negado a esta avaliação.', 403);
             return;
         }
 

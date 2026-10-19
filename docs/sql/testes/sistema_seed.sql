@@ -6,15 +6,29 @@
 --
 -- Pode ser rerodado sem duplicar os mesmos registros.
 --
--- Login de teste (todos os colaboradores ativos):
---   Senha: Senha@Teste123
+-- Credenciais de teste unificadas:
+--   Senha para TODOS os usuarios (Admin, Colaboradores e Alunos): Senha@Teste123
+--
+-- Painel Administrativo (/ctt/admin/login):
 --   Admin:       admin@centrotreinamento.com
 --   Gerente:     roberto.gerente@ctt.teste
 --   Instrutor:   paulo.instrutor@ctt.teste
 --   Instrutora:  mariana.instrutora@ctt.teste
 --   Estagiaria:  larissa.estagiaria@ctt.teste
 --   Atendente:   camila.atendente@ctt.teste
--- Alunos nao entram no painel administrativo.
+--   Inativo:     felipe.inativo@ctt.teste (desativado para testes de bloqueio)
+--
+-- Area do Aluno (/ctt/public/login):
+--   (Login pode ser efetuado com E-mail ou CPF, com a mesma senha Senha@Teste123)
+--   Ana Souza:       ana.souza@ctt.teste       | CPF: 81000000001 (Ativa, turmas e contrato em dia)
+--   Bruno Lima:      bruno.lima@ctt.teste      | CPF: 81000000002 (Ativo, mensalidade vencida)
+--   Carla Mendes:    carla.mendes@ctt.teste    | CPF: 81000000003 (Ativa, contrato pausado)
+--   Elisa Rocha:     elisa.rocha@ctt.teste     | CPF: 81000000005 (Ativa, matricula recente)
+--   Fabio Nunes:     fabio.nunes@ctt.teste     | CPF: 81000000006 (Ativo, contrato encerrado)
+--   Gabriela Pinto:  gabriela.pinto@ctt.teste  | CPF: 81000000007 (Ativa, pagamento parcial)
+--   Henrique Costa:  henrique.costa@ctt.teste  | CPF: 81000000008 (Ativo, plano trimestral)
+--   Diego Alves:     diego.alves@ctt.teste     | CPF: 81000000004 (Inativo)
+--
 
 USE db_centro_treinamento;
 
@@ -23,11 +37,15 @@ START TRANSACTION;
 SET @senha_teste = '$argon2id$v=19$m=65536,t=4,p=1$Uk5pTmFnSk02ckovTERsbQ$kloiHpXCLDoQ9XsEfo7cGenKDCrCRMJ1ODizht6OGMA';
 
 -- ---------------------------------------------------------------------------
--- Admin padrao do banco.sql passa a usar a senha de teste
+-- Garante o Admin para ambiente de teste
 -- ---------------------------------------------------------------------------
-UPDATE usuario
-SET senha = @senha_teste
-WHERE email = 'admin@centrotreinamento.com';
+INSERT INTO usuario (id, nome, sobrenome, cpf, email, senha, data_nascimento, tipo_usuario, endereco_id, conta_ativada)
+VALUES (1, 'Admin', 'Teste', '00000000000', 'admin@centrotreinamento.com', @senha_teste, '1990-01-01', 'admin', 1, TRUE)
+ON DUPLICATE KEY UPDATE senha = @senha_teste, conta_ativada = TRUE;
+
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, senha, conta_ativada)
+VALUES (1, 1, 'ADM-01', @senha_teste, TRUE)
+ON DUPLICATE KEY UPDATE senha = @senha_teste, conta_ativada = TRUE;
 
 SET @admin_id = (SELECT id FROM usuario WHERE email = 'admin@centrotreinamento.com' LIMIT 1);
 
@@ -52,6 +70,18 @@ WHERE c.nome = 'Atendente'
   AND NOT EXISTS (
       SELECT 1 FROM cargo_permissao cp
       WHERE cp.cargo_id = c.id AND cp.permissao_id = p.id
+  );
+
+-- Garante que Instrutor e Estagiario nao tenham permissoes de configuracoes ou modalidades
+DELETE cp FROM cargo_permissao cp
+INNER JOIN cargo c ON c.id = cp.cargo_id
+INNER JOIN permissao p ON p.id = cp.permissao_id
+WHERE c.nome IN ('Instrutor', 'Estagiário')
+  AND p.slug IN (
+      'modalidades.visualizar', 'modalidades.gerenciar',
+      'cargos.visualizar', 'cargos.gerenciar',
+      'funcionarios.visualizar', 'funcionarios.gerenciar',
+      'usuarios.gerenciar', 'configuracoes.gerenciar'
   );
 
 -- ---------------------------------------------------------------------------
@@ -87,28 +117,28 @@ SET @cargo_atendente = (SELECT id FROM cargo WHERE nome = 'Atendente' LIMIT 1);
 -- ---------------------------------------------------------------------------
 -- Funcionarios
 -- ---------------------------------------------------------------------------
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Roberto', 'Gerente', '80000000001', 'roberto.gerente@ctt.teste', @senha_teste, '1982-03-14', 'M', @end_itaim, 'funcionario', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Roberto', 'Gerente', '80000000001', 'roberto.gerente@ctt.teste', @senha_teste, '1982-03-14', 'M', @end_itaim, 'funcionario', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '80000000001' OR email = 'roberto.gerente@ctt.teste');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Paulo', 'Instrutor', '80000000002', 'paulo.instrutor@ctt.teste', @senha_teste, '1988-04-10', 'M', @end_pinheiros, 'funcionario', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Paulo', 'Instrutor', '80000000002', 'paulo.instrutor@ctt.teste', @senha_teste, '1988-04-10', 'M', @end_pinheiros, 'funcionario', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '80000000002' OR email = 'paulo.instrutor@ctt.teste');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Mariana', 'Instrutora', '80000000003', 'mariana.instrutora@ctt.teste', @senha_teste, '1992-07-22', 'F', @end_harmonia, 'funcionario', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Mariana', 'Instrutora', '80000000003', 'mariana.instrutora@ctt.teste', @senha_teste, '1992-07-22', 'F', @end_harmonia, 'funcionario', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '80000000003' OR email = 'mariana.instrutora@ctt.teste');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Larissa', 'Estagiaria', '80000000004', 'larissa.estagiaria@ctt.teste', @senha_teste, '2002-09-18', 'F', @end_augusta, 'funcionario', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Larissa', 'Estagiaria', '80000000004', 'larissa.estagiaria@ctt.teste', @senha_teste, '2002-09-18', 'F', @end_augusta, 'funcionario', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '80000000004' OR email = 'larissa.estagiaria@ctt.teste');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Camila', 'Atendente', '80000000005', 'camila.atendente@ctt.teste', @senha_teste, '1996-11-05', 'F', @end_augusta, 'funcionario', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Camila', 'Atendente', '80000000005', 'camila.atendente@ctt.teste', @senha_teste, '1996-11-05', 'F', @end_augusta, 'funcionario', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '80000000005' OR email = 'camila.atendente@ctt.teste');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Felipe', 'Inativo', '80000000006', 'felipe.inativo@ctt.teste', @senha_teste, '1985-01-30', 'M', @end_pinheiros, 'funcionario', FALSE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Felipe', 'Inativo', '80000000006', 'felipe.inativo@ctt.teste', @senha_teste, '1985-01-30', 'M', @end_pinheiros, 'funcionario', FALSE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '80000000006' OR email = 'felipe.inativo@ctt.teste');
 
 SET @id_gerente = (SELECT id FROM usuario WHERE cpf = '80000000001' LIMIT 1);
@@ -118,28 +148,28 @@ SET @id_larissa = (SELECT id FROM usuario WHERE cpf = '80000000004' LIMIT 1);
 SET @id_camila = (SELECT id FROM usuario WHERE cpf = '80000000005' LIMIT 1);
 SET @id_felipe = (SELECT id FROM usuario WHERE cpf = '80000000006' LIMIT 1);
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-SELECT @id_gerente, @cargo_gerente, 'GER-001', 'Gerente operacional de teste'
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+SELECT @id_gerente, @cargo_gerente, 'GER-001', 'Gerente operacional de teste', @senha_teste, TRUE
 WHERE @id_gerente IS NOT NULL AND NOT EXISTS (SELECT 1 FROM funcionario WHERE usuario_id = @id_gerente);
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-SELECT @id_paulo, @cargo_instrutor, 'CREF-SP-1001', 'Instrutor de Crossfit e mobilidade'
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+SELECT @id_paulo, @cargo_instrutor, 'CREF-SP-1001', 'Instrutor de Crossfit e mobilidade', @senha_teste, TRUE
 WHERE @id_paulo IS NOT NULL AND NOT EXISTS (SELECT 1 FROM funcionario WHERE usuario_id = @id_paulo);
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-SELECT @id_mariana, @cargo_instrutor, 'CREF-SP-1002', 'Instrutora de funcional'
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+SELECT @id_mariana, @cargo_instrutor, 'CREF-SP-1002', 'Instrutora de funcional', @senha_teste, TRUE
 WHERE @id_mariana IS NOT NULL AND NOT EXISTS (SELECT 1 FROM funcionario WHERE usuario_id = @id_mariana);
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-SELECT @id_larissa, @cargo_estagiario, NULL, 'Estagiaria de apoio nas aulas'
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+SELECT @id_larissa, @cargo_estagiario, NULL, 'Estagiaria de apoio nas aulas', @senha_teste, TRUE
 WHERE @id_larissa IS NOT NULL AND NOT EXISTS (SELECT 1 FROM funcionario WHERE usuario_id = @id_larissa);
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-SELECT @id_camila, @cargo_atendente, 'ATD-001', 'Recepcao e financeiro operacional'
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+SELECT @id_camila, @cargo_atendente, 'ATD-001', 'Recepcao e financeiro operacional', @senha_teste, TRUE
 WHERE @id_camila IS NOT NULL AND NOT EXISTS (SELECT 1 FROM funcionario WHERE usuario_id = @id_camila);
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-SELECT @id_felipe, @cargo_instrutor, 'CREF-SP-0999', 'Ex-instrutor inativo para testes de filtro'
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+SELECT @id_felipe, @cargo_instrutor, 'CREF-SP-0999', 'Ex-instrutor inativo para testes de filtro', @senha_teste, TRUE
 WHERE @id_felipe IS NOT NULL AND NOT EXISTS (SELECT 1 FROM funcionario WHERE usuario_id = @id_felipe);
 
 INSERT INTO contato (usuario_id, tipo, valor)
@@ -267,36 +297,36 @@ WHERE @turma_mob IS NOT NULL AND NOT EXISTS (SELECT 1 FROM turma_config_horario 
 -- ---------------------------------------------------------------------------
 -- Alunos
 -- ---------------------------------------------------------------------------
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Ana', 'Souza', '81000000001', 'ana.souza@ctt.teste', @senha_teste, '1995-02-12', 'F', @end_pinheiros, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Ana', 'Souza', '81000000001', 'ana.souza@ctt.teste', @senha_teste, '1995-02-12', 'F', @end_pinheiros, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000001');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Bruno', 'Lima', '81000000002', 'bruno.lima@ctt.teste', @senha_teste, '1990-08-03', 'M', @end_itaim, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Bruno', 'Lima', '81000000002', 'bruno.lima@ctt.teste', @senha_teste, '1990-08-03', 'M', @end_itaim, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000002');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Carla', 'Mendes', '81000000003', 'carla.mendes@ctt.teste', @senha_teste, '1987-12-19', 'F', @end_harmonia, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Carla', 'Mendes', '81000000003', 'carla.mendes@ctt.teste', @senha_teste, '1987-12-19', 'F', @end_harmonia, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000003');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Diego', 'Alves', '81000000004', 'diego.alves@ctt.teste', @senha_teste, '1998-05-27', 'M', @end_augusta, 'aluno', FALSE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Diego', 'Alves', '81000000004', 'diego.alves@ctt.teste', @senha_teste, '1998-05-27', 'M', @end_augusta, 'aluno', FALSE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000004');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Elisa', 'Rocha', '81000000005', 'elisa.rocha@ctt.teste', @senha_teste, '2001-04-09', 'F', @end_pinheiros, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Elisa', 'Rocha', '81000000005', 'elisa.rocha@ctt.teste', @senha_teste, '2001-04-09', 'F', @end_pinheiros, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000005');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Fabio', 'Nunes', '81000000006', 'fabio.nunes@ctt.teste', @senha_teste, '1984-10-15', 'M', @end_itaim, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Fabio', 'Nunes', '81000000006', 'fabio.nunes@ctt.teste', @senha_teste, '1984-10-15', 'M', @end_itaim, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000006');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Gabriela', 'Pinto', '81000000007', 'gabriela.pinto@ctt.teste', @senha_teste, '1993-06-21', 'F', @end_harmonia, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Gabriela', 'Pinto', '81000000007', 'gabriela.pinto@ctt.teste', @senha_teste, '1993-06-21', 'F', @end_harmonia, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000007');
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
-SELECT 'Henrique', 'Costa', '81000000008', 'henrique.costa@ctt.teste', @senha_teste, '1991-01-08', 'M', @end_augusta, 'aluno', TRUE
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+SELECT 'Henrique', 'Costa', '81000000008', 'henrique.costa@ctt.teste', @senha_teste, '1991-01-08', 'M', @end_augusta, 'aluno', TRUE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE cpf = '81000000008');
 
 SET @aluno_ana = (SELECT id FROM usuario WHERE cpf = '81000000001' LIMIT 1);
@@ -308,37 +338,89 @@ SET @aluno_fabio = (SELECT id FROM usuario WHERE cpf = '81000000006' LIMIT 1);
 SET @aluno_gabi = (SELECT id FROM usuario WHERE cpf = '81000000007' LIMIT 1);
 SET @aluno_henrique = (SELECT id FROM usuario WHERE cpf = '81000000008' LIMIT 1);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_ana, '2026-03-02', @id_camila, '202603000001'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_ana, '2026-03-02', @id_camila, '202603000001', @senha_teste, TRUE
 WHERE @aluno_ana IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_ana);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_bruno, '2026-04-10', @id_camila, '202604000002'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_bruno, '2026-04-10', @id_camila, '202604000002', @senha_teste, TRUE
 WHERE @aluno_bruno IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_bruno);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_carla, '2026-05-05', @admin_id, '202605000003'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_carla, '2026-05-05', @admin_id, '202605000003', @senha_teste, TRUE
 WHERE @aluno_carla IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_carla);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_diego, '2026-01-20', @id_camila, '202601000004'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_diego, '2026-01-20', @id_camila, '202601000004', @senha_teste, TRUE
 WHERE @aluno_diego IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_diego);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_elisa, CURDATE(), @id_camila, '202609000005'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_elisa, CURDATE(), @id_camila, '202609000005', @senha_teste, TRUE
 WHERE @aluno_elisa IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_elisa);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_fabio, '2025-11-12', @admin_id, '202511000006'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_fabio, '2025-11-12', @admin_id, '202511000006', @senha_teste, TRUE
 WHERE @aluno_fabio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_fabio);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_gabi, '2026-06-18', @id_camila, '202606000007'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_gabi, '2026-06-18', @id_camila, '202606000007', @senha_teste, TRUE
 WHERE @aluno_gabi IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_gabi);
 
-INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-SELECT @aluno_henrique, '2026-02-28', @id_camila, '202602000008'
+INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+SELECT @aluno_henrique, '2026-02-28', @id_camila, '202602000008', @senha_teste, TRUE
 WHERE @aluno_henrique IS NOT NULL AND NOT EXISTS (SELECT 1 FROM aluno WHERE usuario_id = @aluno_henrique);
+
+-- ---------------------------------------------------------------------------
+-- Sincronizacao de credenciais de teste:
+-- Garante que todos os usuarios, colaboradores e alunos possuam a mesma senha
+-- (@senha_teste = 'Senha@Teste123') e estejam ativados, mesmo ao reaplicar o seed.
+-- ---------------------------------------------------------------------------
+UPDATE usuario
+SET senha = @senha_teste, conta_ativada = TRUE
+WHERE email IN (
+    'admin@centrotreinamento.com',
+    'roberto.gerente@ctt.teste',
+    'paulo.instrutor@ctt.teste',
+    'mariana.instrutora@ctt.teste',
+    'larissa.estagiaria@ctt.teste',
+    'camila.atendente@ctt.teste',
+    'felipe.inativo@ctt.teste',
+    'ana.souza@ctt.teste',
+    'bruno.lima@ctt.teste',
+    'carla.mendes@ctt.teste',
+    'diego.alves@ctt.teste',
+    'elisa.rocha@ctt.teste',
+    'fabio.nunes@ctt.teste',
+    'gabriela.pinto@ctt.teste',
+    'henrique.costa@ctt.teste'
+);
+
+UPDATE funcionario f
+INNER JOIN usuario u ON u.id = f.usuario_id
+SET f.senha = @senha_teste, f.conta_ativada = TRUE
+WHERE u.email IN (
+    'admin@centrotreinamento.com',
+    'roberto.gerente@ctt.teste',
+    'paulo.instrutor@ctt.teste',
+    'mariana.instrutora@ctt.teste',
+    'larissa.estagiaria@ctt.teste',
+    'camila.atendente@ctt.teste',
+    'felipe.inativo@ctt.teste'
+);
+
+UPDATE aluno a
+INNER JOIN usuario u ON u.id = a.usuario_id
+SET a.senha = @senha_teste, a.conta_ativada = TRUE
+WHERE u.email IN (
+    'ana.souza@ctt.teste',
+    'bruno.lima@ctt.teste',
+    'carla.mendes@ctt.teste',
+    'diego.alves@ctt.teste',
+    'elisa.rocha@ctt.teste',
+    'fabio.nunes@ctt.teste',
+    'gabriela.pinto@ctt.teste',
+    'henrique.costa@ctt.teste'
+);
 
 INSERT IGNORE INTO sequencia_matricula (id)
 SELECT n FROM (
@@ -859,13 +941,13 @@ INSERT INTO pagamento (cobranca_id, valor_pago, data_pagamento, forma_pagamento,
 SELECT @cob_fabio, 149.90, '2026-04-11 09:00:00', 'boleto', 'BOL-FAB-001', NULL, @admin_id
 WHERE @cob_fabio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM pagamento WHERE cobranca_id = @cob_fabio);
 
-INSERT INTO audit_logs (user_id, action, operation, module, result)
+INSERT IGNORE INTO audit_logs (user_id, action, operation, module, result)
 SELECT @admin_id, 'seed_applied', 'insert', 'sistema', 'success'
 WHERE NOT EXISTS (SELECT 1 FROM audit_logs WHERE action = 'seed_applied');
 
 COMMIT;
 
-SELECT 'Seed aplicado. Use Senha@Teste123 nos colaboradores.' AS mensagem;
+SELECT 'Seed aplicado com sucesso. Senha unificada de teste (Senha@Teste123) configurada para todos os usuarios, funcionarios e alunos.' AS mensagem;
 SELECT tipo_usuario, COUNT(*) AS total, SUM(ativo) AS ativos
 FROM usuario
 GROUP BY tipo_usuario;

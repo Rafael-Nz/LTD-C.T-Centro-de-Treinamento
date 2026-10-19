@@ -10,6 +10,8 @@
 
 START TRANSACTION;
 
+SET @senha_teste = '$argon2id$v=19$m=65536,t=4,p=1$Uk5pTmFnSk02ckovTERsbQ$kloiHpXCLDoQ9XsEfo7cGenKDCrCRMJ1ODizht6OGMA';
+
 -- Enderecos de apoio
 INSERT INTO endereco (logradouro, numero, cidade, bairro, cep, complemento)
 SELECT 'Rua Teste Instrutor', '101', 'Sao Paulo', 'Centro', '01010000', 'Seed gerenciar turma'
@@ -52,17 +54,18 @@ SET @endereco_estagiario_id = (
 );
 
 -- Usuarios funcionarios
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
 SELECT
     'Paulo',
     'Instrutor',
     '90000000001',
     'paulo.instrutor.teste@ctt.local',
-    '$argon2id$v=19$m=65536,t=4,p=1$enBzQTh6a3NuRTAwWVFFNg$D1fBTREiUz8MPOsv4hl6WI7EgKRbK4+9nl7wf6+U1Sw',
+    @senha_teste,
     '1988-04-10',
     'M',
     @endereco_instrutor_id,
     'funcionario',
+    TRUE,
     TRUE
 WHERE NOT EXISTS (
     SELECT 1
@@ -71,17 +74,18 @@ WHERE NOT EXISTS (
        OR email = 'paulo.instrutor.teste@ctt.local'
 );
 
-INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo)
+INSERT INTO usuario (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
 SELECT
     'Larissa',
     'Estagiaria',
     '90000000002',
     'larissa.estagiaria.teste@ctt.local',
-    '$argon2id$v=19$m=65536,t=4,p=1$enBzQTh6a3NuRTAwWVFFNg$D1fBTREiUz8MPOsv4hl6WI7EgKRbK4+9nl7wf6+U1Sw',
+    @senha_teste,
     '2001-09-18',
     'F',
     @endereco_estagiario_id,
     'funcionario',
+    TRUE,
     TRUE
 WHERE NOT EXISTS (
     SELECT 1
@@ -118,12 +122,14 @@ SET @cargo_estagiario_id = (
     LIMIT 1
 );
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
 SELECT
     @instrutor_usuario_id,
     @cargo_instrutor_id,
     'CREF-TESTE-001',
-    'Instrutor criado pelo seed de gerenciar turma'
+    'Instrutor criado pelo seed de gerenciar turma',
+    @senha_teste,
+    TRUE
 WHERE @instrutor_usuario_id IS NOT NULL
   AND @cargo_instrutor_id IS NOT NULL
   AND NOT EXISTS (
@@ -132,12 +138,14 @@ WHERE @instrutor_usuario_id IS NOT NULL
       WHERE usuario_id = @instrutor_usuario_id
   );
 
-INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
+INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
 SELECT
     @estagiario_usuario_id,
     @cargo_estagiario_id,
     NULL,
-    'Estagiaria criada pelo seed de gerenciar turma'
+    'Estagiaria criada pelo seed de gerenciar turma',
+    @senha_teste,
+    TRUE
 WHERE @estagiario_usuario_id IS NOT NULL
   AND @cargo_estagiario_id IS NOT NULL
   AND NOT EXISTS (
@@ -145,6 +153,15 @@ WHERE @estagiario_usuario_id IS NOT NULL
       FROM funcionario
       WHERE usuario_id = @estagiario_usuario_id
   );
+
+UPDATE usuario
+SET senha = @senha_teste, conta_ativada = TRUE
+WHERE email IN ('paulo.instrutor.teste@ctt.local', 'larissa.estagiaria.teste@ctt.local');
+
+UPDATE funcionario f
+INNER JOIN usuario u ON u.id = f.usuario_id
+SET f.senha = @senha_teste, f.conta_ativada = TRUE
+WHERE u.email IN ('paulo.instrutor.teste@ctt.local', 'larissa.estagiaria.teste@ctt.local');
 
 -- Modalidades
 INSERT INTO modalidade (nome, descricao, ativo)

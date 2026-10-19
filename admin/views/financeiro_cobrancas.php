@@ -49,9 +49,14 @@
                             </div>
                         </div>
                     </div>
-                <button class="btn btn-red d-flex align-items-center color border border-white" id="atualizarVencidas" type="button">
-                    <i class="ph ph-arrows-clockwise me-1"></i>Atualizar vencidas
-                </button>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="/ctt/api/financeiro/exportar" class="btn btn-red d-flex align-items-center color border border-white" id="exportarCobrancasCsv" title="Exportar lista de cobranças em CSV">
+                        <i class="ph ph-download-simple me-1"></i>Exportar CSV
+                    </a>
+                    <button class="btn btn-red d-flex align-items-center color border border-white" id="atualizarVencidas" type="button">
+                        <i class="ph ph-arrows-clockwise me-1"></i>Atualizar vencidas
+                    </button>
+                </div>
             </div>
 
                 <div class="card-body">

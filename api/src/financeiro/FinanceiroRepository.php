@@ -32,7 +32,13 @@ class FinanceiroRepository extends Repository
         $params = []; $where = [];
         $search = trim((string) ($filters['search']['value'] ?? ''));
         if ($search !== '') { $where[] = '(nome LIKE ? OR descricao LIKE ?)'; $params = ['%' . $search . '%', '%' . $search . '%']; }
-        if (in_array($filters['ativo'] ?? '', ['0', '1'], true)) { $where[] = 'ativo = ?'; $params[] = (int) $filters['ativo']; }
+        if (isset($filters['ativo']) && $filters['ativo'] !== '') {
+            $ativos = array_values(array_intersect(explode(',', (string) $filters['ativo']), ['0', '1']));
+            if (count($ativos) === 1) {
+                $where[] = 'ativo = ?';
+                $params[] = (int) $ativos[0];
+            }
+        }
         if (!empty($filters['categoria'])) { $where[] = "$category = ?"; $params[] = (string) $filters['categoria']; }
         $clause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
         $total = (int) $this->fetch("SELECT COUNT(*) AS total FROM $table")['total'];
@@ -267,7 +273,7 @@ class FinanceiroRepository extends Repository
 
     public function cobranca(int $id): ?array
     {
-        return $this->fetch('SELECT c.*, CONCAT(u.nome, " ", u.sobrenome) AS aluno_nome FROM cobranca c INNER JOIN usuario u ON u.id = c.aluno_id WHERE c.id = ?', [$id]);
+        return $this->fetch('SELECT c.*, CONCAT(u.nome, " ", u.sobrenome) AS aluno_nome, ct.multa_percentual, ct.juros_percentual FROM cobranca c INNER JOIN usuario u ON u.id = c.aluno_id LEFT JOIN contrato ct ON ct.id = c.contrato_id WHERE c.id = ?', [$id]);
     }
 
     public function criarCobranca(int $contratoId, int $alunoId, ?string $competencia, string $descricao, float $valorOriginal, float $desconto, string $vencimento): int
@@ -345,4 +351,139 @@ class FinanceiroRepository extends Repository
         return $this->fetchAll("SELECT id FROM contrato WHERE status = 'ativo' ORDER BY id");
     }
 
+    public function metricas(?string $competencia = null, ?int $alunoId = null): array
+    {
+        $where = [];
+        $params = [];
+        if ($competencia !== null && $competencia !== '' && $competencia !== 'all') {
+            $where[] = 'c.competencia = ?';
+            $params[] = $competencia;
+        }
+        if ($alunoId !== null) {
+            $where[] = 'c.aluno_id = ?';
+            $params[] = $alunoId;
+        }
+        $clause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = 'SELECT c.id, c.status, c.valor_final,
+            COALESCE((SELECT SUM(p.valor_pago) FROM pagamento p WHERE p.cobranca_id = c.id AND p.estornado_em IS NULL), 0) AS total_pago
+            FROM cobranca c' . $clause;
+
+        $rows = $this->fetchAll($sql, $params);
+
+        $totalAberto = 0.0;
+        $totalVencido = 0.0;
+        $totalPago = 0.0;
+        $totalCancelado = 0.0;
+        $qtdCobrancas = count($rows);
+        $qtdPagas = 0;
+        $qtdAbertas = 0;
+        $qtdVencidas = 0;
+
+        foreach ($rows as $row) {
+            $saldo = max(0, (float) $row['valor_final'] - (float) $row['total_pago']);
+            $totalPago += (float) $row['total_pago'];
+
+            if ($row['status'] === 'aberta') {
+                $totalAberto += $saldo;
+                $qtdAbertas++;
+            } elseif ($row['status'] === 'vencida') {
+                $totalVencido += $saldo;
+                $qtdVencidas++;
+            } elseif ($row['status'] === 'paga') {
+                $qtdPagas++;
+            } elseif ($row['status'] === 'cancelada') {
+                $totalCancelado += (float) $row['valor_final'];
+            }
+        }
+
+        $totalPrevisto = $totalAberto + $totalVencido + $totalPago;
+        $taxaInadimplencia = $totalPrevisto > 0 ? round(($totalVencido / $totalPrevisto) * 100, 1) : 0;
+
+        return [
+            'total_aberto' => $totalAberto,
+            'total_vencido' => $totalVencido,
+            'total_pago' => $totalPago,
+            'total_cancelado' => $totalCancelado,
+            'total_cobrancas' => $qtdCobrancas,
+            'qtd_pagas' => $qtdPagas,
+            'qtd_abertas' => $qtdAbertas,
+            'qtd_vencidas' => $qtdVencidas,
+            'taxa_inadimplencia' => $taxaInadimplencia,
+        ];
+    }
+
+    public function competenciasDisponiveis(?int $alunoId = null): array
+    {
+        $sql = 'SELECT DISTINCT competencia FROM cobranca WHERE competencia IS NOT NULL AND competencia != ""';
+        $params = [];
+        if ($alunoId !== null) {
+            $sql .= ' AND aluno_id = ?';
+            $params[] = $alunoId;
+        }
+        $sql .= ' ORDER BY competencia DESC LIMIT 24';
+        $rows = $this->fetchAll($sql, $params);
+        return array_values(array_filter(array_column($rows, 'competencia')));
+    }
+
+    public function exportarCobrancas(?string $competencia = null, ?string $status = null, ?int $alunoId = null): array
+    {
+        $from = ' FROM cobranca c INNER JOIN usuario u ON u.id = c.aluno_id';
+        $where = [];
+        $params = [];
+        if ($competencia !== null && $competencia !== '' && $competencia !== 'all') {
+            $where[] = 'c.competencia = ?';
+            $params[] = $competencia;
+        }
+        if ($status !== null && $status !== '' && $status !== 'all') {
+            $where[] = 'c.status = ?';
+            $params[] = $status;
+        }
+        if ($alunoId !== null) {
+            $where[] = 'c.aluno_id = ?';
+            $params[] = $alunoId;
+        }
+        $clause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+        $sql = 'SELECT c.id, CONCAT(u.nome, " ", u.sobrenome) AS aluno_nome,
+            c.descricao, c.competencia, c.data_vencimento, c.status,
+            c.valor_original, c.desconto, c.multa, c.juros, c.valor_final,
+            COALESCE((SELECT SUM(p.valor_pago) FROM pagamento p WHERE p.cobranca_id = c.id AND p.estornado_em IS NULL), 0) AS total_pago'
+            . $from . $clause . ' ORDER BY c.data_vencimento DESC, c.id DESC';
+        $rows = $this->fetchAll($sql, $params);
+        foreach ($rows as &$row) {
+            $row['saldo'] = max(0, (float) $row['valor_final'] - (float) $row['total_pago']);
+        }
+        unset($row);
+        return $rows;
+    }
+
+    public function aplicarEncargos(int $cobrancaId, float $multa, float $juros): void
+    {
+        $cobranca = $this->fetch('SELECT valor_original, desconto FROM cobranca WHERE id = ?', [$cobrancaId]);
+        if (!$cobranca) return;
+        $original = FinanceiroValidation::centavos($cobranca['valor_original']);
+        $desconto = FinanceiroValidation::centavos($cobranca['desconto']);
+        $multaCent = FinanceiroValidation::centavos($multa);
+        $jurosCent = FinanceiroValidation::centavos($juros);
+        $finalCent = $original - $desconto + $multaCent + $jurosCent;
+        $valorFinal = FinanceiroValidation::decimal($finalCent);
+
+        $this->execute('UPDATE cobranca SET multa = ?, juros = ?, valor_final = ? WHERE id = ?', [
+            $multa, $juros, $valorFinal, $cobrancaId
+        ]);
+    }
+
+    public function reciboPagamento(int $cobrancaId, int $pagamentoId): ?array
+    {
+        return $this->fetch('SELECT p.*,
+            c.aluno_id, c.descricao AS cobranca_descricao, c.competencia, c.data_vencimento,
+            c.valor_original, c.desconto, c.multa, c.juros, c.valor_final, c.status AS cobranca_status,
+            u.nome AS aluno_nome, u.sobrenome AS aluno_sobrenome, u.cpf AS aluno_cpf, u.email AS aluno_email,
+            CONCAT(op.nome, " ", op.sobrenome) AS registrado_por_nome
+            FROM pagamento p
+            INNER JOIN cobranca c ON c.id = p.cobranca_id
+            INNER JOIN usuario u ON u.id = c.aluno_id
+            LEFT JOIN usuario op ON op.id = p.registrado_por
+            WHERE p.id = ? AND p.cobranca_id = ?', [$pagamentoId, $cobrancaId]);
+    }
 }

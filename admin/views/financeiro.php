@@ -24,35 +24,61 @@
     <main class="flex-fill d-flex" id="mainContent">
         <div class="container-lg p-4 d-flex flex-column flex-fill">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                <h1 class="h4 mb-0">Visão geral</h1>
+                <div>
+                    <h1 class="h4 mb-0">Visão geral</h1>
+                    <span class="text-muted small">Indicadores financeiros e gestão de contratos</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <label for="filtroCompetenciaMetricas" class="small text-muted mb-0 me-1">Competência:</label>
+                    <select id="filtroCompetenciaMetricas" class="form-select form-select-sm w-auto" style="min-width: 170px;">
+                        <option value="all">Todas as competências</option>
+                    </select>
+                    <button id="btnAtualizarMetricas" class="btn btn-sm btn-outline-secondary" type="button" title="Atualizar indicadores" aria-label="Atualizar indicadores">
+                        <i class="ph ph-arrows-clockwise"></i>
+                    </button>
+                    <a href="/ctt/api/financeiro/exportar" id="btnExportarCobrancasGeral" class="btn btn-sm btn-red color border border-white d-flex align-items-center" title="Exportar cobranças em CSV">
+                        <i class="ph ph-download-simple me-1"></i>Exportar CSV
+                    </a>
+                </div>
             </div>
 
             <div class="row g-3 mb-4" id="financeiroResumo">
                 <div class="col-sm-6 col-xl-3">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body"><span class="text-muted small">Em aberto</span>
+                        <div class="card-body">
+                            <span class="text-muted small">Em aberto</span>
                             <div class="h4 mb-0 mt-2" id="totalAberto">R$ 0,00</div>
+                            <small class="text-muted" id="detalheAberto">0 cobranças</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body"><span class="text-muted small">Vencido</span>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Vencido</span>
+                                <span class="badge bg-danger-subtle text-danger-emphasis" id="badgeInadimplencia">0%</span>
+                            </div>
                             <div class="h4 text-danger mb-0 mt-2" id="totalVencido">R$ 0,00</div>
+                            <small class="text-muted" id="detalheVencido">0 cobranças</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body"><span class="text-muted small">Recebido</span>
+                        <div class="card-body">
+                            <span class="text-muted small">Recebido</span>
                             <div class="h4 text-success mb-0 mt-2" id="totalPago">R$ 0,00</div>
+                            <small class="text-muted" id="detalhePago">0 quitadas</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body"><span class="text-muted small">Cobranças</span>
+                        <div class="card-body">
+                            <span class="text-muted small">Cobranças emitidas</span>
                             <div class="h4 mb-0 mt-2" id="totalCobrancas">0</div>
+                            <small class="text-muted" id="detalheCobrancas">No período selecionado</small>
                         </div>
                     </div>
                 </div>
@@ -69,18 +95,25 @@
                         <div class="dropdown-center">
                             <button id="filtrosContratosBtn" class="btn btn-red dropdown-toggle color border border-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Filtrar contratos"><i class="ph ph-funnel me-1"></i></button>
                             <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 280px" aria-labelledby="filtrosContratosBtn">
-                                <label for="filtroPlanoContrato" class="form-label small">Plano</label>
-                                <select class="form-select" id="filtroPlanoContrato"><option></option></select>
+                                <p class="h6 text-start" style="font-size: 0.875rem">Plano</p>
+                                <div class="mb-3">
+                                    <select class="form-select" id="filtroPlanoContrato"><option></option></select>
+                                </div>
                                 <hr class="dropdown-divider">
-                                <p class="h6 small">Status</p>
+                                <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
                                 <?php foreach (['ativo' => 'Ativo', 'pausado' => 'Pausado', 'encerrado' => 'Encerrado', 'cancelado' => 'Cancelado'] as $valor => $rotulo): ?>
                                     <div class="form-check"><input class="form-check-input filtro-status-contrato" type="checkbox" value="<?= $valor ?>" id="contratoStatus-<?= $valor ?>"><label class="form-check-label" for="contratoStatus-<?= $valor ?>"><?= $rotulo ?></label></div>
                                 <?php endforeach; ?>
                                 <hr class="dropdown-divider">
-                                <div class="d-flex gap-2 mt-3"><button id="aplicarFiltrosContratos" class="btn btn-sm btn-red">Aplicar filtros</button><button id="limparFiltrosContratos" class="btn btn-sm btn-outline-secondary">Limpar</button></div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-sm btn-red" id="aplicarFiltrosContratos" type="button">Aplicar Filtros</button>
+                                    <button class="btn btn-sm btn-red" id="limparFiltrosContratos" type="button">Limpar</button>
+                                </div>
                             </div>
                         </div>
+                        <?php if (\Core\Auth\Auth::can('financeiro.gerenciar')): ?>
                         <a href="/ctt/admin/financeiro/contratos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white"><i class="ph ph-plus me-1"></i>Novo contrato</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="card-body">

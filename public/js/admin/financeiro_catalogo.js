@@ -66,11 +66,28 @@
     $(function () {
         const labels = { mensalidade: 'Mensalidade', avaliacao: 'Avaliação', personal: 'Personal', taxa: 'Taxa', outro: 'Outro', mensal: 'Mensal', trimestral: 'Trimestral', semestral: 'Semestral', anual: 'Anual', avulso: 'Avulso' };
         const escape = value => $('<span>').text(value ?? '').html();
+        const $categoria = $('#filtroCategoria');
+        if ($categoria.length) {
+            $categoria.select2({
+                theme: 'bootstrap-5',
+                placeholder: servico ? 'Todos os tipos' : 'Todas as periodicidades',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $categoria.closest('.dropdown-menu')
+            });
+        }
+
         const tabela = inicializarTabela({
             tableId: 'tabelaCatalogo', ajaxUrl: endpoint,
             emptyMessage: servico ? 'Nenhum serviço encontrado.' : 'Nenhum plano encontrado.',
             searchInput: '#campoBuscaCatalogo', searchButton: '#botaoBuscarCatalogo',
-            getFilters: () => ({ categoria: $('#filtroCategoria').val(), ativo: $('#filtroAtivo').val() }),
+            getFilters: () => {
+                const checked = $('.filtro-status-catalogo:checked').map((_, el) => el.value).get();
+                return {
+                    categoria: $categoria.val() || '',
+                    ativo: checked.length === 1 ? checked[0] : ''
+                };
+            },
             columns: [
                 { data: 'nome', render: escape },
                 { data: servico ? 'tipo' : 'periodicidade', render: value => escape(labels[value] || value) },
@@ -78,6 +95,10 @@
                 { data: 'ativo', className: 'text-center', render: formatarStatus },
                 { data: null, className: 'text-center', render: row => {
                     const id = Number(row.id), ativo = Number(row.ativo) === 1;
+                    const canManage = typeof window.can === 'function' ? window.can('financeiro.gerenciar') : true;
+                    if (!canManage) {
+                        return '<span class="text-muted">—</span>';
+                    }
                     const nome = servico ? 'serviço' : 'plano';
                     const acao = `${ativo ? 'Desativar' : 'Ativar'} ${nome}`;
                     return `<div class="d-flex gap-1 justify-content-center flex-wrap"><a class="btn btn-sm btn-primary" href="/ctt/admin/financeiro/${catalogo}/editar/${id}" title="Editar ${nome}" aria-label="Editar ${nome}"><i class="ph ph-pencil" aria-hidden="true"></i></a><button type="button" class="btn btn-sm btn-${ativo ? 'danger' : 'success'} btn-status-catalogo" data-id="${id}" data-ativo="${ativo ? 1 : 0}" title="${acao}" aria-label="${acao}"><i class="ph ph-${ativo ? 'x' : 'check'}" aria-hidden="true"></i></button></div>`;
@@ -97,7 +118,9 @@
         const closeFilters = () => bootstrap.Dropdown.getOrCreateInstance(document.getElementById('filtrosCatalogoBtn')).hide();
         $('#aplicarFiltrosCatalogo').on('click', () => { tabela.ajax.reload(); closeFilters(); });
         $('#limparFiltrosCatalogo').on('click', () => {
-            $('#filtroCategoria, #filtroAtivo, #campoBuscaCatalogo').val('');
+            $categoria.val(null).trigger('change');
+            $('.filtro-status-catalogo').prop('checked', false);
+            $('#campoBuscaCatalogo').val('');
             tabela.search('').draw();
             closeFilters();
         });

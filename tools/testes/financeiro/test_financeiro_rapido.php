@@ -13,6 +13,7 @@ $tests = [
     'paginacao de contratos' => 'test_contratos_paginacao.php',
     'paginacao de cobrancas' => 'test_cobrancas_paginacao.php',
     'acoes financeiras' => 'test_financeiro_acoes.php',
+    'metricas e encargos' => 'test_financeiro_metricas_encargos.php',
 ];
 
 $failures = [];

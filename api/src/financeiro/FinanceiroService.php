@@ -181,7 +181,7 @@ class FinanceiroService extends Service
         });
     }
 
-    public function registrarPagamento(int $cobrancaId, PagamentoDTO $dto): int
+    public function registrarPagamento(int $cobrancaId, PagamentoDTO $dto, bool $aplicarEncargos = false): int
     {
         $valor = FinanceiroValidation::centavos($dto->valor_pago, 'Pagamento');
         if ($valor < 1) throw new \InvalidArgumentException('Pagamento deve ser maior que zero.');
@@ -191,27 +191,37 @@ class FinanceiroService extends Service
         $dto->transacao_id = trim($dto->transacao_id ?? '') ?: null;
         if (strlen($dto->transacao_id ?? '') > 120) throw new \InvalidArgumentException('Identificacao bancaria muito longa.');
         $hash = hash('sha256', json_encode([$cobrancaId, $valor, $dto->forma_pagamento, $dto->data_pagamento, $dto->transacao_id, $dto->observacoes], JSON_THROW_ON_ERROR));
-        return $this->transaction(function () use ($cobrancaId, $dto, $valor, $hash) {
-        $cobranca = $this->repo->bloquearCobranca($cobrancaId);
-        $existing = $this->repo->pagamentoPorChave($dto->chave_idempotencia);
-        if ($existing) {
-            if (!hash_equals($existing['requisicao_hash'], $hash)) throw new \InvalidArgumentException('Esta identificacao ja foi usada com outros dados.');
-            return (int) $existing['id'];
-        }
-        if (!$cobranca || $cobranca['status'] === 'cancelada') {
-            throw new \RuntimeException('Cobranca nao encontrada ou cancelada.');
-        }
-        $saldo = FinanceiroValidation::centavos($cobranca['valor_final']) - FinanceiroValidation::centavos($this->repo->totalPago($cobrancaId));
-        if ($valor > $saldo) {
-            throw new \InvalidArgumentException('O pagamento deve ser maior que zero e nao pode exceder o saldo da cobranca.');
-        }
-        if (!in_array($dto->forma_pagamento, ['pix', 'dinheiro', 'cartao', 'boleto', 'transferencia', 'outro'], true)) {
-            throw new \InvalidArgumentException('Forma de pagamento invalida.');
-        }
-        if ($dto->transacao_id && $this->repo->pagamentoPorTransacao($dto->transacao_id)) throw new \InvalidArgumentException('Essa transacao bancaria ja foi registrada.');
-        $id = $this->repo->registrarPagamento($cobrancaId, $dto, $hash);
-        $this->atualizarSaldo($cobrancaId, $cobranca);
-        return $id;
+        return $this->transaction(function () use ($cobrancaId, $dto, $valor, $hash, $aplicarEncargos) {
+            $cobranca = $this->repo->bloquearCobranca($cobrancaId);
+            $existing = $this->repo->pagamentoPorChave($dto->chave_idempotencia);
+            if ($existing) {
+                if (!hash_equals($existing['requisicao_hash'], $hash)) throw new \InvalidArgumentException('Esta identificacao ja foi usada com outros dados.');
+                return (int) $existing['id'];
+            }
+            if (!$cobranca || $cobranca['status'] === 'cancelada') {
+                throw new \RuntimeException('Cobranca nao encontrada ou cancelada.');
+            }
+            if ($aplicarEncargos && $cobranca['data_vencimento'] < date('Y-m-d')) {
+                $cobrancaCompleta = $this->repo->cobranca($cobrancaId);
+                if ($cobrancaCompleta) {
+                    $encargos = $this->calcularEncargos($cobrancaCompleta, $dto->data_pagamento ? substr($dto->data_pagamento, 0, 10) : date('Y-m-d'));
+                    if ($encargos['valor_encargos'] > 0) {
+                        $this->repo->aplicarEncargos($cobrancaId, $encargos['multa'], $encargos['juros']);
+                        $cobranca = $this->repo->bloquearCobranca($cobrancaId);
+                    }
+                }
+            }
+            $saldo = FinanceiroValidation::centavos($cobranca['valor_final']) - FinanceiroValidation::centavos($this->repo->totalPago($cobrancaId));
+            if ($valor > $saldo) {
+                throw new \InvalidArgumentException('O pagamento deve ser maior que zero e nao pode exceder o saldo da cobranca.');
+            }
+            if (!in_array($dto->forma_pagamento, ['pix', 'dinheiro', 'cartao', 'boleto', 'transferencia', 'outro'], true)) {
+                throw new \InvalidArgumentException('Forma de pagamento invalida.');
+            }
+            if ($dto->transacao_id && $this->repo->pagamentoPorTransacao($dto->transacao_id)) throw new \InvalidArgumentException('Essa transacao bancaria ja foi registrada.');
+            $id = $this->repo->registrarPagamento($cobrancaId, $dto, $hash);
+            $this->atualizarSaldo($cobrancaId, $cobranca);
+            return $id;
         });
     }
 
@@ -291,5 +301,81 @@ class FinanceiroService extends Service
         if (trim($dto->nome) === '' || $dto->valor_base < 0 || !in_array($dto->tipo, ['mensalidade', 'avaliacao', 'personal', 'taxa', 'outro'], true)) {
             throw new \InvalidArgumentException('Nome, tipo e valor do servico sao obrigatorios e validos.');
         }
+    }
+
+    public function metricas(?string $competencia = null, ?int $alunoId = null): array
+    {
+        return $this->repo->metricas($competencia, $alunoId);
+    }
+
+    public function competenciasDisponiveis(?int $alunoId = null): array
+    {
+        return $this->repo->competenciasDisponiveis($alunoId);
+    }
+
+    public function exportarCobrancas(?string $competencia = null, ?string $status = null, ?int $alunoId = null): array
+    {
+        return $this->repo->exportarCobrancas($competencia, $status, $alunoId);
+    }
+
+    public function calcularEncargos(array $cobranca, ?string $dataReferencia = null): array
+    {
+        $hoje = FinanceiroValidation::data($dataReferencia ?? date('Y-m-d'));
+        $vencimento = FinanceiroValidation::data($cobranca['data_vencimento']);
+
+        $multaPercentual = (float) ($cobranca['multa_percentual'] ?? 0);
+        $jurosPercentual = (float) ($cobranca['juros_percentual'] ?? 0);
+
+        if ($hoje <= $vencimento || ($multaPercentual <= 0 && $jurosPercentual <= 0)) {
+            return [
+                'dias_atraso' => 0,
+                'multa' => 0.0,
+                'juros' => 0.0,
+                'valor_original' => (float) $cobranca['valor_original'],
+                'desconto' => (float) $cobranca['desconto'],
+                'valor_encargos' => 0.0,
+                'valor_total_atualizado' => (float) $cobranca['valor_final'],
+            ];
+        }
+
+        $diasAtraso = (int) $vencimento->diff($hoje)->days;
+        $valorBase = max(0, (float) $cobranca['valor_original'] - (float) $cobranca['desconto']);
+        $baseCentavos = FinanceiroValidation::centavos($valorBase);
+
+        // Multa contratual percentual fixa
+        $multaCentavos = (int) round($baseCentavos * ($multaPercentual / 100));
+
+        // Juros mensais pró-rata dia (taxa mensal dividida por 30)
+        $jurosCentavos = (int) round($baseCentavos * (($jurosPercentual / 100) / 30) * $diasAtraso);
+
+        $totalAtualizadoCentavos = $baseCentavos + $multaCentavos + $jurosCentavos;
+
+        return [
+            'dias_atraso' => $diasAtraso,
+            'multa' => (float) FinanceiroValidation::decimal($multaCentavos),
+            'juros' => (float) FinanceiroValidation::decimal($jurosCentavos),
+            'valor_original' => (float) $cobranca['valor_original'],
+            'desconto' => (float) $cobranca['desconto'],
+            'valor_encargos' => (float) FinanceiroValidation::decimal($multaCentavos + $jurosCentavos),
+            'valor_total_atualizado' => (float) FinanceiroValidation::decimal($totalAtualizadoCentavos),
+        ];
+    }
+
+    public function recibo(int $cobrancaId, int $pagamentoId): array
+    {
+        $dados = $this->repo->reciboPagamento($cobrancaId, $pagamentoId);
+        if (!$dados) {
+            throw new \InvalidArgumentException('Comprovante de pagamento não encontrado.');
+        }
+        $totalPago = (float) $this->repo->totalPago($cobrancaId);
+        $dados['total_pago_cobranca'] = $totalPago;
+        $dados['saldo_restante'] = max(0, (float) $dados['valor_final'] - $totalPago);
+        $dados['estabelecimento'] = [
+            'nome' => 'Cross C.T - Centro de Treinamento',
+            'documento' => '00.000.000/0001-00',
+            'telefone' => '(11) 99999-9999',
+            'endereco' => 'Cross C.T, Treinamento & Saúde Integrada',
+        ];
+        return $dados;
     }
 }

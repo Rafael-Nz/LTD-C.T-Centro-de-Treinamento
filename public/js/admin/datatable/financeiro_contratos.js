@@ -24,7 +24,15 @@ $(function () {
                 return `<span class="badge bg-${color}-subtle text-${color}-emphasis">${esc(labels[value] || value)}</span>`;
             } },
             { data: 'valor_contratado', className: 'text-end', render: formatarMoeda },
-            { data: null, className: 'text-center', render: row => ['ativo', 'pausado'].includes(row.status) ? `<button type="button" class="btn btn-sm btn-primary btn-status-contrato" data-id="${Number(row.id)}" data-status="${esc(row.status)}" title="Alterar status do contrato" aria-label="Alterar status do contrato"><i class="ph ph-arrows-clockwise" aria-hidden="true"></i></button>` : '<span class="text-muted" title="Contrato finalizado">—</span>' },
+            { data: null, className: 'text-center', render: row => {
+                const canManage = typeof window.can === 'function' ? window.can('financeiro.gerenciar') : true;
+                if (!['ativo', 'pausado'].includes(row.status)) {
+                    return '<span class="text-muted" title="Contrato finalizado">—</span>';
+                }
+                return canManage
+                    ? `<button type="button" class="btn btn-sm btn-primary btn-status-contrato" data-id="${Number(row.id)}" data-status="${esc(row.status)}" title="Alterar status do contrato" aria-label="Alterar status do contrato"><i class="ph ph-arrows-clockwise" aria-hidden="true"></i></button>`
+                    : '<span class="text-muted">—</span>';
+            } },
         ]
     });
     const reload = () => { tabela.ajax.reload(); bootstrap.Dropdown.getInstance(document.querySelector('#filtrosContratosBtn'))?.hide(); };

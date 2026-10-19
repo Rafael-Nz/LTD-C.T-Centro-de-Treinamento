@@ -92,19 +92,31 @@ $opcoes = $servico
                         <div class="dropdown-center">
                             <button class="btn btn-red dropdown-toggle color border border-white" id="filtrosCatalogoBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Filtrar <?= strtolower($titulo) ?>" title="Filtrar <?= strtolower($titulo) ?>" type="button"><i class="ph ph-funnel me-1"></i></button>
                             <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 250px">
-                                <label class="form-label" for="filtroCategoria"><?= $categoria ?></label>
-                                <select class="form-select mb-3" id="filtroCategoria">
-                                    <option value="">Todos</option>
-                                    <?php foreach ($opcoes as $valor => $rotulo): ?><option value="<?= $valor ?>"><?= $rotulo ?></option><?php endforeach; ?>
-                                </select>
-                                <label class="form-label" for="filtroAtivo">Status</label>
-                                <select class="form-select mb-3" id="filtroAtivo"><option value="">Todos</option><option value="1">Ativo</option><option value="0">Inativo</option></select>
+                                <p class="h6 text-start" style="font-size: 0.875rem"><?= $categoria ?></p>
+                                <div class="mb-3">
+                                    <select class="form-select" id="filtroCategoria">
+                                        <option></option>
+                                        <?php foreach ($opcoes as $valor => $rotulo): ?><option value="<?= $valor ?>"><?= $rotulo ?></option><?php endforeach; ?>
+                                    </select>
+                                </div>
                                 <hr class="dropdown-divider">
-                                <div class="d-flex gap-2"><button class="btn btn-sm btn-red" id="aplicarFiltrosCatalogo" type="button">Aplicar Filtros</button><button class="btn btn-sm btn-red" id="limparFiltrosCatalogo" type="button">Limpar</button></div>
+                                <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
+                                <div class="form-check">
+                                    <input class="form-check-input filtro-status-catalogo" type="checkbox" value="1" id="catalogoAtivo">
+                                    <label class="form-check-label" for="catalogoAtivo">Ativo</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filtro-status-catalogo" type="checkbox" value="0" id="catalogoInativo">
+                                    <label class="form-check-label" for="catalogoInativo">Inativo</label>
+                                </div>
+                                <hr class="dropdown-divider">
+                                <div class="d-grid gap-2"><button class="btn btn-sm btn-red" id="aplicarFiltrosCatalogo" type="button">Aplicar Filtros</button><button class="btn btn-sm btn-red" id="limparFiltrosCatalogo" type="button">Limpar</button></div>
                             </div>
                         </div>
                     </div>
+                    <?php if (\Core\Auth\Auth::can('financeiro.gerenciar')): ?>
                     <a class="btn btn-red d-flex align-items-center color border border-white" href="/ctt/admin/financeiro/<?= $catalogo ?>/cadastrar"><i class="ph ph-plus me-1"></i><?= $servico ? 'Novo Serviço' : 'Novo Plano' ?></a>
+                    <?php endif; ?>
                 </div>
                 <div class="card-body">
                     <table class="table table-hover align-middle w-100 mb-0" id="tabelaCatalogo" aria-label="Lista de <?= $titulo ?>">
@@ -120,9 +132,8 @@ $opcoes = $servico
     <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script defer src="/ctt/js/admin/sidebar.js"></script>
     <script src="/ctt/plugins/jquery/jquery-3.7.1.min.js"></script>
-    <?php if ($formulario): ?>
     <script src="/ctt/plugins/select2/js/select2.min.js"></script>
-    <?php else: ?>
+    <?php if (!$formulario): ?>
     <script src="/ctt/plugins/datatables/js/dataTables.min.js"></script>
     <script src="/ctt/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
     <script src="/ctt/plugins/datatables/js/dataTables.responsive.min.js"></script>

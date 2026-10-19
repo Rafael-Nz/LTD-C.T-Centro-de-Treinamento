@@ -85,6 +85,10 @@ class FinanceiroController extends Controller
 
     public function contratos(): void
     {
+        if (Auth::user('tipo') === 'aluno') {
+            $_GET['aluno_id'] = (string) Auth::id();
+        }
+
         if (isset($_GET['draw'])) {
             $this->datatable(['draw' => max(0, (int) $_GET['draw'])] + $this->repo->contratosPaginados($_GET));
             return;
@@ -99,6 +103,12 @@ class FinanceiroController extends Controller
             $this->error('Contrato financeiro nao encontrado.', 404);
             return;
         }
+
+        if (Auth::user('tipo') === 'aluno' && (int) ($item['aluno_id'] ?? 0) !== (int) Auth::id()) {
+            $this->error('Acesso negado a este contrato.', 403);
+            return;
+        }
+
         $this->json($item);
     }
 
@@ -117,6 +127,10 @@ class FinanceiroController extends Controller
 
     public function cobrancas(): void
     {
+        if (Auth::user('tipo') === 'aluno') {
+            $_GET['aluno_id'] = (string) Auth::id();
+        }
+
         if (isset($_GET['draw'])) {
             $this->datatable(['draw' => max(0, (int) $_GET['draw'])] + $this->repo->cobrancasPaginadas($_GET));
             return;
@@ -131,6 +145,12 @@ class FinanceiroController extends Controller
             $this->error('Cobranca financeira nao encontrada.', 404);
             return;
         }
+
+        if (Auth::user('tipo') === 'aluno' && (int) ($item['aluno_id'] ?? 0) !== (int) Auth::id()) {
+            $this->error('Acesso negado a esta cobranca.', 403);
+            return;
+        }
+
         $item['total_pago'] = $this->repo->totalPago($id);
         $item['saldo'] = max(0, (float) $item['valor_final'] - (float) $item['total_pago']);
         $item['pagamentos'] = $this->repo->pagamentos($id);
@@ -153,9 +173,11 @@ class FinanceiroController extends Controller
     public function registrarPagamento(int $cobrancaId): void
     {
         try {
-            $dto = PagamentoDTO::fromArray($this->body());
+            $body = $this->body();
+            $dto = PagamentoDTO::fromArray($body);
             $dto->registrado_por = Auth::id();
-            $id = $this->service->registrarPagamento($cobrancaId, $dto);
+            $aplicarEncargos = !empty($body['aplicar_encargos']);
+            $id = $this->service->registrarPagamento($cobrancaId, $dto, $aplicarEncargos);
             $this->json(['id' => $id, 'message' => 'Pagamento registrado com sucesso.'], 201);
         } catch (\PDOException $e) {
             error_log('[Financeiro] Falha no pagamento: ' . $e->getCode());
@@ -171,6 +193,91 @@ class FinanceiroController extends Controller
     public function atualizarVencidas(): void
     {
         $this->operacao(fn () => ['atualizadas' => $this->service->atualizarVencidas()]);
+    }
+
+    public function metricas(): void
+    {
+        $alunoId = Auth::user('tipo') === 'aluno' ? (int) Auth::id() : null;
+        $competencia = $_GET['competencia'] ?? null;
+        $metricas = $this->service->metricas($competencia, $alunoId);
+        $competencias = $this->service->competenciasDisponiveis($alunoId);
+        $this->json([
+            'metricas' => $metricas,
+            'competencias' => $competencias,
+            'competencia_atual' => $competencia ?: (in_array(date('Y-m'), $competencias, true) ? date('Y-m') : 'all'),
+        ]);
+    }
+
+    public function exportar(): void
+    {
+        $alunoId = Auth::user('tipo') === 'aluno' ? (int) Auth::id() : null;
+        $competencia = $_GET['competencia'] ?? null;
+        $status = $_GET['status'] ?? null;
+        $rows = $this->service->exportarCobrancas($competencia, $status, $alunoId);
+
+        $filename = 'cobrancas_' . ($competencia ?: 'todas') . '_' . date('Ymd_His') . '.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        fputcsv($output, ['ID', 'Aluno', 'Descrição', 'Competência', 'Vencimento', 'Status', 'Valor Original (R$)', 'Desconto (R$)', 'Multa (R$)', 'Juros (R$)', 'Valor Final (R$)', 'Total Pago (R$)', 'Saldo (R$)'], ';');
+        foreach ($rows as $r) {
+            fputcsv($output, [
+                $r['id'],
+                $r['aluno_nome'],
+                $r['descricao'],
+                $r['competencia'] ?? '-',
+                $r['data_vencimento'],
+                ucfirst($r['status']),
+                number_format((float) $r['valor_original'], 2, ',', '.'),
+                number_format((float) $r['desconto'], 2, ',', '.'),
+                number_format((float) ($r['multa'] ?? 0), 2, ',', '.'),
+                number_format((float) ($r['juros'] ?? 0), 2, ',', '.'),
+                number_format((float) $r['valor_final'], 2, ',', '.'),
+                number_format((float) $r['total_pago'], 2, ',', '.'),
+                number_format((float) $r['saldo'], 2, ',', '.'),
+            ], ';');
+        }
+        fclose($output);
+        exit;
+    }
+
+    public function calcularEncargos(int $id): void
+    {
+        try {
+            $cobranca = $this->repo->cobranca($id);
+            if (!$cobranca) {
+                $this->error('Cobrança não encontrada.', 404);
+                return;
+            }
+            if (Auth::user('tipo') === 'aluno' && (int) ($cobranca['aluno_id'] ?? 0) !== (int) Auth::id()) {
+                $this->error('Acesso negado a esta cobrança.', 403);
+                return;
+            }
+            $dataPagamento = $_GET['data_pagamento'] ?? date('Y-m-d');
+            $this->json($this->service->calcularEncargos($cobranca, $dataPagamento));
+        } catch (\Throwable $e) {
+            error_log($e);
+            $this->error('Erro ao calcular encargos.', 500);
+        }
+    }
+
+    public function recibo(int $id, int $pagamento_id): void
+    {
+        try {
+            $recibo = $this->service->recibo($id, $pagamento_id);
+            if (Auth::user('tipo') === 'aluno' && (int) ($recibo['aluno_id'] ?? 0) !== (int) Auth::id()) {
+                $this->error('Acesso negado a este recibo.', 403);
+                return;
+            }
+            $this->json($recibo);
+        } catch (\InvalidArgumentException $e) {
+            $this->error($e->getMessage(), 404);
+        } catch (\Throwable $e) {
+            error_log($e);
+            $this->error('Erro ao gerar comprovante de pagamento.', 500);
+        }
     }
 
     public function servico(int $id): void {

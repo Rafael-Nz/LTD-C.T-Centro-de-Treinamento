@@ -92,9 +92,11 @@ class FuncionarioRepository extends Repository implements DataTablesRepositoryIn
 
     public function findById(int $id): ?array {
         return $this->fetch("
-            SELECT 
-                u.*,
-                e.*,
+            SELECT
+                u.id, u.nome, u.sobrenome, u.cpf, u.email, u.data_nascimento,
+                u.genero, u.endereco_id, u.tipo_usuario, u.ativo,
+                u.conta_ativada, u.data_criacao, u.data_atualizacao,
+                e.logradouro, e.numero, e.cidade, e.bairro, e.cep, e.complemento,
                 c.nome as cargo_nome,
                 f.cargo_id,
                 f.registro_profissional
@@ -148,13 +150,15 @@ class FuncionarioRepository extends Repository implements DataTablesRepositoryIn
 
     public function create(FuncionarioDTO $dto, int $usuarioId): int {
         $this->execute("
-            INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO funcionario (usuario_id, cargo_id, registro_profissional, observacoes, senha, conta_ativada)
+            VALUES (?, ?, ?, ?, ?, ?)
         ", [
             $usuarioId,
             $dto->cargo_id,
             $dto->registro_profissional ?? null,
-            $dto->observacoes ?? null
+            $dto->observacoes ?? null,
+            password_hash($dto->senha, PASSWORD_ARGON2ID),
+            $dto->conta_ativada ? 1 : 0,
         ]);
 
         return $usuarioId;

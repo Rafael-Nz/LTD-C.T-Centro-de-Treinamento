@@ -148,6 +148,31 @@ body {
     letter-spacing: 2px;
 }
 
+.password-container {
+    position: relative;
+}
+
+.password-container .form-control {
+    padding-right: 48px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+}
+
+.password-toggle:hover {
+    color: var(--primary-red);
+}
+
 /* =========================================================
    ESQUECEU A SENHA
    ========================================================= */

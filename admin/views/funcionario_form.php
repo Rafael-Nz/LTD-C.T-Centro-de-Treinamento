@@ -72,15 +72,6 @@ $pageTitle = $isEdit ? 'Editar Funcionário' : 'Cadastrar Funcionário';
                   </div>
                 </div>
 
-                <?php if (!$id): ?>
-                  <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                      <label for="senha" class="form-label">Senha:</label>
-                      <input type="password" name="senha" id="senha" class="form-control" minlength="12" maxlength="128" autocomplete="new-password" required>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
                 <div class="row g-3 mb-3">
                   <div class="col-md-6">
                     <label for="cpf" class="form-label">CPF:</label>

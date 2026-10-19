@@ -4,6 +4,7 @@ namespace Aluno;
 
 use Aluno\DTO\AlunoDTO;
 use Auth\AuthService;
+use Core\Auth\PasswordPolicy;
 use Core\Services\Service;
 use Usuario\UsuarioService;
 
@@ -22,26 +23,60 @@ class AlunoService extends Service
         $this->authService = new AuthService();
     }
 
-    public function create(AlunoDTO $dto): int
+    public function create(AlunoDTO $dto): array
     {
-        $usuarioId = $this->transaction(function () use ($dto) {
+        $senhaInicial = PasswordPolicy::generate();
+
+        $cadastro = $this->transaction(function () use ($dto, $senhaInicial) {
             $this->validateTurmas($dto->turma_ids);
 
             if (empty($dto->codigo_matricula)) {
                 $dto->codigo_matricula = $this->gerarMatricula();
             }
 
+            $dto->senha = $senhaInicial;
+            $dto->conta_ativada = false;
+
+            $usuarioExistente = $this->usuarioService->findByEmailOrCpf($dto->email, $dto->cpf);
+            if ($usuarioExistente) {
+                if ($usuarioExistente['email'] !== $dto->email || $usuarioExistente['cpf'] !== $dto->cpf) {
+                    throw new \InvalidArgumentException('O e-mail e o CPF devem ser os mesmos da conta existente.');
+                }
+
+                if ($this->alunoRepo->findAlunoData((int) $usuarioExistente['id'])) {
+                    throw new \InvalidArgumentException('Este usuario ja possui um cadastro de aluno.');
+                }
+
+                $this->alunoRepo->create($dto, (int) $usuarioExistente['id']);
+                return ['id' => (int) $usuarioExistente['id'], 'nova_conta' => false, 'enviar_senha' => true];
+            }
+
             $dto->tipo_usuario = 'aluno';
 
-            $usuarioId = $this->usuarioService->create($dto, false, false);
+            $usuarioId = $this->usuarioService->create($dto, true, true);
             $this->alunoRepo->create($dto, $usuarioId);
 
-            return $usuarioId;
+            return ['id' => $usuarioId, 'nova_conta' => true, 'enviar_senha' => true];
         });
 
-        $this->authService->sendStudentActivationInvite($usuarioId);
+        $emailEnviado = false;
+        if ($cadastro['enviar_senha']) {
+            $emailEnviado = true;
+            try {
+                $this->authService->sendInitialPassword($cadastro['id'], $senhaInicial);
+        } catch (\Throwable $e) {
+            // O cadastro já foi confirmado no banco. Não transforme uma falha
+            // de SMTP em erro 500 nem faça o operador cadastrar o aluno de novo.
+                $emailEnviado = false;
+                error_log('[AlunoService::create] Falha ao enviar senha inicial do aluno ' . $cadastro['id'] . ': ' . $e->getMessage());
+            }
+        }
 
-        return $usuarioId;
+        return [
+            'id' => $cadastro['id'],
+            'email_enviado' => $emailEnviado,
+            'conta_reutilizada' => !$cadastro['nova_conta'],
+        ];
     }
 
     public function update(int $id, AlunoDTO $dto): void

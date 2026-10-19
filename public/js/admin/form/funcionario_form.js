@@ -121,7 +121,6 @@
             sobrenome: document.getElementById('sobrenome')?.value.trim(),
             cpf: document.getElementById('cpf')?.value.replace(/\D/g, ''),
             email: document.getElementById('email')?.value,
-            senha: document.getElementById('senha')?.value || undefined,
             data_nascimento: document.getElementById('nascimento')?.value,
             genero: document.getElementById('genero')?.value || 'O',
             cargo_id: parseInt(document.getElementById('cargo')?.value),
@@ -262,12 +261,13 @@
                     body: JSON.stringify(payload),
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                if (data.success !== false) {
+                const responseData = await res.json();
+                const data = responseData.data || responseData;
+                if (responseData.success !== false) {
                     await Swal.fire({
                         icon: 'success',
                         title: id ? 'Funcionário atualizado!' : 'Funcionário cadastrado!',
-                        text: data.message || (id ? 'Atualizado com sucesso.' : 'Cadastrado com sucesso.'),
+                        text: data.message || responseData.message || (id ? 'Atualizado com sucesso.' : 'Cadastrado com sucesso.'),
                         confirmButtonText: 'OK'
                     });
                     window.location.href = '/ctt/admin/funcionarios';

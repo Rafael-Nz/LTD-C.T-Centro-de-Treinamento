@@ -14,7 +14,7 @@
   <div class="login-container">
     <div class="text-center mb-4">
       <h1 class="brand-title">CROSS <span>C.T</span></h1>
-      <p class="brand-subtitle">Sistema Administrativo</p>
+      <p class="brand-subtitle">Área Administrativa </p>
     </div>
 
     <?php if (!empty($loginError)): ?>
@@ -57,11 +57,11 @@
     <div class="text-center mt-4">
       <!-- modifiquei o essa linha de ../home.php para /ctt/ -->
       <a href="/ctt/" class="back-link">
-        <i class="ph ph-arrow-left me-1"></i> Página Inicial
+        <i class="ph ph-arrow-left me-1"></i> Página Principal
       </a>
     </div>
   </div>
-  
+
   <script src="/ctt/plugins/popper/popper.min.js"></script>
   <script src="/ctt/plugins/bootstrap/js/bootstrap.min.js"></script>
   <script src="/ctt/js/admin/login.js"></script>

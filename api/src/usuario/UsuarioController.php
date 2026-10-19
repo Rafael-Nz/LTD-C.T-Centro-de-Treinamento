@@ -51,6 +51,11 @@ class UsuarioController extends Controller {
             return;
         }
 
+        $usuario['permissoes'] = Auth::permissions();
+        $usuario['tipo_sessao'] = Auth::user('tipo');
+        $usuario['cargo_id'] = Auth::user('cargo_id') ?? ($usuario['cargo_id'] ?? null);
+        $usuario['cargo_nome'] = Auth::user('cargo_nome') ?? ($usuario['cargo_nome'] ?? null);
+
         $this->json($usuario);
     }
 

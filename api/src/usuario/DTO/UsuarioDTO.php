@@ -17,6 +17,7 @@ class UsuarioDTO extends BaseDTO
     public string $tipo_usuario;
     public ?string $senha = null;
     public bool $ativo = true;
+    public bool $conta_ativada = true;
 
     // Relacionamentos (outros DTOs)
     public ?EnderecoDTO $endereco = null;

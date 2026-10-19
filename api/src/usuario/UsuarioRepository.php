@@ -96,6 +96,11 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
                 u.endereco_id,
                 u.tipo_usuario,
                 u.ativo,
+                u.conta_ativada,
+                (SELECT a2.conta_ativada FROM aluno a2 WHERE a2.usuario_id = u.id) AS conta_ativada_aluno,
+                (SELECT f2.conta_ativada FROM funcionario f2 WHERE f2.usuario_id = u.id) AS conta_ativada_funcionario,
+                f.cargo_id,
+                c.nome AS cargo_nome,
                 u.data_criacao,
                 u.data_atualizacao,
                 e.logradouro,
@@ -106,6 +111,8 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
                 e.complemento
             FROM usuario u
             LEFT JOIN endereco e ON e.id = u.endereco_id
+            LEFT JOIN funcionario f ON f.usuario_id = u.id
+            LEFT JOIN cargo c ON c.id = f.cargo_id
             WHERE u.id = ?
         ", [$id]);
 
@@ -128,19 +135,25 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
     public function create(UsuarioDTO $dto, ?int $enderecoId = null): int
     {
         $sql = "INSERT INTO usuario
-                (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                (nome, sobrenome, cpf, email, senha, data_nascimento, genero, endereco_id, tipo_usuario, ativo, conta_ativada)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $senhaCentral = $dto->tipo_usuario === 'admin'
+            ? $dto->senha
+            : bin2hex(random_bytes(32));
 
         $this->execute($sql, [
             $dto->nome,
             $dto->sobrenome,
             $dto->cpf,
             $dto->email,
-            password_hash($dto->senha, PASSWORD_ARGON2ID),
+            password_hash($senhaCentral, PASSWORD_ARGON2ID),
             $dto->data_nascimento,
             $dto->genero,
             $enderecoId,
-            $dto->tipo_usuario
+            $dto->tipo_usuario,
+            $dto->ativo ? 1 : 0,
+            $dto->conta_ativada ? 1 : 0
         ]);
 
         return (int) $this->lastInsertId();
@@ -197,16 +210,56 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
     public function findByLogin(string $login): ?array
     {
         return $this->fetch("
-            SELECT id, nome, email, senha, ativo, tipo_usuario
-            FROM usuario
-            WHERE email = ? OR cpf = ?
+            SELECT u.id, u.nome, u.email, u.senha, u.ativo, u.conta_ativada, u.tipo_usuario,
+                   a.senha AS senha_aluno, a.conta_ativada AS conta_ativada_aluno,
+                   f.senha AS senha_funcionario, f.conta_ativada AS conta_ativada_funcionario,
+                   f.cargo_id, c.nome AS cargo_nome,
+                   EXISTS (SELECT 1 FROM aluno ax WHERE ax.usuario_id = u.id) AS possui_aluno,
+                   EXISTS (SELECT 1 FROM funcionario fx WHERE fx.usuario_id = u.id) AS possui_funcionario
+            FROM usuario u
+            LEFT JOIN aluno a ON a.usuario_id = u.id
+            LEFT JOIN funcionario f ON f.usuario_id = u.id
+            LEFT JOIN cargo c ON c.id = f.cargo_id
+            WHERE u.email = ? OR u.cpf = ?
         ", [$login, $login]);
+    }
+
+    public function findPermissionsByCargoId(int $cargoId): array
+    {
+        $rows = $this->fetchAll("
+            SELECT p.slug
+            FROM permissao p
+            INNER JOIN cargo_permissao cp ON cp.permissao_id = p.id
+            WHERE cp.cargo_id = ?
+        ", [$cargoId]);
+
+        return array_column($rows, 'slug');
+    }
+
+    public function findByEmailOrCpf(string $email, string $cpf): ?array
+    {
+        return $this->fetch(
+            'SELECT id, nome, sobrenome, email, cpf, senha, ativo, conta_ativada, tipo_usuario
+             FROM usuario
+             WHERE email = ? OR cpf = ?
+             LIMIT 1',
+            [$email, $cpf]
+        );
+    }
+
+    public function findByCpf(string $cpf): ?array
+    {
+        return $this->fetch(
+            'SELECT id, nome, sobrenome, email, cpf, senha, ativo, conta_ativada, tipo_usuario
+             FROM usuario WHERE cpf = ? LIMIT 1',
+            [$cpf]
+        );
     }
 
     public function findByEmail(string $email): ?array
     {
         return $this->fetch("
-            SELECT id, nome, email, ativo
+            SELECT id, nome, sobrenome, email, cpf, ativo, conta_ativada, tipo_usuario
             FROM usuario
             WHERE email = ?
             LIMIT 1
@@ -223,20 +276,21 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
 
     public function createPasswordResetToken(
         int $usuarioId,
+        string $perfil,
         string $tokenHash,
         string $expiresAt
     ): void {
         $this->execute(
-            'INSERT INTO password_resets (usuario_id, token_hash, expires_at)
-             VALUES (?, ?, ?)',
-            [$usuarioId, $tokenHash, $expiresAt]
+            'INSERT INTO password_resets (usuario_id, perfil, token_hash, expires_at)
+             VALUES (?, ?, ?, ?)',
+            [$usuarioId, $perfil, $tokenHash, $expiresAt]
         );
     }
 
     public function findValidPasswordReset(string $tokenHash): ?array
     {
         return $this->fetch(
-            'SELECT id, usuario_id
+            'SELECT id, usuario_id, perfil
              FROM password_resets
              WHERE token_hash = ?
                AND used_at IS NULL
@@ -263,46 +317,59 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         );
     }
 
-    public function createStudentActivationToken(int $usuarioId, string $tokenHash, string $expiresAt): void
+    public function createStudentActivationToken(int $usuarioId, string $perfil, string $tokenHash, string $expiresAt): void
     {
         $this->execute(
-            'INSERT INTO student_account_activations (usuario_id, token_hash, expires_at)
-             VALUES (?, ?, ?)',
-            [$usuarioId, $tokenHash, $expiresAt]
+            'INSERT INTO student_account_activations (usuario_id, perfil, token_hash, expires_at)
+             VALUES (?, ?, ?, ?)',
+            [$usuarioId, $perfil, $tokenHash, $expiresAt]
         );
     }
 
-    public function deleteStudentActivationTokens(int $usuarioId): void
+    public function updateProfilePassword(int $usuarioId, string $perfil, string $passwordHash): void
     {
-        $this->execute('DELETE FROM student_account_activations WHERE usuario_id = ?', [$usuarioId]);
+        $table = match ($perfil) {
+            'aluno' => 'aluno',
+            'funcionario' => 'funcionario',
+            default => throw new \InvalidArgumentException('Perfil de senha invalido.')
+        };
+
+        $this->execute("UPDATE {$table} SET senha = ? WHERE usuario_id = ?", [$passwordHash, $usuarioId]);
     }
 
-    public function findValidStudentActivation(string $tokenHash): ?array
+    public function deleteAccountActivationTokens(int $usuarioId, string $perfil): void
+    {
+        $this->execute('DELETE FROM student_account_activations WHERE usuario_id = ? AND perfil = ?', [$usuarioId, $perfil]);
+    }
+
+    public function findValidAccountActivation(string $tokenHash): ?array
     {
         return $this->fetch(
-            'SELECT a.id, a.usuario_id, u.nome, u.email
+            'SELECT a.id, a.usuario_id, a.perfil, u.nome, u.email
              FROM student_account_activations a
              INNER JOIN usuario u ON u.id = a.usuario_id
-             INNER JOIN aluno al ON al.usuario_id = u.id
              WHERE a.token_hash = ?
                AND a.used_at IS NULL
                AND a.expires_at > NOW()
-               AND u.ativo = 0
+               AND u.ativo = 1
+               AND ((a.perfil = \'aluno\' AND EXISTS (SELECT 1 FROM aluno ap WHERE ap.usuario_id = u.id AND ap.conta_ativada = 0))
+                 OR (a.perfil = \'funcionario\' AND EXISTS (SELECT 1 FROM funcionario fp WHERE fp.usuario_id = u.id AND fp.conta_ativada = 0)))
              LIMIT 1',
             [$tokenHash]
         );
     }
 
-    public function activateStudentAccount(int $usuarioId, int $activationId, string $passwordHash): void
+    public function activateProfileAccount(int $usuarioId, int $activationId, string $perfil, string $passwordHash): void
     {
-        $this->execute(
-            'UPDATE usuario SET senha = ?, ativo = 1 WHERE id = ? AND ativo = 0',
-            [$passwordHash, $usuarioId]
-        );
+        if ($perfil === 'aluno') {
+            $this->execute('UPDATE aluno SET senha = ?, conta_ativada = 1 WHERE usuario_id = ?', [$passwordHash, $usuarioId]);
+        } else {
+            $this->execute('UPDATE funcionario SET senha = ?, conta_ativada = 1 WHERE usuario_id = ?', [$passwordHash, $usuarioId]);
+        }
         $this->execute(
             'UPDATE student_account_activations SET used_at = NOW()
-             WHERE id = ? AND usuario_id = ? AND used_at IS NULL',
-            [$activationId, $usuarioId]
+             WHERE id = ? AND usuario_id = ? AND perfil = ? AND used_at IS NULL',
+            [$activationId, $usuarioId, $perfil]
         );
     }
 

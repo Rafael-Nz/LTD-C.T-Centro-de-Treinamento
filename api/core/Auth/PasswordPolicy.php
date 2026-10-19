@@ -7,6 +7,37 @@ class PasswordPolicy
     public const MIN_LENGTH = 12;
     public const MAX_LENGTH = 128;
 
+    public static function generate(int $length = 16): string
+    {
+        if ($length < self::MIN_LENGTH || $length > self::MAX_LENGTH) {
+            throw new \InvalidArgumentException('Tamanho de senha inicial invalido.');
+        }
+
+        $groups = [
+            '0123456789',
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            'abcdefghijklmnopqrstuvwxyz',
+            '!@#$%^&*()-_=+[]{}:,.?/',
+        ];
+        $allCharacters = implode('', $groups);
+        $characters = [];
+
+        foreach ($groups as $group) {
+            $characters[] = $group[random_int(0, strlen($group) - 1)];
+        }
+
+        while (count($characters) < $length) {
+            $characters[] = $allCharacters[random_int(0, strlen($allCharacters) - 1)];
+        }
+
+        for ($index = count($characters) - 1; $index > 0; $index--) {
+            $swapIndex = random_int(0, $index);
+            [$characters[$index], $characters[$swapIndex]] = [$characters[$swapIndex], $characters[$index]];
+        }
+
+        return implode('', $characters);
+    }
+
     public static function validate(string $password): void
     {
         $length = mb_strlen($password, 'UTF-8');

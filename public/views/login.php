@@ -27,27 +27,33 @@
 
             <main class="login-form-area">
                 <div class="login-form-content">
-                    <h2 class="form-title">Bem-vindo de volta</h2>
-                    <p class="form-subtitle">Acesse sua conta para continuar</p>
+                    <h2 class="form-title">Área do Aluno</h2>
+                    <div id="login-error" class="alert alert-danger d-none" role="alert"></div>
+                    <form id="student-login-form" action="<?= BASE_URL ?>api/auth/login" method="post">
+                        <label for="uEmail" class="form-label fw-semibold">E-mail:</label>
+                        <input type="text" id="uEmail" name="login" class="form-control" placeholder="nome@email.com" autocomplete="username" required>
 
-                    <form action="/ctt/dashboard" method="post">
-                        <label for="uEmail" class="form-label fw-semibold">E-mail</label>
-                        <input type="email" id="uEmail" class="form-control" placeholder="nome@email.com" required>
-
-                        <label for="uSenha" class="form-label fw-semibold">Senha</label>
-                        <input type="password" id="uSenha" class="form-control" placeholder="●●●●●●●●" required>
+                        <label for="uSenha" class="form-label fw-semibold">Senha:</label>
+                        <div class="password-container">
+                            <input type="password" id="uSenha" name="senha" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+                            <button type="button" class="password-toggle" id="toggleStudentPassword" aria-label="Mostrar senha">
+                                <i class="ph ph-eye-slash" id="studentEyeIcon"></i>
+                            </button>
+                        </div>
 
                         <a href="#" class="esqueceu-senha">Esqueceu a senha?</a>
 
                         <button type="submit" class="btn btn-entrar">Entrar</button>
 
                         <a href="/ctt/" class="btn-voltar">
-                            <span>&#8249;</span> Tela Principal
+                            <span>&#8249;</span> Página Principal
                         </a>
                     </form>
                 </div>
             </main>
         </div>
     </div>
+    <script src="<?= PUBLIC_URL ?>js/login.js"></script>
 </body>
+
 </html>

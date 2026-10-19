@@ -47,11 +47,19 @@ class FuncionarioController extends Controller {
     public function store() {
         $dto = FuncionarioDTO::fromArray($this->body());
         try {
-            $id = $this->service->create($dto);
-            $this->json(['id' => $id, 'message' =>  'Funcionário criado com sucesso.' ], 201);
+            $result = $this->service->create($dto);
+            $message = $result['email_enviado']
+                ? 'Funcionário criado com sucesso. O convite de ativação foi enviado para o e-mail cadastrado.'
+                : 'Funcionário criado com sucesso, mas o convite não foi enviado. Verifique a configuração de e-mail e o log do servidor.';
+            if ($result['conta_reutilizada']) {
+                $message = 'Perfil de funcionario adicionado a conta existente. O usuario deve usar as mesmas credenciais.';
+            }
+            $this->json(['id' => $result['id'], 'email_enviado' => $result['email_enviado'], 'conta_reutilizada' => $result['conta_reutilizada'], 'message' => $message], 201);
+        } catch (\InvalidArgumentException $e) {
+            $this->error($e->getMessage(), 422);
         } catch (\Throwable $e) {
             error_log('[FuncionarioController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
-            $this->error("Erro: " . $e->getMessage(), 500); // só para debug, depois trocar para mensagem genérica
+            $this->error("Erro interno ao salvar funcionário.", 500);
         }
     }
 

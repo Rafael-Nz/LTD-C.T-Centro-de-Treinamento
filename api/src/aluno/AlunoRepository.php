@@ -144,13 +144,15 @@ class AlunoRepository extends Repository implements DataTablesRepositoryInterfac
 
     public function create(AlunoDTO $dto, int $usuarioId): int {
         $this->execute("
-            INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO aluno (usuario_id, data_matricula, cadastrado_por, codigo_matricula, senha, conta_ativada)
+            VALUES (?, ?, ?, ?, ?, ?)
         ", [
             $usuarioId,
             $dto->data_matricula ?? date('Y-m-d'),
             $dto->cadastrado_por,
             $dto->codigo_matricula,
+            password_hash($dto->senha, PASSWORD_ARGON2ID),
+            $dto->conta_ativada ? 1 : 0,
         ]);
 
         if ($dto->turma_ids !== null) {

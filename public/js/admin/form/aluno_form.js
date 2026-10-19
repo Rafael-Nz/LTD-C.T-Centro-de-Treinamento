@@ -194,7 +194,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function loadAlunoData() {
         if (!id) {
-            setValue('dataMatricula', new Date().toISOString().split('T')[0]);
+            const now = new Date();
+            const pad = (value) => String(value).padStart(2, '0');
+            setValue('dataMatricula', `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
             await loadTurmas();
             return;
         }
@@ -313,10 +315,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const data = await response.json();
+                const responseData = await response.json();
+                const data = responseData.data || responseData;
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Erro no servidor');
+                    throw new Error(responseData.message || data.message || 'Erro no servidor');
                 }
 
                 const alunoId = data.id ?? parseInt(id, 10);
@@ -325,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 await Swal.fire({
                     icon: 'success',
                     title: id ? 'Atualizado!' : 'Cadastrado!',
-                    text: 'Dados salvos com sucesso.'
+                    text: data.message || 'Dados salvos com sucesso.'
                 });
 
                 window.location.href = '/ctt/admin/alunos';

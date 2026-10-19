@@ -35,6 +35,7 @@
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
+                    area: 'admin',
                     login: emailInput.value,
                     senha: senhaInput.value
                 })

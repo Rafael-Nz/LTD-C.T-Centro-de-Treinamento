@@ -29,6 +29,12 @@ class AlunoController extends Controller {
     }
 
     public function show(int $id) {
+        $userTipo = Auth::user('tipo');
+        if ($userTipo === 'aluno' && (int) Auth::id() !== $id) {
+            $this->error("Acesso negado. Você só pode visualizar o seu próprio perfil.", 403);
+            return;
+        }
+
         $aluno = $this->service->findById($id);
         if (!$aluno) {
             $this->error("Aluno nao encontrado.", 404);
@@ -43,10 +49,33 @@ class AlunoController extends Controller {
         $dto->cadastrado_por = Auth::user('id');
 
         try {
-            $id = $this->service->create($dto);
-            $this->json(['id' => $id, 'message' => 'Aluno criado com sucesso.'], 201);
+            $result = $this->service->create($dto);
+            $message = $result['conta_reutilizada']
+                ? 'Perfil de aluno adicionado a conta existente. O usuario deve usar as mesmas credenciais.'
+                : ($result['email_enviado']
+                    ? 'Aluno criado com sucesso. A senha inicial foi enviada para o e-mail cadastrado.'
+                    : 'Aluno criado com sucesso, mas nao foi possivel enviar a senha inicial por e-mail. Verifique a configuracao de e-mail e o log do servidor.');
+            $this->json([
+                'id' => $result['id'],
+                'email_enviado' => $result['email_enviado'],
+                'conta_reutilizada' => $result['conta_reutilizada'],
+                'message' => $message,
+            ], 201);
         } catch (\InvalidArgumentException $e) {
             $this->error($e->getMessage(), 422);
+        } catch (\PDOException $e) {
+            $errorCode = (int) ($e->errorInfo[1] ?? 0);
+            $details = strtolower($e->getMessage());
+
+            if ($errorCode === 1062) {
+                $field = str_contains($details, 'cpf')
+                    ? 'CPF'
+                    : (str_contains($details, 'email') ? 'e-mail' : 'CPF ou e-mail');
+                $this->error("Este {$field} já está cadastrado.", 409);
+            }
+
+            error_log('[AlunoController::store] ' . $e->getMessage());
+            $this->error('Não foi possível salvar o aluno no banco de dados.', 500);
         } catch (\Throwable $e) {
             error_log('[AlunoController::store] ' . $e->getMessage());
             $this->error("Erro interno ao processar requisicao.", 500);

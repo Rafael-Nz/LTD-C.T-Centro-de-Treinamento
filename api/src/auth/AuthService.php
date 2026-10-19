@@ -21,15 +21,25 @@ class AuthService extends Service
         $this->usuarioRepo = new UsuarioRepository();
     }
 
-    public function login(LoginDTO $dto): array
+    public function login(LoginDTO $dto, string $area): array
     {
+        if (!in_array($area, ['aluno', 'admin'], true)) {
+            throw new Exception('Area de login invalida.');
+        }
+
         $identifier = strtolower(trim($dto->login));
         $this->assertRateLimit('login', $identifier, 5, 900);
 
         // Busca o usuário pelo e-mail ou CPF
         $usuario = $this->usuarioRepo->findByLogin($dto->login);
 
-        if (!$usuario || !password_verify($dto->senha, $usuario['senha'])) {
+        $senhaHash = $area === 'aluno'
+            ? ($usuario['senha_aluno'] ?? null)
+            : (($usuario['tipo_usuario'] ?? null) === 'admin'
+                ? ($usuario['senha'] ?? null)
+                : ($usuario['senha_funcionario'] ?? null));
+
+        if (!$usuario || !$senhaHash || !password_verify($dto->senha, $senhaHash)) {
             $this->usuarioRepo->recordAuthAttempt('login', $identifier, $this->requestIp(), 5, 900, 900);
             throw new Exception("As informações de login que você inseriu estão incorretas.");
         }
@@ -39,7 +49,20 @@ class AuthService extends Service
             throw new Exception("As informações de login que você inseriu estão incorretas.");
         }
 
-        $tiposPermitidos = ['admin', 'funcionario'];
+        $possuiAluno = (bool) ($usuario['possui_aluno'] ?? false);
+        $possuiFuncionario = (bool) ($usuario['possui_funcionario'] ?? false);
+        $possuiAdmin = ($usuario['tipo_usuario'] ?? null) === 'admin';
+        $acessoPermitido = $area === 'aluno'
+            ? $possuiAluno
+            : ($possuiAdmin || $possuiFuncionario);
+
+        if (!$acessoPermitido) {
+            throw new Exception($area === 'aluno'
+                ? 'Esta conta pertence a area administrativa. Use o login administrativo.'
+                : 'Esta conta pertence a area do aluno. Use o login do aluno.');
+        }
+
+        $tiposPermitidos = ['admin', 'funcionario', 'aluno'];
         if (!in_array($usuario['tipo_usuario'], $tiposPermitidos)) {
             throw new Exception("Acesso negado. Esta área é restrita a colaboradores.");
         }
@@ -47,26 +70,54 @@ class AuthService extends Service
         $this->usuarioRepo->clearAuthAttempts('login', $identifier, $this->requestIp());
 
         // Inicia a sessão no Core
+        $tipoSessao = $area === 'aluno'
+            ? 'aluno'
+            : ($possuiAdmin ? 'admin' : 'funcionario');
+
+        $cargoId = null;
+        $cargoNome = null;
+        $permissoes = [];
+
+        if ($tipoSessao === 'admin') {
+            $cargoNome = 'Administrador';
+            $permissoes = ['*'];
+        } elseif ($tipoSessao === 'funcionario') {
+            $cargoId = isset($usuario['cargo_id']) ? (int) $usuario['cargo_id'] : null;
+            $cargoNome = $usuario['cargo_nome'] ?? 'Colaborador';
+            if ($cargoId) {
+                $permissoes = $this->usuarioRepo->findPermissionsByCargoId($cargoId);
+            }
+        } else {
+            $cargoNome = 'Aluno';
+            $permissoes = [];
+        }
+
         CoreAuth::login([
-            'id' => (int)$usuario['id'],
+            'id' => (int) $usuario['id'],
             'nome' => $usuario['nome'],
-            'tipo' => $usuario['tipo_usuario']
-        ]);
+            'tipo' => $tipoSessao,
+            'cargo_id' => $cargoId,
+            'cargo_nome' => $cargoNome,
+            'permissoes' => $permissoes
+        ], $area);
 
         return [
-            'id' => (int)$usuario['id'],
+            'id' => (int) $usuario['id'],
             'nome' => $usuario['nome'],
-            'tipo' => $usuario['tipo_usuario']
+            'tipo' => $tipoSessao,
+            'cargo_id' => $cargoId,
+            'cargo_nome' => $cargoNome,
+            'permissoes' => $permissoes
         ];
     }
 
-    public function logout(): void
+    public function logout(?string $area = null): void
     {
-        CoreAuth::logout();
+        CoreAuth::logout($area);
     }
 
 
-    public function generatePasswordResetToken(string $email): void
+    public function generatePasswordResetToken(string $email, string $perfil = 'admin'): void
     {
         $email = trim($email);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -76,6 +127,10 @@ class AuthService extends Service
         $identifier = strtolower($email);
         $this->assertRateLimit('password_reset', $identifier, 3, 900);
         $this->usuarioRepo->recordAuthAttempt('password_reset', $identifier, $this->requestIp(), 3, 900, 900);
+
+        if (!in_array($perfil, ['admin', 'aluno', 'funcionario'], true)) {
+            throw new Exception('Perfil de senha invalido.');
+        }
 
         $usuario = $this->usuarioRepo->findByEmail($email);
 
@@ -90,6 +145,7 @@ class AuthService extends Service
             $this->usuarioRepo->deletePasswordResetTokens((int) $usuario['id']);
             $this->usuarioRepo->createPasswordResetToken(
                 (int) $usuario['id'],
+                $perfil,
                 hash('sha256', $token),
                 $expiresAt
             );
@@ -120,34 +176,63 @@ class AuthService extends Service
         $passwordHash = password_hash($novaSenha, PASSWORD_ARGON2ID);
 
         $this->transaction(function () use ($reset, $passwordHash): void {
-            $this->usuarioRepo->updatePassword((int) $reset['usuario_id'], $passwordHash);
+            if ($reset['perfil'] === 'admin') {
+                $this->usuarioRepo->updatePassword((int) $reset['usuario_id'], $passwordHash);
+            } else {
+                $this->usuarioRepo->updateProfilePassword((int) $reset['usuario_id'], $reset['perfil'], $passwordHash);
+            }
             $this->usuarioRepo->invalidatePasswordResetToken((int) $reset['id']);
         });
     }
 
-    public function sendStudentActivationInvite(int $usuarioId): void
+    public function sendInitialPassword(int $usuarioId, string $senhaInicial): void
     {
         $usuario = $this->usuarioRepo->findById($usuarioId);
-        if (!$usuario || $usuario['tipo_usuario'] !== 'aluno' || (bool) $usuario['ativo']) {
-            throw new Exception('Aluno invalido para ativacao.');
+        if (!$usuario || !(bool) $usuario['ativo']) {
+            throw new Exception('Usuario inválido para ativação.');
+        }
+
+        $this->sendInitialPasswordEmail($usuario, $senhaInicial);
+    }
+
+    public function resendAccountActivationLink(int $usuarioId, string $perfil): void
+    {
+        if (!in_array($perfil, ['aluno', 'funcionario'], true)) {
+            throw new Exception('Perfil de ativacao invalido.');
+        }
+
+        $usuario = $this->usuarioRepo->findById($usuarioId);
+        if (!$usuario || !(bool) $usuario['ativo']) {
+            throw new Exception('Usuario invalido para ativacao.');
+        }
+
+        $loginData = $this->usuarioRepo->findByLogin($usuario['email']);
+        $campoAtivacao = $perfil === 'aluno' ? 'conta_ativada_aluno' : 'conta_ativada_funcionario';
+        if (!$loginData || !(bool) ($loginData['possui_' . $perfil] ?? false)) {
+            throw new Exception('Este usuario nao possui o perfil informado.');
+        }
+
+        if ((bool) ($loginData[$campoAtivacao] ?? false)) {
+            throw new Exception('Esta conta ja foi ativada.');
         }
 
         $token = bin2hex(random_bytes(32));
         $expiresAt = date('Y-m-d H:i:s', time() + 86400);
 
-        $this->transaction(function () use ($usuarioId, $token, $expiresAt): void {
-            $this->usuarioRepo->deleteStudentActivationTokens($usuarioId);
+        $this->transaction(function () use ($usuarioId, $perfil, $token, $expiresAt): void {
+            $this->usuarioRepo->deleteAccountActivationTokens($usuarioId, $perfil);
             $this->usuarioRepo->createStudentActivationToken(
                 $usuarioId,
+                $perfil,
                 hash('sha256', $token),
                 $expiresAt
             );
         });
 
-        $this->sendStudentActivationEmail($usuario, $token);
+        $this->sendAccountActivationEmail($usuario, $token, $perfil);
     }
 
-    public function activateStudent(string $token, string $novaSenha, string $confirmarSenha): void
+    public function activateAccount(string $token, string $novaSenha, string $confirmarSenha): void
     {
         $token = trim($token);
         if ($token === '' || $novaSenha !== $confirmarSenha) {
@@ -155,15 +240,16 @@ class AuthService extends Service
         }
 
         PasswordPolicy::validate($novaSenha);
-        $activation = $this->usuarioRepo->findValidStudentActivation(hash('sha256', $token));
+        $activation = $this->usuarioRepo->findValidAccountActivation(hash('sha256', $token));
         if (!$activation) {
             throw new Exception('Link invalido ou expirado.');
         }
 
         $this->transaction(function () use ($activation, $novaSenha): void {
-            $this->usuarioRepo->activateStudentAccount(
+            $this->usuarioRepo->activateProfileAccount(
                 (int) $activation['usuario_id'],
                 (int) $activation['id'],
+                (string) $activation['perfil'],
                 password_hash($novaSenha, PASSWORD_ARGON2ID)
             );
         });
@@ -207,11 +293,11 @@ class AuthService extends Service
         $mailer->send();
     }
 
-    private function sendStudentActivationEmail(array $usuario, string $token): void
+    private function sendAccountActivationEmail(array $usuario, string $token, string $perfil): void
     {
         $mailer = new PHPMailer(true);
         $appUrl = rtrim($_ENV['APP_URL'], '/');
-        $activationUrl = $appUrl . '/admin/ativar-conta/' . urlencode($token);
+        $activationUrl = $appUrl . '/ativar-conta/' . urlencode($token) . '?perfil=' . urlencode($perfil);
         $nome = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
         $safeActivationUrl = htmlspecialchars($activationUrl, ENT_QUOTES, 'UTF-8');
 
@@ -229,9 +315,9 @@ class AuthService extends Service
         $mailer->addAddress($usuario['email'], $usuario['nome']);
         $mailer->isHTML(true);
         $mailer->Subject = 'Ative sua conta - Cross C.T';
-        $template = file_get_contents(__DIR__ . '/student-activation.html');
+        $template = file_get_contents(__DIR__ . '/account-activation.html');
         if ($template === false) {
-            throw new Exception('Template de ativacao nao encontrado.');
+            throw new Exception('Template de ativação não encontrado.');
         }
 
         $mailer->Body = str_replace(
@@ -239,7 +325,95 @@ class AuthService extends Service
             [$nome, $safeActivationUrl],
             $template
         );
-        $mailer->AltBody = "Acesse {$activationUrl} para ativar sua conta. Este convite expira em 24 horas.";
+        $mailer->AltBody = "Acesse {$activationUrl} para ativar sua conta e definir sua senha definitiva. Este link expira em 24 horas.";
+        $mailer->send();
+    }
+
+    private function sendInitialPasswordEmail(array $usuario, string $senhaInicial): void
+    {
+        $mailer = new PHPMailer(true);
+        $nome = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
+        $safeInitialPassword = htmlspecialchars($senhaInicial, ENT_QUOTES, 'UTF-8');
+
+        $mailer->isSMTP();
+        $mailer->Host = $_ENV['MAIL_HOST'];
+        $mailer->SMTPAuth = true;
+        $mailer->Username = $_ENV['MAIL_USERNAME'];
+        $mailer->Password = $_ENV['MAIL_PASSWORD'];
+        $mailer->Port = (int) $_ENV['MAIL_PORT'];
+        $mailer->SMTPSecure = strtolower($_ENV['MAIL_ENCRYPTION']) === 'ssl'
+            ? PHPMailer::ENCRYPTION_SMTPS
+            : PHPMailer::ENCRYPTION_STARTTLS;
+        $mailer->CharSet = 'UTF-8';
+        $mailer->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
+        $mailer->addAddress($usuario['email'], $usuario['nome']);
+        $mailer->isHTML(true);
+        $mailer->Subject = 'Sua senha inicial - Cross C.T';
+        $template = file_get_contents(__DIR__ . '/initial-password.html');
+        if ($template === false) {
+            throw new Exception('Template de senha inicial nao encontrado.');
+        }
+
+        $mailer->Body = str_replace(
+            ['{{nome}}', '{{senha_inicial}}'],
+            [$nome, $safeInitialPassword],
+            $template
+        );
+        $mailer->AltBody = "Sua senha inicial e: {$senhaInicial}. Use-a para acessar sua conta.";
+        $mailer->send();
+    }
+
+    private function sendAccountActivationLinkEmailUnused(array $usuario, string $token): void
+    {
+        $mailer = new PHPMailer(true);
+        $appUrl = rtrim($_ENV['APP_URL'], '/');
+        $activationUrl = $appUrl . '/ativar-conta/' . urlencode($token);
+        $nome = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
+        $safeActivationUrl = htmlspecialchars($activationUrl, ENT_QUOTES, 'UTF-8');
+
+        $mailer->isSMTP();
+        $mailer->Host = $_ENV['MAIL_HOST'];
+        $mailer->SMTPAuth = true;
+        $mailer->Username = $_ENV['MAIL_USERNAME'];
+        $mailer->Password = $_ENV['MAIL_PASSWORD'];
+        $mailer->Port = (int) $_ENV['MAIL_PORT'];
+        $mailer->SMTPSecure = strtolower($_ENV['MAIL_ENCRYPTION']) === 'ssl'
+            ? PHPMailer::ENCRYPTION_SMTPS
+            : PHPMailer::ENCRYPTION_STARTTLS;
+        $mailer->CharSet = 'UTF-8';
+        $mailer->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
+        $mailer->addAddress($usuario['email'], $usuario['nome']);
+        $mailer->isHTML(true);
+        $mailer->Subject = 'Link para ativar sua conta - Cross C.T';
+        $mailer->Body = '<p>Olá, ' . $nome . '.</p><p>Conforme solicitado, segue um novo link para ativar sua conta:</p><p><a href="' . $safeActivationUrl . '">Ativar minha conta</a></p><p>O link expira em 24 horas e pode ser usado uma única vez.</p>';
+        $mailer->AltBody = "Acesse {$activationUrl} para ativar sua conta. Este link expira em 24 horas.";
+        $mailer->send();
+    }
+
+    private function sendAccountActivationLinkEmail(array $usuario, string $token): void
+    {
+        $mailer = new PHPMailer(true);
+        $appUrl = rtrim($_ENV['APP_URL'], '/');
+        $activationUrl = $appUrl . '/ativar-conta/' . urlencode($token);
+        $nome = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
+        $safeActivationUrl = htmlspecialchars($activationUrl, ENT_QUOTES, 'UTF-8');
+
+        $mailer->isSMTP();
+        $mailer->Host = $_ENV['MAIL_HOST'];
+        $mailer->SMTPAuth = true;
+        $mailer->Username = $_ENV['MAIL_USERNAME'];
+        $mailer->Password = $_ENV['MAIL_PASSWORD'];
+        $mailer->Port = (int) $_ENV['MAIL_PORT'];
+        $mailer->SMTPSecure = strtolower($_ENV['MAIL_ENCRYPTION']) === 'ssl'
+            ? PHPMailer::ENCRYPTION_SMTPS
+            : PHPMailer::ENCRYPTION_STARTTLS;
+        $mailer->CharSet = 'UTF-8';
+        $mailer->setFrom($_ENV['MAIL_FROM_ADDRESS'], $_ENV['MAIL_FROM_NAME']);
+        $mailer->addAddress($usuario['email'], $usuario['nome']);
+        $mailer->isHTML(true);
+        $mailer->Subject = 'Link para ativar sua conta - Cross C.T';
+        $mailer->Body = '<p>Olá, ' . $nome . '.</p><p>Conforme solicitado, segue um novo link para ativar sua conta:</p><p><a href="' . $safeActivationUrl . '">Ativar minha conta</a></p><p>O link expira em 24 horas e pode ser usado uma única vez.</p>';
+        $mailer->AltBody = "Acesse {$activationUrl} para ativar sua conta. Este link expira em 24 horas.";
         $mailer->send();
     }
 

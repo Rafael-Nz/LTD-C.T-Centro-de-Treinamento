@@ -61,6 +61,18 @@ class UsuarioService extends Service
         });
     }
 
+    public function findByEmailOrCpf(string $email, string $cpf): ?array
+    {
+        $emailUser = $this->repo->findByEmail(trim($email));
+        $cpfUser = $this->repo->findByCpf(trim($cpf));
+
+        if ($emailUser && $cpfUser && (int) $emailUser['id'] !== (int) $cpfUser['id']) {
+            throw new \InvalidArgumentException('O e-mail e o CPF pertencem a contas diferentes.');
+        }
+
+        return $emailUser ?: $cpfUser;
+    }
+
     public function update(int $id, UsuarioDTO $dto): void
     {
         if (property_exists($dto, 'tipo_usuario') && isset($dto->tipo_usuario)) {

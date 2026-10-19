@@ -210,7 +210,7 @@ $pageTitle = $isEdit ? 'Editar Aluno' : 'Cadastrar Aluno';
 	<script defer src="/ctt/plugins/overlayscrollbars/js/overlayscrollbars.browser.es6.min.js"></script>
 	<script defer src="/ctt/js/admin/sidebar.js"></script>
 	<script src="/ctt/js/admin/form/anamnese.js"></script>
-	<script src="/ctt/js/admin/form/aluno_form.js"></script>
+	<script src="/ctt/js/admin/form/aluno_form.js?v=2"></script>
 </body>
 
 </html>

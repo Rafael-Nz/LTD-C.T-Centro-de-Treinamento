@@ -55,10 +55,11 @@ Router::post('/financeiro/cobrancas/{id}/cancelar', [FinanceiroController::class
 Router::post('/financeiro/cobrancas/{id}/pagamentos/{pagamento_id}/estornar', [FinanceiroController::class, 'estornarPagamento'], $auth);
 
 Router::post('/auth/login', [AuthController::class, 'login']);
-Router::post('/auth/logout', [AuthController::class, 'logout'], $auth);
+Router::post('/auth/logout', [AuthController::class, 'logout']);
 Router::post('/auth/recuperar-senha', [AuthController::class, 'requestPasswordReset']);
 Router::post('/auth/redefinir-senha', [AuthController::class, 'resetPassword']);
-Router::post('/auth/ativar-conta', [AuthController::class, 'activateStudent']);
+Router::post('/auth/ativar-conta', [AuthController::class, 'activateAccount']);
+Router::post('/auth/reenviar-ativacao', [AuthController::class, 'resendActivationLink'], $auth);
 
 Router::get('/usuarios', [UsuarioController::class, 'index'], $auth);
 Router::get('/usuarios/me', [UsuarioController::class, 'me'], $auth);

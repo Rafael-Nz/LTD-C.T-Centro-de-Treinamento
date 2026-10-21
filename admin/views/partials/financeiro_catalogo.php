@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!isset($catalogo, $formulario) || !in_array($catalogo, ['servicos', 'planos'], true)) {
     http_response_code(404);
     exit;
@@ -71,6 +71,49 @@ $opcoes = $servico
                                 <option value="1" selected>Sim</option>
                                 <option value="0">Não</option>
                             </select>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!$servico): ?>
+                        <div class="col-12 mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-1 pb-2">
+                                <div>
+                                    <h3 class="h6 mb-0 section-title">Composição do Plano (Serviços Inclusos)</h3>
+                                    <span class="text-muted small">Adicione os serviços que integram este plano comercial</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="btnAdicionarServicoPlano">
+                                    <i class="ph ph-plus me-1"></i>Adicionar serviço
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle table-hover mb-2" id="tabelaItensPlano">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="min-width: 250px;">Serviço</th>
+                                            <th style="width: 110px;">Quantidade</th>
+                                            <th style="width: 160px;">Valor Unitário (R$)</th>
+                                            <th style="width: 140px;" class="text-end">Subtotal</th>
+                                            <th style="width: 60px;" class="text-center">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itensPlanoContainer">
+                                        <!-- Inserido dinamicamente via JS -->
+                                    </tbody>
+                                    <tfoot class="border-top">
+                                        <tr>
+                                            <th colspan="3" class="text-end">Soma dos itens:</th>
+                                            <th class="text-end" id="somaServicosPlano">R$ 0,00</th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                                <span class="text-muted small" id="mensagemItensPlano">Nenhum serviço adicionado ainda.</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnUsarSomaItens" style="display: none;">
+                                    <i class="ph ph-arrow-circle-up me-1"></i>Definir valor do plano igual à soma (<span id="valorSomaSugerido">R$ 0,00</span>)
+                                </button>
+                            </div>
                         </div>
                         <?php endif; ?>
                     </div>

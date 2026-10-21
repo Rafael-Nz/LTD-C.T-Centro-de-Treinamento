@@ -14,6 +14,7 @@ $tests = [
     'paginacao de cobrancas' => 'test_cobrancas_paginacao.php',
     'acoes financeiras' => 'test_financeiro_acoes.php',
     'metricas e encargos' => 'test_financeiro_metricas_encargos.php',
+    'triggers e just-in-time' => 'test_jit_triggers.php',
 ];
 
 $failures = [];

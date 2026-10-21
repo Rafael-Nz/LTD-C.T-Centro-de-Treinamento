@@ -141,6 +141,11 @@ class FinanceiroRepository extends Repository
         $this->execute('INSERT INTO plano_item (plano_id, servico_id, quantidade, valor_unitario) VALUES (?, ?, ?, ?)', [$planoId, $servicoId, $quantidade, $valor]);
     }
 
+    public function limparItensPlano(int $planoId): void
+    {
+        $this->execute('DELETE FROM plano_item WHERE plano_id = ?', [$planoId]);
+    }
+
     public function contrato(int $id): ?array
     {
         $contrato = $this->fetch('SELECT c.*, CONCAT(u.nome, " ", u.sobrenome) AS aluno_nome, p.nome AS plano_nome FROM contrato c INNER JOIN usuario u ON u.id = c.aluno_id LEFT JOIN plano p ON p.id = c.plano_id WHERE c.id = ?', [$id]);
@@ -300,9 +305,10 @@ class FinanceiroRepository extends Repository
         $this->execute('UPDATE cobranca SET status = ? WHERE id = ?', [$status, $id]);
     }
 
-    public function atualizarVencidas(): int
+    public function atualizarVencidas(?string $hoje = null): int
     {
-        $this->execute("UPDATE cobranca SET status = 'vencida' WHERE status = 'aberta' AND data_vencimento < CURDATE()");
+        $hoje = $hoje ?? date('Y-m-d');
+        $this->execute("UPDATE cobranca SET status = 'vencida' WHERE status = 'aberta' AND data_vencimento < ?", [$hoje]);
         $row = $this->fetch("SELECT ROW_COUNT() AS total");
         return (int) ($row['total'] ?? 0);
     }

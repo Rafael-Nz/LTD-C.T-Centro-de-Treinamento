@@ -12,5 +12,5 @@ class PlanoDTO extends FinanceiroDTO
     public string $periodicidade = 'mensal';
     public float $valor = 0;
     public bool $ativo = true;
-    public array $itens = [];
+    public ?array $itens = null;
 }

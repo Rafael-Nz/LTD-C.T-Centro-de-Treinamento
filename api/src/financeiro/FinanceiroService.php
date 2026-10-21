@@ -49,6 +49,10 @@ class FinanceiroService extends Service
             }
             if ($same && (int) $same['id'] !== $id) throw new \InvalidArgumentException('Já existe outro cadastro com esse nome.');
             $this->repo->salvarCatalogo($table, $id, ['nome' => $dto->nome, 'descricao' => $dto->descricao] + $dados);
+            if ($dto instanceof PlanoDTO && $dto->itens !== null && method_exists($this->repo, 'limparItensPlano')) {
+                $this->repo->limparItensPlano($id);
+                $this->salvarItensPlano($id, $dto->itens);
+            }
         });
     }
 
@@ -69,6 +73,9 @@ class FinanceiroService extends Service
             if (in_array($contrato['status'], ['encerrado', 'cancelado'], true)) throw new \InvalidArgumentException('Contratos encerrados ou cancelados não podem ser reabertos. Cadastre um novo contrato.');
             if ($status === 'ativo' && !empty($contrato['data_fim']) && $contrato['data_fim'] < date('Y-m-d')) throw new \InvalidArgumentException('A vigência deste contrato já terminou.');
             $this->repo->salvarStatusContrato($id, $status);
+            if ($status === 'ativo' && !empty($contrato['geracao_automatica']) && isset($contrato['data_inicio'], $contrato['dia_vencimento'], $contrato['periodicidade'])) {
+                $this->gerarAutomaticasContrato($id);
+            }
         });
     }
 
@@ -83,24 +90,31 @@ class FinanceiroService extends Service
         }
         return $this->transaction(function () use ($dto) {
             $id = $this->repo->criarPlano($dto);
-            foreach ($dto->itens as $item) {
-                if (!is_array($item)) throw new \InvalidArgumentException('Item do plano invalido.');
-                $servicoId = (int) ($item['servico_id'] ?? 0);
-                $servico = $this->repo->servico($servicoId);
-                if (!$servico || !$servico['ativo']) {
-                    throw new \InvalidArgumentException('Todo item do plano deve referenciar um servico ativo.');
-                }
-                $quantidade = (int) ($item['quantidade'] ?? 1);
-                if (!is_array($item) || !preg_match('/^[1-9]\d{0,5}$/D', (string) ($item['quantidade'] ?? 1))) throw new \InvalidArgumentException('Quantidade invalida.');
-                FinanceiroValidation::centavos($item['valor_unitario'] ?? $servico['valor_base'], 'Valor do item');
-                $valor = (float) ($item['valor_unitario'] ?? $servico['valor_base']);
-                if ($quantidade < 1 || $valor < 0) {
-                    throw new \InvalidArgumentException('Quantidade e valor dos itens do plano sao invalidos.');
-                }
-                $this->repo->adicionarItemPlano($id, $servicoId, $quantidade, $valor);
+            if (is_array($dto->itens) && !empty($dto->itens)) {
+                $this->salvarItensPlano($id, $dto->itens);
             }
             return $id;
         });
+    }
+
+    private function salvarItensPlano(int $planoId, array $itens): void
+    {
+        foreach ($itens as $item) {
+            if (!is_array($item)) throw new \InvalidArgumentException('Item do plano invalido.');
+            $servicoId = (int) ($item['servico_id'] ?? 0);
+            $servico = $this->repo->servico($servicoId);
+            if (!$servico || !$servico['ativo']) {
+                throw new \InvalidArgumentException('Todo item do plano deve referenciar um servico ativo.');
+            }
+            $quantidade = (int) ($item['quantidade'] ?? 1);
+            if (!preg_match('/^[1-9]\d{0,5}$/D', (string) ($item['quantidade'] ?? 1))) throw new \InvalidArgumentException('Quantidade invalida.');
+            FinanceiroValidation::centavos($item['valor_unitario'] ?? $servico['valor_base'], 'Valor do item');
+            $valor = (float) ($item['valor_unitario'] ?? $servico['valor_base']);
+            if ($quantidade < 1 || $valor < 0) {
+                throw new \InvalidArgumentException('Quantidade e valor dos itens do plano sao invalidos.');
+            }
+            $this->repo->adicionarItemPlano($planoId, $servicoId, $quantidade, $valor);
+        }
     }
 
     public function criarContrato(ContratoDTO $dto): int
@@ -147,6 +161,9 @@ class FinanceiroService extends Service
                     'valor_unitario' => (float) ($item['valor_unitario'] ?? 0),
                     'valor_desconto' => (float) ($item['valor_desconto'] ?? 0),
                 ]);
+            }
+            if ($dto->status === 'ativo' && $dto->geracao_automatica && isset($dto->data_inicio, $dto->dia_vencimento, $dto->periodicidade)) {
+                $this->gerarAutomaticasContrato($id);
             }
             return $id;
         });
@@ -254,28 +271,67 @@ class FinanceiroService extends Service
         });
     }
 
-    public function atualizarVencidas(): int {
-        return $this->transaction(fn () => $this->repo->atualizarVencidas());
+    public function atualizarVencidas(?string $hoje = null): int {
+        return $this->transaction(fn () => $this->repo->atualizarVencidas($hoje));
+    }
+
+    public function gerarAutomaticasContrato(int $contratoId, ?string $referencia = null): int {
+        $limite = FinanceiroValidation::data($referencia ?? date('Y-m-d'))->modify('last day of this month');
+        return $this->transaction(function () use ($contratoId, $limite) {
+            $contrato = $this->repo->bloquearContrato($contratoId);
+            if (!$contrato || $contrato['status'] !== 'ativo' || empty($contrato['geracao_automatica'])) return 0;
+            $count = 0;
+            foreach (self::vencimentos($contrato, $limite) as $date) {
+                if ($this->repo->porCompetencia($contratoId, substr($date, 0, 7))) continue;
+                $this->gerarCobranca($contratoId, ['competencia' => substr($date, 0, 7), 'data_vencimento' => $date]);
+                $count++;
+            }
+            return $count;
+        });
     }
 
     public function gerarAutomaticas(?string $referencia = null): array {
-        $limite = FinanceiroValidation::data($referencia ?? date('Y-m-d'))->modify('last day of this month');
         $geradas = 0;
         foreach ($this->repo->contratosAutomaticos() as $item) {
-            $geradas += $this->transaction(function () use ($item, $limite) {
-                $contrato = $this->repo->bloquearContrato((int) $item['id']);
-                if (!$contrato || $contrato['status'] !== 'ativo') return 0;
-                $count = 0;
-                foreach (self::vencimentos($contrato, $limite) as $date) {
-                    if ($this->repo->porCompetencia((int) $item['id'], substr($date, 0, 7))) continue;
-                    $this->gerarCobranca((int) $item['id'], ['competencia' => substr($date, 0, 7), 'data_vencimento' => $date]);
-                    $count++;
-                }
-                return $count;
-            });
+            $geradas += $this->gerarAutomaticasContrato((int) $item['id'], $referencia);
         }
         $vencidas = $this->atualizarVencidas();
         return ['geradas' => $geradas, 'vencidas' => $vencidas];
+    }
+
+    public function processarJustInTime(?string $referencia = null): array {
+        $hoje = FinanceiroValidation::data($referencia ?? date('Y-m-d'))->format('Y-m-d');
+        
+        // 1. Sincronização em tempo real de status vencidos (<1ms)
+        $vencidas = $this->atualizarVencidas($hoje);
+
+        // 2. Throttle de geração diária (evita varreduras redundantes no mesmo dia)
+        $stateFile = dirname(__DIR__, 3) . '/tools/financeiro/financeiro_jit_state.json';
+        $deveGerar = true;
+
+        if (is_file($stateFile)) {
+            $conteudo = @file_get_contents($stateFile);
+            $dados = $conteudo ? json_decode($conteudo, true) : null;
+            if (is_array($dados) && ($dados['ultima_execucao'] ?? '') === $hoje) {
+                $deveGerar = false;
+            }
+        }
+
+        $geradas = 0;
+        if ($deveGerar) {
+            $resultado = $this->gerarAutomaticas($hoje);
+            $geradas = $resultado['geradas'] ?? 0;
+            $vencidas = $resultado['vencidas'] ?? $vencidas;
+
+            @file_put_contents($stateFile, json_encode([
+                'ultima_execucao' => $hoje,
+                'executado_em' => date('c'),
+                'geradas' => $geradas,
+                'vencidas' => $vencidas,
+            ], JSON_PRETTY_PRINT));
+        }
+
+        return ['geradas' => $geradas, 'vencidas' => $vencidas, 'executou_geracao' => $deveGerar];
     }
 
     public static function vencimentos(array $contrato, \DateTimeImmutable $limite): array {

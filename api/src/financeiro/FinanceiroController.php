@@ -85,6 +85,7 @@ class FinanceiroController extends Controller
 
     public function contratos(): void
     {
+        $this->executarJit();
         if (Auth::user('tipo') === 'aluno') {
             $_GET['aluno_id'] = (string) Auth::id();
         }
@@ -127,6 +128,7 @@ class FinanceiroController extends Controller
 
     public function cobrancas(): void
     {
+        $this->executarJit();
         if (Auth::user('tipo') === 'aluno') {
             $_GET['aluno_id'] = (string) Auth::id();
         }
@@ -149,6 +151,11 @@ class FinanceiroController extends Controller
         if (Auth::user('tipo') === 'aluno' && (int) ($item['aluno_id'] ?? 0) !== (int) Auth::id()) {
             $this->error('Acesso negado a esta cobranca.', 403);
             return;
+        }
+
+        if ($item['status'] === 'aberta' && $item['data_vencimento'] < date('Y-m-d')) {
+            $this->service->atualizarVencidas();
+            $item['status'] = 'vencida';
         }
 
         $item['total_pago'] = $this->repo->totalPago($id);
@@ -197,6 +204,7 @@ class FinanceiroController extends Controller
 
     public function metricas(): void
     {
+        $this->executarJit();
         $alunoId = Auth::user('tipo') === 'aluno' ? (int) Auth::id() : null;
         $competencia = $_GET['competencia'] ?? null;
         $metricas = $this->service->metricas($competencia, $alunoId);
@@ -328,6 +336,14 @@ class FinanceiroController extends Controller
 
     public function gerarAutomaticas(): void {
         $this->operacao(fn () => $this->service->gerarAutomaticas());
+    }
+
+    private function executarJit(): void {
+        try {
+            $this->service->processarJustInTime();
+        } catch (\Throwable $e) {
+            error_log('[Financeiro JIT] ' . $e->getMessage());
+        }
     }
 
 }

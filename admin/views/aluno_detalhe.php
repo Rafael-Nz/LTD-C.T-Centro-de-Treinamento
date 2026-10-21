@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $alunoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 ?>
 

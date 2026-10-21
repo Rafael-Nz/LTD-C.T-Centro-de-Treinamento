@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $acao = $_GET['acao'] ?? 'novo';
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 

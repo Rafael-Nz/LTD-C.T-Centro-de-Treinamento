@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 ?>
 <!DOCTYPE html>

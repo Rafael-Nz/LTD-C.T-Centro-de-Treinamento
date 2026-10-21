@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -30,8 +30,8 @@
                     <h2 class="form-title">Área do Aluno</h2>
                     <div id="login-error" class="alert alert-danger d-none" role="alert"></div>
                     <form id="student-login-form" action="<?= BASE_URL ?>api/auth/login" method="post">
-                        <label for="uEmail" class="form-label fw-semibold">E-mail:</label>
-                        <input type="text" id="uEmail" name="login" class="form-control" placeholder="nome@email.com" autocomplete="username" required>
+                        <label for="uEmail" class="form-label fw-semibold">E-mail ou Matrícula:</label>
+                        <input type="text" id="uEmail" name="login" class="form-control" placeholder="nome@email.com ou matrícula" autocomplete="username" required>
 
                         <label for="uSenha" class="form-label fw-semibold">Senha:</label>
                         <div class="password-container">

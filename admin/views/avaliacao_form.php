@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $acao = $_GET['acao'] ?? 'cadastrar';
 $avaliacaoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $alunoId = isset($_GET['aluno_id']) ? (int) $_GET['aluno_id'] : (isset($_GET['aluno']) ? (int) $_GET['aluno'] : 0);

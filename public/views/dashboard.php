@@ -1,23 +1,16 @@
-﻿<?php $pageTitle = 'Cross C.T - Painel'; $currentPage = 'dashboard'; $pageCss = 'visao-geral.css'; ?>
+<?php $pageTitle = 'Cross C.T - Painel';
+$currentPage = 'dashboard';
+$pageCss = 'visao-geral.css'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <?php include __DIR__ . '/partials/head.php'; ?>
+
 <body>
     <div class="d-flex vh-100">
         <?php include __DIR__ . '/partials/sidebar.php'; ?>
 
         <div class="d-flex flex-column flex-grow-1 min-width-0">
             <main class="dashboard-main">
-                <div class="greeting">
-                    <button class="btn-menu d-lg-none" id="btnMenu">
-                        <i class="bi bi-list"></i>
-                    </button>
-                    <div>
-                        <p class="greeting-text">Bem vindo</p>
-                        <p class="greeting-date">Segunda-feira, 15 de Setembro de 2026</p>
-                    </div>
-                </div>
-
                 <div class="section-header">
                     <h2 class="section-title">Visão Geral</h2>
                     <p class="section-subtitle">Resumo da sua conta e atividades recentes</p>
@@ -154,4 +147,5 @@
     <script src="<?= PUBLIC_URL ?>js/sidebar.js"></script>
     <script src="<?= PUBLIC_URL ?>js/dashboard.js"></script>
 </body>
+
 </html>

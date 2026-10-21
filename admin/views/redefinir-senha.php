@@ -1,4 +1,4 @@
-﻿<?php $token = $_GET['token'] ?? ''; ?>
+<?php $token = $_GET['token'] ?? ''; ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="dark">

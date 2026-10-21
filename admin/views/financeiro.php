@@ -1,20 +1,20 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross C.T | Financeiro</title>
+    <title>Cross C.T | Contratos</title>
     <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/ctt/css/admin-styles.css">
+    <link rel="stylesheet" href="/ctt/css/admin-styles.css">
     <link rel="stylesheet" href="/ctt/css/sidebar.css">
-  <link rel="stylesheet" href="/ctt/plugins/phosphor-icons/src/regular/style.css">
+    <link rel="stylesheet" href="/ctt/plugins/phosphor-icons/src/regular/style.css">
     <link href="/ctt/plugins/fonts/manrope.css" rel="stylesheet">
     <script src="/ctt/plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <link rel="stylesheet" href="/ctt/plugins/datatables/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" href="/ctt/plugins/datatables/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="/ctt/plugins/datatables/css/responsive.bootstrap5.min.css">
     <link rel="stylesheet" href="/ctt/plugins/select2/css/select2.min.css">
-  <link rel="stylesheet" href="/ctt/plugins/select2/css/select2-bootstrap-5-theme.min.css">
+    <link rel="stylesheet" href="/ctt/plugins/select2/css/select2-bootstrap-5-theme.min.css">
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -23,70 +23,12 @@
 
     <main class="flex-fill d-flex" id="mainContent">
         <div class="container-lg p-4 d-flex flex-column flex-fill">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                <div>
-                    <h1 class="h4 mb-0">Visão geral</h1>
-                    <span class="text-muted small">Indicadores financeiros e gestão de contratos</span>
-                </div>
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <label for="filtroCompetenciaMetricas" class="small text-muted mb-0 me-1">Competência:</label>
-                    <select id="filtroCompetenciaMetricas" class="form-select form-select-sm w-auto" style="min-width: 170px;">
-                        <option value="all">Todas as competências</option>
-                    </select>
-                    <button id="btnAtualizarMetricas" class="btn btn-sm btn-outline-secondary" type="button" title="Atualizar indicadores" aria-label="Atualizar indicadores">
-                        <i class="ph ph-arrows-clockwise"></i>
-                    </button>
-                    <a href="/ctt/api/financeiro/exportar" id="btnExportarCobrancasGeral" class="btn btn-sm btn-red color border border-white d-flex align-items-center" title="Exportar cobranças em CSV">
-                        <i class="ph ph-download-simple me-1"></i>Exportar CSV
-                    </a>
-                </div>
-            </div>
-
-            <div class="row g-3 mb-4" id="financeiroResumo">
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <span class="text-muted small">Em aberto</span>
-                            <div class="h4 mb-0 mt-2" id="totalAberto">R$ 0,00</div>
-                            <small class="text-muted" id="detalheAberto">0 cobranças</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted small">Vencido</span>
-                                <span class="badge bg-danger-subtle text-danger-emphasis" id="badgeInadimplencia">0%</span>
-                            </div>
-                            <div class="h4 text-danger mb-0 mt-2" id="totalVencido">R$ 0,00</div>
-                            <small class="text-muted" id="detalheVencido">0 cobranças</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <span class="text-muted small">Recebido</span>
-                            <div class="h4 text-success mb-0 mt-2" id="totalPago">R$ 0,00</div>
-                            <small class="text-muted" id="detalhePago">0 quitadas</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <span class="text-muted small">Cobranças emitidas</span>
-                            <div class="h4 mb-0 mt-2" id="totalCobrancas">0</div>
-                            <small class="text-muted" id="detalheCobrancas">No período selecionado</small>
-                        </div>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 mb-0">Contratos</h1>
             </div>
 
             <div class="card border-0 p-2 shadow-sm mb-4">
                 <div class="card-header bg-body border-0">
-                    <h2 class="h6 mb-3">Contratos de alunos</h2>
                     <div class="d-flex gap-2 flex-wrap">
                         <div class="input-group w-auto" role="search">
                             <input id="campoBuscaContratos" class="form-control" type="search" placeholder="Buscar aluno ou plano..." aria-label="Buscar contratos">
@@ -97,7 +39,9 @@
                             <div class="dropdown-menu p-3 dropdown-menu-lg" style="min-width: 280px" aria-labelledby="filtrosContratosBtn">
                                 <p class="h6 text-start" style="font-size: 0.875rem">Plano</p>
                                 <div class="mb-3">
-                                    <select class="form-select" id="filtroPlanoContrato"><option></option></select>
+                                    <select class="form-select" id="filtroPlanoContrato">
+                                        <option></option>
+                                    </select>
                                 </div>
                                 <hr class="dropdown-divider">
                                 <p class="h6 text-start" style="font-size: 0.875rem">Status</p>
@@ -112,25 +56,25 @@
                             </div>
                         </div>
                         <?php if (\Core\Auth\Auth::can('financeiro.gerenciar')): ?>
-                        <a href="/ctt/admin/financeiro/contratos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white"><i class="ph ph-plus me-1"></i>Novo contrato</a>
+                            <a href="/ctt/admin/financeiro/contratos/cadastrar" class="btn btn-red d-flex align-items-center color border border-white"><i class="ph ph-plus me-1"></i>Novo contrato</a>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div class="card-body">
-                        <table id="tabelaContratos" class="table table-hover align-middle w-100" aria-label="Contratos de alunos">
-                            <thead>
-                                <tr>
-                                    <th>Aluno</th>
-                                    <th>Plano</th>
-                                    <th>Início</th>
-                                    <th>Vencimento</th>
-                                    <th>Status</th>
-                                    <th class="text-end">Valor</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                    <table id="tabelaContratos" class="table table-hover align-middle w-100" aria-label="Contratos de alunos">
+                        <thead>
+                            <tr>
+                                <th>Aluno</th>
+                                <th>Plano</th>
+                                <th>Início</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th class="text-end">Valor</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>

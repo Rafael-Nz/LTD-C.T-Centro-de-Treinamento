@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 
 <head>
@@ -73,7 +73,7 @@
                 <div class="col-md-6" id="filtroTurma" style="display: none;">
                   <label for="turma" class="form-label">Turma <span class="text-danger d-none" id="turmaObrigatoria">*</span></label>
                   <select class="form-select select2" id="turma" name="turma">
-                    <option value="">Todas as turmas</option>
+                    <option value="">Selecione uma turma</option>
                   </select>
                 </div>
 

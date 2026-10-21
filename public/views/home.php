@@ -1,14 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CT Sempre em Forma - Centro de Treinamento</title>
     <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="<?= PUBLIC_URL ?>css/home.css">
+    <link rel="stylesheet" href="<?= PUBLIC_URL ?>css/home.css">
     <link href="/ctt/plugins/fonts/inter.css" rel="stylesheet">
-  <link href="/ctt/plugins/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/ctt/plugins/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
+
 <body>
 
     <header class="header sticky-top">
@@ -29,7 +31,8 @@
                     <li class="nav-item"><a class="nav-link" href="#modalidades">BENEFÍCIOS</a></li>
                     <li class="nav-item"><a class="nav-link" href="#depoimentos">AVALIAÇÕES</a></li>
                 </ul>
-                <a href="/ctt/login" class="btn btn-danger btn-sm fw-semibold px-4">Área do Aluno</a>
+                <a href="/ctt/login" class="btn btn-danger btn-sm fw-semibold px-4 me-2">Área do Aluno</a>
+                <a href="/ctt/admin/login" class="btn btn-danger btn-sm fw-semibold px-4">Área do Administrador</a>
             </div>
         </nav>
     </header>
@@ -294,4 +297,5 @@
     <script src="/ctt/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="<?= PUBLIC_URL ?>js/home.js"></script>
 </body>
+
 </html>

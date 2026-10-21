@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // O router já processa os parâmetros corretamente
 // Para /alunos/novo: $_GET['acao'] = 'novo'
 // Para /alunos/editar/5: $_GET['acao'] = 'editar', $_GET['id'] = 5

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $token = $_GET['token'] ?? '';
 $perfil = in_array($_GET['perfil'] ?? '', ['aluno', 'funcionario'], true)
     ? $_GET['perfil']

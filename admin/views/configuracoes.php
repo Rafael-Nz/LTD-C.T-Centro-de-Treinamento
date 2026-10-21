@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $canCargos = \Core\Auth\Auth::canAny(['cargos.visualizar', 'cargos.gerenciar']);
 $canModalidades = \Core\Auth\Auth::canAny(['modalidades.visualizar', 'modalidades.gerenciar']);
 $canEmpresa = \Core\Auth\Auth::can('configuracoes.gerenciar');

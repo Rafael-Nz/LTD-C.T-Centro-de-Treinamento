@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 $acao = $_GET['acao'] ?? 'novo';
 

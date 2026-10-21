@@ -99,6 +99,7 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
                 u.conta_ativada,
                 (SELECT a2.conta_ativada FROM aluno a2 WHERE a2.usuario_id = u.id) AS conta_ativada_aluno,
                 (SELECT f2.conta_ativada FROM funcionario f2 WHERE f2.usuario_id = u.id) AS conta_ativada_funcionario,
+                (SELECT a2.codigo_matricula FROM aluno a2 WHERE a2.usuario_id = u.id LIMIT 1) AS codigo_matricula,
                 f.cargo_id,
                 c.nome AS cargo_nome,
                 u.data_criacao,
@@ -207,10 +208,22 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return $result['endereco_id'] ?? null;
     }
 
-    public function findByLogin(string $login): ?array
+    public function findByLogin(string $login, ?string $area = null): ?array
     {
+        $where = "u.email = ? OR a.codigo_matricula = ? OR u.cpf = ?";
+        $params = [$login, $login, $login];
+
+        if ($area === 'aluno') {
+            $where = "u.email = ? OR a.codigo_matricula = ?";
+            $params = [$login, $login];
+        } elseif ($area === 'admin') {
+            $where = "u.email = ? OR u.cpf = ?";
+            $params = [$login, $login];
+        }
+
         return $this->fetch("
             SELECT u.id, u.nome, u.email, u.senha, u.ativo, u.conta_ativada, u.tipo_usuario,
+                   a.codigo_matricula,
                    a.senha AS senha_aluno, a.conta_ativada AS conta_ativada_aluno,
                    f.senha AS senha_funcionario, f.conta_ativada AS conta_ativada_funcionario,
                    f.cargo_id, c.nome AS cargo_nome,
@@ -220,8 +233,8 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
             LEFT JOIN aluno a ON a.usuario_id = u.id
             LEFT JOIN funcionario f ON f.usuario_id = u.id
             LEFT JOIN cargo c ON c.id = f.cargo_id
-            WHERE u.email = ? OR u.cpf = ?
-        ", [$login, $login]);
+            WHERE {$where}
+        ", $params);
     }
 
     public function findPermissionsByCargoId(int $cargoId): array

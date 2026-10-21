@@ -82,6 +82,12 @@ class UsuarioController extends Controller {
     }
 
     public function update(int $id) {
+        $userTipo = Auth::user('tipo');
+        if ($userTipo === 'aluno' && (int) Auth::id() !== $id) {
+            $this->error('Acesso negado. Você só pode atualizar seus próprios dados.', 403);
+            return;
+        }
+
         $dto = UsuarioDTO::fromArray($this->body());
 
         try {

@@ -26,12 +26,20 @@ class ContatoRepository extends Repository {
             $data = $data->toArray();
         }
 
-        if (empty($data['tipo']) || empty($data['valor'])) {
-            throw new \InvalidArgumentException("Contato inválido: tipo e valor são obrigatórios.");
+        if (empty($data['tipo'])) {
+            throw new \InvalidArgumentException("Contato inválido: tipo é obrigatório.");
         }
 
         $tipo = $this->normalizarTipo($data['tipo']);
         $this->validarTipo($tipo);
+
+        $valor = isset($data['valor']) ? trim((string)$data['valor']) : '';
+
+        // Se o valor estiver vazio, remove o contato deste tipo para o usuário (campo opcional em branco ou limpo)
+        if ($valor === '') {
+            $this->deleteByTipos($usuarioId, [$tipo]);
+            return;
+        }
 
         $this->execute("
             INSERT INTO contato (usuario_id, tipo, valor)
@@ -41,7 +49,7 @@ class ContatoRepository extends Repository {
         ", [
             $usuarioId,
             $tipo,
-            $data['valor']
+            $valor
         ]);
     }
 

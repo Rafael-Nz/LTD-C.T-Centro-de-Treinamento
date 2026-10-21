@@ -30,8 +30,8 @@ class AuthService extends Service
         $identifier = strtolower(trim($dto->login));
         $this->assertRateLimit('login', $identifier, 5, 900);
 
-        // Busca o usuário pelo e-mail ou CPF
-        $usuario = $this->usuarioRepo->findByLogin($dto->login);
+        // Busca o usuário pelo identificador correspondente à área (e-mail ou matrícula para aluno; e-mail ou CPF para admin)
+        $usuario = $this->usuarioRepo->findByLogin($dto->login, $area);
 
         $senhaHash = $area === 'aluno'
             ? ($usuario['senha_aluno'] ?? null)
@@ -285,11 +285,11 @@ class AuthService extends Service
         }
 
         $mailer->Body = str_replace(
-            ['{{nome}}', '{{link}}'],
-            [$nome, $safeResetUrl],
+            ['{{nome}}', '{{link}}', '{{ano}}'],
+            [$nome, $safeResetUrl, date('Y')],
             $template
         );
-        $mailer->AltBody = "Acesse {$resetUrl} para redefinir sua senha. Este link expira em 15 minutos.";
+        $mailer->AltBody = "Olá, {$usuario['nome']}. Recebemos uma solicitação para redefinir sua senha no Cross C.T. Acesse {$resetUrl} para definir sua nova senha. Este link expira em 15 minutos.";
         $mailer->send();
     }
 
@@ -321,19 +321,28 @@ class AuthService extends Service
         }
 
         $mailer->Body = str_replace(
-            ['{{nome}}', '{{link}}'],
-            [$nome, $safeActivationUrl],
+            ['{{nome}}', '{{link}}', '{{ano}}'],
+            [$nome, $safeActivationUrl, date('Y')],
             $template
         );
-        $mailer->AltBody = "Acesse {$activationUrl} para ativar sua conta e definir sua senha definitiva. Este link expira em 24 horas.";
+        $mailer->AltBody = "Olá, {$usuario['nome']}. Acesse {$activationUrl} para ativar sua conta no Cross C.T e definir sua senha definitiva. Este link expira em 24 horas.";
         $mailer->send();
     }
 
     private function sendInitialPasswordEmail(array $usuario, string $senhaInicial): void
     {
         $mailer = new PHPMailer(true);
+        $appUrl = rtrim($_ENV['APP_URL'], '/');
         $nome = htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars($usuario['email'] ?? '', ENT_QUOTES, 'UTF-8');
         $safeInitialPassword = htmlspecialchars($senhaInicial, ENT_QUOTES, 'UTF-8');
+        $matricula = !empty($usuario['codigo_matricula'])
+            ? htmlspecialchars((string) $usuario['codigo_matricula'], ENT_QUOTES, 'UTF-8')
+            : 'Não informada';
+
+        $isStaff = in_array($usuario['tipo_usuario'] ?? '', ['admin', 'funcionario'], true) && empty($usuario['codigo_matricula']);
+        $loginUrl = $isStaff ? $appUrl . '/admin/login' : $appUrl . '/login';
+        $safeLoginUrl = htmlspecialchars($loginUrl, ENT_QUOTES, 'UTF-8');
 
         $mailer->isSMTP();
         $mailer->Host = $_ENV['MAIL_HOST'];
@@ -355,11 +364,11 @@ class AuthService extends Service
         }
 
         $mailer->Body = str_replace(
-            ['{{nome}}', '{{senha_inicial}}'],
-            [$nome, $safeInitialPassword],
+            ['{{nome}}', '{{matricula}}', '{{email}}', '{{senha_inicial}}', '{{login_url}}', '{{ano}}'],
+            [$nome, $matricula, $email, $safeInitialPassword, $safeLoginUrl, date('Y')],
             $template
         );
-        $mailer->AltBody = "Sua senha inicial e: {$senhaInicial}. Use-a para acessar sua conta.";
+        $mailer->AltBody = "Olá, {$usuario['nome']}.\nSuas credenciais de acesso ao Cross C.T:\nMatrícula: {$matricula}\nE-mail: {$usuario['email']}\nSenha inicial: {$senhaInicial}\nAcesse {$loginUrl} para entrar no sistema e ativar sua conta.";
         $mailer->send();
     }
 

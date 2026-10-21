@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
     const api = '/ctt/api/financeiro';
     const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const post = (url, body) => request(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -72,7 +72,8 @@
     async function loadMetricas(competencia = null) {
         if (!document.querySelector('#financeiroResumo')) return;
         try {
-            const comp = competencia ?? document.querySelector('#filtroCompetenciaMetricas')?.value ?? 'all';
+            const selectComp = document.querySelector('#filtroCompetenciaMetricas');
+            const comp = competencia ?? selectComp?.value ?? 'all';
             const url = `${api}/metricas${comp && comp !== 'all' ? `?competencia=${comp}` : ''}`;
             const res = await request(url);
             const m = res.metricas || {};
@@ -91,7 +92,6 @@
             const detPago = document.querySelector('#detalhePago');
             if (detPago) detPago.textContent = `${m.qtd_pagas || 0} quitada(s)`;
 
-            const selectComp = document.querySelector('#filtroCompetenciaMetricas');
             if (selectComp && selectComp.options.length <= 1 && Array.isArray(res.competencias)) {
                 res.competencias.forEach(c => {
                     const opt = document.createElement('option');
@@ -117,7 +117,6 @@
     async function loadCobrancas() {
         if (document.querySelector('table#tabelaCobrancas')) {
             if (typeof recarregarTabela === 'function') recarregarTabela('tabelaCobrancas');
-            return;
         }
         await loadMetricas();
     }
@@ -182,45 +181,89 @@
                 </div>
             `;
 
-            await Swal.fire({
+            const result = await Swal.fire({
                 title: 'Comprovante de Pagamento',
                 html: printHtml,
                 width: 650,
                 showCancelButton: true,
                 confirmButtonText: '<i class="ph ph-printer me-1"></i> Imprimir',
                 cancelButtonText: 'Fechar',
-                confirmButtonColor: '#c53030',
-                preConfirm: () => {
-                    const printWindow = window.open('', '_blank', 'width=800,height=600');
-                    if (printWindow) {
-                        printWindow.document.write(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>Recibo de Pagamento - Cross C.T</title>
-                                <link href="/ctt/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-                                <style>
-                                    body { font-family: sans-serif; padding: 20px; color: #111; }
-                                    @media print { .no-print { display: none; } }
-                                </style>
-                            </head>
-                            <body>
-                                ${document.querySelector('#conteudoReciboImpressao').innerHTML}
-                                <script>
-                                    window.onload = function() { window.print(); };
-                                </script>
-                            </body>
-                            </html>
-                        `);
-                        printWindow.document.close();
-                    } else {
-                        window.print();
-                    }
-                }
+                confirmButtonColor: '#c53030'
             });
+
+            limparSweetAlert();
+
+            if (result.isConfirmed) {
+                executarImpressao(printHtml);
+            }
         } catch (err) {
+            limparSweetAlert();
             showError(err);
         }
+    }
+
+    function limparSweetAlert() {
+        document.querySelectorAll('.swal2-container').forEach(el => el.remove());
+        document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+        document.documentElement.classList.remove('swal2-shown', 'swal2-height-auto');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.body.style.pointerEvents = '';
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
+        window.focus();
+    }
+
+    function executarImpressao(conteudoHtml) {
+        document.querySelector('#estiloReciboImpressao')?.remove();
+        document.querySelector('#reciboAreaImpressao')?.remove();
+
+        const printStyle = document.createElement('style');
+        printStyle.id = 'estiloReciboImpressao';
+        printStyle.textContent = `
+            @media screen {
+                #reciboAreaImpressao { display: none !important; }
+            }
+            @media print {
+                body > *:not(#reciboAreaImpressao) { display: none !important; }
+                #reciboAreaImpressao {
+                    display: block !important;
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    width: 100% !important;
+                    margin: 0 !important;
+                    padding: 24px !important;
+                    background: #fff !important;
+                    color: #111 !important;
+                }
+                .no-print { display: none !important; }
+            }
+        `;
+        document.head.appendChild(printStyle);
+
+        const printContainer = document.createElement('div');
+        printContainer.id = 'reciboAreaImpressao';
+        printContainer.innerHTML = conteudoHtml;
+        document.body.appendChild(printContainer);
+
+        let finalizado = false;
+        const restaurar = () => {
+            if (finalizado) return;
+            finalizado = true;
+            window.removeEventListener('afterprint', restaurar);
+            printStyle.remove();
+            printContainer.remove();
+            limparSweetAlert();
+        };
+
+        window.addEventListener('afterprint', restaurar);
+
+        setTimeout(() => {
+            window.print();
+            setTimeout(restaurar, 500);
+        }, 150);
     }
 
     document.querySelector('#formServico')?.addEventListener('submit', async event => {
@@ -263,7 +306,12 @@
     document.addEventListener('click', async event => {
         const btnRecibo = event.target.closest('.btn-ver-recibo');
         if (btnRecibo) {
-            imprimirRecibo(btnRecibo.dataset.cobranca, btnRecibo.dataset.pagamento);
+            btnRecibo.disabled = true;
+            try {
+                await imprimirRecibo(btnRecibo.dataset.cobranca, btnRecibo.dataset.pagamento);
+            } finally {
+                btnRecibo.disabled = false;
+            }
             return;
         }
 
@@ -509,7 +557,7 @@
             });
 
             if (postAction.isConfirmed && paymentResult?.id) {
-                imprimirRecibo(id, paymentResult.id);
+                await imprimirRecibo(id, paymentResult.id);
             }
         } catch (error) {
             showError(error);

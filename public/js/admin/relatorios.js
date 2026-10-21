@@ -1,7 +1,8 @@
-﻿let graficoDist = null;
+let graficoDist = null;
 let graficoPresenca = null;
 let versaoRelatorio = 0;
 let versaoListaAlunos = 0;
+let turmasCache = [];
 
 function escapeHtml(value) {
     return String(value ?? '')
@@ -85,11 +86,7 @@ function carregarFiltros() {
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            const items = data.data || data || [];
-            const select = $('#turma');
-            select.empty();
-            select.append('<option value="">Todas</option>');
-            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
+            turmasCache = data.data || data || [];
             atualizarFiltroTurma($('#tipoRelatorio').val());
         }
     });
@@ -166,9 +163,25 @@ function atualizarFiltroAluno(tipoRelatorio) {
 function atualizarFiltroTurma(tipoRelatorio) {
     const obrigatoria = tipoRelatorio === 'treinos';
     const select = $('#turma');
-    select.find('option[value=""]')
-        .text(obrigatoria ? 'Selecione uma turma' : 'Todas as turmas')
-        .prop('disabled', obrigatoria);
+    const valorAtual = select.val();
+    select.empty();
+
+    if (obrigatoria) {
+        select.append('<option value="">Selecione uma turma</option>');
+    } else {
+        select.append('<option value="">Todas as turmas</option>');
+    }
+
+    turmasCache.forEach(item => {
+        select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`);
+    });
+
+    if (valorAtual && select.find(`option[value="${valorAtual}"]`).length) {
+        select.val(valorAtual);
+    } else {
+        select.val('');
+    }
+
     select.attr('aria-required', String(obrigatoria));
     $('#turmaObrigatoria').toggleClass('d-none', !obrigatoria);
     select.trigger('change');

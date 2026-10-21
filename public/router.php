@@ -33,9 +33,12 @@ final class PublicRouter
         foreach ($this->routes as $regex => $route) {
             if (!preg_match($regex, $url, $matches)) continue;
             foreach ($route['middlewares'] as $middleware) $middleware();
-            $_GET = array_merge($_GET, array_filter($matches, static fn ($key) => is_string($key), ARRAY_FILTER_USE_KEY));
+            $_GET = array_merge($_GET, array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY));
             $viewFile = $this->viewsDir . $route['view'];
-            if (is_file($viewFile)) { require $viewFile; return; }
+            if (is_file($viewFile)) {
+                require $viewFile;
+                return;
+            }
         }
         http_response_code(404);
         $message = 'A página solicitada não foi encontrada.';
@@ -66,7 +69,11 @@ $router->add('', 'home.php');
 $router->add('login', 'login.php', [$loginGuest]);
 $router->add('ativar-conta/{token}', 'ativar-conta.php');
 $router->add('dashboard', 'dashboard.php', [$studentAuth]);
-$router->add('mensalidade', 'mensalidade.php', [$studentAuth]);
+$router->add('dados-pessoais', 'dados-pessoais.php', [$studentAuth]);
+$router->add('matricula', 'matricula.php', [$studentAuth]);
+$router->add('avaliacoes', 'avaliacoes.php', [$studentAuth]);
+$router->add('horarios', 'horarios.php', [$studentAuth]);
+$router->add('financeiro', 'financeiro.php', [$studentAuth]);
 $router->add('logout', '', [static function (): void {
     Auth::logout(Auth::GUARD_ALUNO);
     header('Location: ' . BASE_URL . 'login');

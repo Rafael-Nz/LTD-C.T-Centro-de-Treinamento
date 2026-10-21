@@ -1,0 +1,189 @@
+/* =========================================================
+   MATRÍCULA - ESTILOS
+   ========================================================= */
+
+.matricula-badge-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: var(--white);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.matricula-badge-card::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(220, 53, 69, 0.2);
+    pointer-events: none;
+}
+
+.matricula-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    margin-bottom: 4px;
+}
+
+.matricula-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #f9fafb;
+    margin-bottom: 8px;
+}
+
+.matricula-date {
+    font-size: 13px;
+    color: #d1d5db;
+}
+
+.info-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-card-title i {
+    color: var(--primary-red);
+}
+
+.turma-item {
+    background: #fdfdfd;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.turma-item:hover {
+    border-color: #ced4da;
+    transform: translateY(-1px);
+}
+
+.turma-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.turma-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.turma-details {
+    font-size: 12px;
+    color: var(--text-dimmed);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.turma-details span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.turma-horarios-tag {
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-pill--active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-pill--pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-pill--inactive {
+    background-color: #fde8e8;
+    color: #991b1b;
+}
+
+.anamnese-box {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.btn-ctt-action {
+    background-color: var(--primary-red);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.15s;
+}
+
+.btn-ctt-action:hover {
+    background-color: var(--primary-red-hover);
+    color: var(--white);
+}
+
+@media (max-width: 767.98px) {
+    .turma-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -62,6 +62,12 @@ class AnamneseController extends Controller {
     public function show(int $alunoId) {
         $this->auth();
 
+        $userTipo = \Core\Auth\Auth::user('tipo');
+        if ($userTipo === 'aluno' && (int) \Core\Auth\Auth::id() !== $alunoId) {
+            $this->error('Acesso negado às respostas informadas.', 403);
+            return;
+        }
+
         try {
             $respostas = $this->service->getRespostas($alunoId);
             $this->json($respostas);

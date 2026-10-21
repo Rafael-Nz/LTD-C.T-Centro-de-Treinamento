@@ -48,7 +48,7 @@ $canOrStudent = fn(string ...$perms) => [new class($perms) {
 
         http_response_code(403);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => false, 'message' => 'Acesso não autorizado ao módulo financeiro.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Acesso não autorizado.'], JSON_UNESCAPED_UNICODE);
         return false;
     }
 }];
@@ -62,7 +62,7 @@ Router::get('/docs/openapi.json', [DocsController::class, 'openapi']);
 Router::get('/relatorios/metricas', [RelatorioController::class, 'metricas'], $can('relatorios.visualizar'));
 Router::get('/relatorios/gerar', [RelatorioController::class, 'gerar'], $can('relatorios.visualizar'));
 Router::get('/relatorios/exportar', [RelatorioController::class, 'exportar'], $can('relatorios.exportar'));
-Router::get('/agenda/treinos', [RelatorioController::class, 'agenda'], $canAny('turmas.visualizar', 'treinos.visualizar', 'relatorios.visualizar'));
+Router::get('/agenda/treinos', [RelatorioController::class, 'agenda'], $canOrStudent('turmas.visualizar', 'treinos.visualizar', 'relatorios.visualizar'));
 
 // Financeiro
 Router::get('/financeiro/metricas', [FinanceiroController::class, 'metricas'], $canOrStudent('financeiro.visualizar'));
@@ -107,14 +107,14 @@ Router::post('/auth/reenviar-ativacao', [AuthController::class, 'resendActivatio
 Router::get('/usuarios', [UsuarioController::class, 'index'], $can('usuarios.gerenciar'));
 Router::get('/usuarios/me', [UsuarioController::class, 'me'], $auth);
 Router::get('/usuarios/{id}', [UsuarioController::class, 'show'], $can('usuarios.gerenciar'));
-Router::put('/usuarios/{id}', [UsuarioController::class, 'update'], $can('usuarios.gerenciar'));
+Router::put('/usuarios/{id}', [UsuarioController::class, 'update'], $canOrStudent('usuarios.gerenciar'));
 Router::put('/usuarios/{id}/desativar', [UsuarioController::class, 'deactivate'], $can('usuarios.gerenciar'));
 Router::put('/usuarios/{id}/reativar', [UsuarioController::class, 'reactivate'], $can('usuarios.gerenciar'));
 
 // Alunos
-Router::get('/alunos', [AlunoController::class, 'index'], $can('alunos.visualizar'));
-Router::get('/alunos/{id}', [AlunoController::class, 'show'], $can('alunos.visualizar'));
-Router::get('/alunos/{id}/avaliacoes', [AvaliacaoFisicaController::class, 'indexByAluno'], $canAny('alunos.visualizar', 'avaliacoes.visualizar'));
+Router::get('/alunos', [AlunoController::class, 'index'], $canAny('alunos.visualizar', 'financeiro.gerenciar', 'financeiro.visualizar'));
+Router::get('/alunos/{id}', [AlunoController::class, 'show'], $canOrStudent('alunos.visualizar'));
+Router::get('/alunos/{id}/avaliacoes', [AvaliacaoFisicaController::class, 'indexByAluno'], $canOrStudent('avaliacoes.visualizar'));
 Router::post('/alunos/{id}/avaliacoes', [AvaliacaoFisicaController::class, 'storeByAluno'], $can('avaliacoes.criar'));
 Router::post('/alunos', [AlunoController::class, 'store'], $can('alunos.criar'));
 Router::put('/alunos/{id}', [AlunoController::class, 'update'], $can('alunos.editar'));
@@ -122,14 +122,14 @@ Router::put('/alunos/{id}/desativar', [AlunoController::class, 'deactivate'], $c
 Router::put('/alunos/{id}/reativar', [AlunoController::class, 'reactivate'], $can('alunos.desativar'));
 
 // Avaliações
-Router::get('/avaliacoes/{id}', [AvaliacaoFisicaController::class, 'show'], $can('avaliacoes.visualizar'));
+Router::get('/avaliacoes/{id}', [AvaliacaoFisicaController::class, 'show'], $canOrStudent('avaliacoes.visualizar'));
 Router::put('/avaliacoes/{id}', [AvaliacaoFisicaController::class, 'update'], $can('avaliacoes.editar'));
 
 // Anamnese
 Router::get('/anamnese/formularios', [AnamneseController::class, 'listar'], $canAny('anamnese.visualizar', 'anamnese.preencher'));
 Router::get('/anamnese/formularios/{id}', [AnamneseController::class, 'obterFormulario'], $canAny('anamnese.visualizar', 'anamnese.preencher'));
 Router::get('/anamnese/formularios/{id}/perguntas', [AnamneseController::class, 'index'], $canAny('anamnese.visualizar', 'anamnese.preencher'));
-Router::get('/anamnese/respostas/{aluno_id}', [AnamneseController::class, 'show'], $can('anamnese.visualizar'));
+Router::get('/anamnese/respostas/{aluno_id}', [AnamneseController::class, 'show'], $canOrStudent('anamnese.visualizar'));
 Router::post('/anamnese', [AnamneseController::class, 'store'], $can('anamnese.preencher'));
 
 // Permissões e Cargos
@@ -158,12 +158,12 @@ Router::put('/funcionarios/{id}/desativar', [FuncionarioController::class, 'deac
 Router::put('/funcionarios/{id}/reativar', [FuncionarioController::class, 'reactivate'], $can('funcionarios.gerenciar'));
 
 // Turmas
-Router::get('/turmas', [TurmaController::class, 'index'], $can('turmas.visualizar'));
+Router::get('/turmas', [TurmaController::class, 'index'], $canOrStudent('turmas.visualizar'));
 Router::get('/turmas/{id}/gerenciar', [TurmaController::class, 'manage'], $can('turmas.gerenciar'));
 Router::post('/turmas/{id}/treinos', [TurmaController::class, 'confirmTreino'], $can('turmas.gerenciar'));
 Router::put('/turmas/{id}/treinos/{treino_id}/cancelar', [TurmaController::class, 'cancelTreino'], $can('turmas.gerenciar'));
 Router::put('/turmas/{id}/treinos/{treino_id}/presencas', [TurmaController::class, 'savePresencas'], $can('turmas.gerenciar'));
-Router::get('/turmas/{id}', [TurmaController::class, 'show'], $can('turmas.visualizar'));
+Router::get('/turmas/{id}', [TurmaController::class, 'show'], $canOrStudent('turmas.visualizar'));
 Router::post('/turmas', [TurmaController::class, 'store'], $can('turmas.criar'));
 Router::put('/turmas/{id}', [TurmaController::class, 'update'], $can('turmas.editar'));
 Router::put('/turmas/{id}/desativar', [TurmaController::class, 'deactivate'], $can('turmas.desativar'));

@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "email:build": "mjml templates/password-reset.mjml -o ../../api/src/auth/password-reset.html",
+    "email:build": "mjml templates/password-reset.mjml -o ../../api/src/auth/password-reset.html && mjml templates/initial-password.mjml -o ../../api/src/auth/initial-password.html && mjml templates/account-activation.mjml -o ../../api/src/auth/account-activation.html",
     "email:watch": "mjml -w templates/password-reset.mjml -o ../../api/src/auth/password-reset.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

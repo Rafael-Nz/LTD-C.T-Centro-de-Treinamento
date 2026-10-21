@@ -1,0 +1,91 @@
+<mjml>
+  <mj-head>
+    <mj-title>Ative sua conta - Cross C.T</mj-title>
+    <mj-preview>Ativação de conta e primeiro acesso ao Cross C.T</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" />
+      <mj-text color="#374151" font-size="15px" line-height="1.6" />
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body background-color="#f3f4f6">
+    <!-- Header -->
+    <mj-section background-color="#141414" padding="28px 32px 24px" border-top="5px solid #dc3545">
+      <mj-column>
+        <mj-text align="center" padding="0">
+          <span style="color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 1.5px;">CROSS <span style="color: #dc3545;">C.T</span></span>
+        </mj-text>
+        <mj-text align="center" padding="4px 0 0">
+          <span style="color: #9ca3af; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Centro de Treinamento</span>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Main Content -->
+    <mj-section background-color="#ffffff" padding="36px 32px 20px">
+      <mj-column>
+        <mj-text color="#111827" font-size="22px" font-weight="700" line-height="1.3" padding="0 0 16px">
+          Ative sua conta no Cross C.T
+        </mj-text>
+
+        <mj-text padding="0 0 14px">
+          Olá, <strong>{{nome}}</strong>!
+        </mj-text>
+
+        <mj-text padding="0 0 24px">
+          Sua conta no <strong>Cross C.T</strong> foi criada com sucesso! Para confirmar seu cadastro, definir sua senha definitiva pessoal e liberar seu acesso completo, clique no botão de ativação abaixo:
+        </mj-text>
+
+        <!-- CTA Button -->
+        <mj-button
+          background-color="#dc3545"
+          color="#ffffff"
+          border-radius="6px"
+          font-size="15px"
+          font-weight="700"
+          inner-padding="14px 28px"
+          href="{{link}}"
+          padding="0 0 28px"
+        >
+          Ativar Minha Conta
+        </mj-button>
+
+        <!-- Info Box -->
+        <mj-table padding="0 0 20px">
+          <tr>
+            <td style="background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 14px 16px;">
+              <p style="margin: 0 0 8px 0; font-size: 13px; line-height: 1.5; color: #1e40af;">
+                Este link expira em <strong>24 horas</strong> e pode ser utilizado uma única vez.
+              </p>
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #1e40af;">
+                Após ativar sua conta, você terá acesso imediato aos treinos, horários das turmas, dados financeiros e acompanhamento de evolução.
+              </p>
+            </td>
+          </tr>
+        </mj-table>
+
+        <!-- Fallback URL -->
+        <mj-divider border-color="#e5e7eb" border-width="1px" padding="0 0 16px" />
+        <mj-text color="#6b7280" font-size="12px" line-height="1.5" padding="0">
+          Se o botão acima não funcionar, copie e cole o link a seguir no seu navegador:<br/>
+          <a href="{{link}}" style="color: #dc3545; word-break: break-all;">{{link}}</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#f9fafb" padding="24px 32px" border-top="1px solid #e5e7eb">
+      <mj-column>
+        <mj-text align="center" color="#4b5563" font-size="13px" font-weight="600" padding="0 0 4px">
+          CROSS C.T — Centro de Treinamento
+        </mj-text>
+        <mj-text align="center" color="#9ca3af" font-size="12px" line-height="1.5" padding="0 0 4px">
+          Esta é uma mensagem automática do sistema. Por favor, não responda a este e-mail.
+        </mj-text>
+        <mj-text align="center" color="#9ca3af" font-size="11px" padding="0">
+          &copy; {{ano}} Cross C.T. Todos os direitos reservados.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -24,6 +24,12 @@
    BASE
    ========================================================= */
 
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-light);
@@ -99,19 +105,12 @@ body {
     width: 100%;
 }
 
-.sidebar.collapsed .sidebar-dropdown {
-    left: 8px;
-    right: auto;
-    width: 160px;
-    bottom: 100%;
-}
-
 .sidebar-logo {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 0 8px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     cursor: pointer;
 }
 
@@ -134,17 +133,20 @@ body {
     color: var(--text-dimmed);
     letter-spacing: 0.5px;
     padding: 0 8px;
+    margin-top: 12px;
     margin-bottom: 8px;
 }
 
 .sidebar-link {
-    display: block;
+    display: flex;
+    align-items: center;
     padding: 10px 12px;
     border-radius: 8px;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
     color: var(--text-light);
+    transition: all 0.15s ease;
 }
 
 .sidebar-link:hover {
@@ -157,57 +159,16 @@ body {
     color: var(--white);
 }
 
-.sidebar-user-wrap {
-    position: relative;
-    margin-top: auto;
-}
-
-.sidebar-dropdown {
-    position: absolute;
-    bottom: 100%;
-    left: 8px;
-    right: 8px;
-    margin-bottom: 8px;
-    background-color: #2a2a2e;
-    border-radius: 10px;
-    padding: 6px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(6px);
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
-    z-index: 1100;
-}
-
-.sidebar-dropdown.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.sidebar-dropdown-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--primary-red);
-    text-decoration: none;
-    transition: background-color 0.15s;
-}
-
-.sidebar-dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--primary-red);
-}
-
+/* Perfil do Aluno (Em cima da navegação) */
 .sidebar-user {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 8px;
+    padding: 10px 8px;
     border-radius: 10px;
-    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 8px;
     transition: background-color 0.15s;
 }
 
@@ -232,17 +193,25 @@ body {
 .sidebar-user-info {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .sidebar-user-name {
     font-size: 13px;
     font-weight: 600;
     color: var(--white);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-user-role {
     font-size: 11px;
     color: var(--text-dimmed);
+}
+
+.sidebar-footer-wrap {
+    margin-top: auto;
 }
 
 /* =========================================================

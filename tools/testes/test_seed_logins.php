@@ -75,13 +75,22 @@ try {
     echo "[FAIL] Login Aluna (E-mail) falhou: " . $e->getMessage() . "\n";
 }
 
-// 6. Teste Login Aluno (com CPF na Area do Aluno)
-$dtoAlunoCpf = new LoginDTO(['login' => '81000000002', 'senha' => 'Senha@Teste123']); // Bruno Lima
+// 6. Teste Login Aluno (com Matricula na Area do Aluno)
+$dtoAlunoMatricula = new LoginDTO(['login' => '202604000002', 'senha' => 'Senha@Teste123']); // Bruno Lima
 try {
-    $res = $auth->login($dtoAlunoCpf, 'aluno');
-    echo "[PASS] Login Aluno (CPF) bem-sucedido! Nome: {$res['nome']}\n";
+    $res = $auth->login($dtoAlunoMatricula, 'aluno');
+    echo "[PASS] Login Aluno (Matricula) bem-sucedido! Nome: {$res['nome']}\n";
 } catch (Exception $e) {
-    echo "[FAIL] Login Aluno (CPF) falhou: " . $e->getMessage() . "\n";
+    echo "[FAIL] Login Aluno (Matricula) falhou: " . $e->getMessage() . "\n";
+}
+
+// 6b. Teste Bloqueio: Aluno tentando entrar com CPF (substituido por matricula)
+$dtoAlunoCpf = new LoginDTO(['login' => '81000000002', 'senha' => 'Senha@Teste123']);
+try {
+    $auth->login($dtoAlunoCpf, 'aluno');
+    echo "[FAIL] Aluno conseguiu logar com CPF na area do aluno!\n";
+} catch (Exception $e) {
+    echo "[PASS] Bloqueio correto de CPF na area do aluno: " . $e->getMessage() . "\n";
 }
 
 // 7. Teste Bloqueio: Aluno tentando entrar na area administrativa

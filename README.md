@@ -96,6 +96,37 @@ ctt/
 - A API possui bootstrap dedicado em `api/bootstrap.php`.
 - A conexão com banco utiliza PDO e banco MySQL `db_centro_treinamento`.
 - A estrutura da API segue uma divisão por responsabilidade para facilitar manutenção e evolução.
+## 🚀 Como Rodar o Projeto (Guia Rápido)
+
+Para colocar o sistema em funcionamento em uma máquina com **XAMPP** (PHP 8.2+ e MySQL):
+
+1. **Localização**: Posicione o código na pasta `htdocs` do seu XAMPP nomeando a pasta como `ctt` (ex: `<xampp>/htdocs/ctt`).
+2. **Dependências & Assets (Ambiente Dev)**:
+   ```powershell
+   composer install
+   npm install --prefix tools/email
+   npm run email:build --prefix tools/email
+   ```
+3. **Banco de Dados**: Com Apache e MySQL iniciados no painel do XAMPP, importe a base e configure a conta restrita de auditoria (`ctt_app`):
+   ```powershell
+   mysql -u root < docs/sql/setup/banco.sql
+   mysql -u root -e "CREATE USER 'ctt_app'@'localhost' IDENTIFIED BY 'sua_senha_forte';"
+   mysql -u root -e "source docs/sql/auditoria_permissoes.sql"
+   ```
+   *(Ou execute esses arquivos via aba Importar/SQL do phpMyAdmin).*
+4. **Variáveis de Ambiente**:
+   - Copie `.env.example` para `.env` e configure os dados de conexão do banco `ctt_app` e a URL (`http://localhost/ctt`).
+5. **Administrador Inicial**:
+   ```powershell
+   php tools/sistema/criar_admin.php
+   ```
+6. **Acesso**:
+   - Painel Admin: `http://localhost/ctt/admin/login`
+   - Documentação Swagger da API: `http://localhost/ctt/api/docs`
+
+> 📖 **Manuais Detalhados Passo a Passo:**
+> - [Guia de Instalação e Pré-requisitos](docs/instalacao.md): Requisitos de execução vs desenvolvimento no XAMPP, extensões PHP, `mod_rewrite` e solução de problemas.
+> - [Guia de Setup Inicial e Banco de Dados](docs/setup.md): Criação da base de dados no XAMPP, segurança de auditoria, seeds de teste, rotina financeira e validações.
 
 ## 📚 Documentação & Wiki do Projeto
 
@@ -111,4 +142,5 @@ A documentação do sistema está organizada na pasta [`docs/`](docs/) e formata
 - 🗄️ **Banco de Dados**: [Modelagem & Dicionário de Tabelas](docs/database/README.md) • [Scripts SQL](docs/sql/)
 - 🛠️ **Ferramentas & Automação**: [Rotinas Agendadas & CLI](docs/tools/README.md)
 - ⚡ **Swagger / OpenAPI**: Interface viva acessível em `http://localhost/ctt/api/docs` (consulte [Módulo Docs](docs/modules/docs.md))
+
 

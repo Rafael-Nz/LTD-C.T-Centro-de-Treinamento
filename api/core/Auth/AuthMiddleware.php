@@ -15,6 +15,7 @@ class AuthMiddleware
     {
         $guard = $this->guard ?? Auth::context();
         Auth::check($guard);
+        Auth::setContext($guard);
 
         if (in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
             Csrf::validate();

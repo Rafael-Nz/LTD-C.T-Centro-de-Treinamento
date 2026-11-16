@@ -2,6 +2,21 @@
 // admin/router.php
 require_once dirname(__DIR__) . '/autoload.php';
 \Core\Auth\Auth::setContext(\Core\Auth\Auth::GUARD_ADMIN);
+// Garante cookie/sessão CSRF antes de qualquer saída (login, reset e ativação enviam o token).
+\Core\Auth\Csrf::token();
+
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';");
+    header('Cross-Origin-Opener-Policy: same-origin');
+    header('Cross-Origin-Resource-Policy: same-origin');
+    if (\Core\Auth\Auth::isSecure()) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
 
 class AdminRouter {
     private array $routes = [];
@@ -33,8 +48,16 @@ class AdminRouter {
     public function dispatch(string $url): void {
         $url = trim($url, '/');
 
-        if (!defined('BASE_URL')) define('BASE_URL', '/ctt/admin/');
-        if (!defined('API_BASE_URL')) define('API_BASE_URL', '/ctt/api/');
+        if (!defined('BASE_URL')) {
+            $docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+            $isDirectVhost = ($docRoot === str_replace('\\', '/', dirname(__DIR__) . '/public'));
+            define('BASE_URL', $isDirectVhost ? '/admin/' : '/ctt/admin/');
+        }
+        if (!defined('API_BASE_URL')) {
+            $docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+            $isDirectVhost = ($docRoot === str_replace('\\', '/', dirname(__DIR__) . '/public'));
+            define('API_BASE_URL', $isDirectVhost ? '/api/' : '/ctt/api/');
+        }
 
         foreach ($this->routes as $regex => $route) {
             if (preg_match($regex, $url, $matches)) {

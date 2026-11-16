@@ -1,7 +1,25 @@
 <?php
 
-if (!defined('BASE_URL')) define('BASE_URL', '/ctt/');
-if (!defined('PUBLIC_URL')) define('PUBLIC_URL', BASE_URL . 'public/');
+require_once dirname(__DIR__) . '/autoload.php';
+
+if (!defined('BASE_URL')) {
+    $docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+    $isDirectVhost = ($docRoot === str_replace('\\', '/', __DIR__));
+    define('BASE_URL', $isDirectVhost ? '/' : '/ctt/');
+}
+if (!defined('PUBLIC_URL')) {
+    define('PUBLIC_URL', (BASE_URL === '/' ? '/' : BASE_URL . 'public/'));
+}
+
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';");
+    header('Cross-Origin-Opener-Policy: same-origin');
+    header('Cross-Origin-Resource-Policy: same-origin');
+}
 
 require_once dirname(__DIR__) . '/api/core/Auth/Auth.php';
 require_once dirname(__DIR__) . '/api/core/Auth/Csrf.php';
@@ -75,6 +93,12 @@ $router->add('avaliacoes', 'avaliacoes.php', [$studentAuth]);
 $router->add('horarios', 'horarios.php', [$studentAuth]);
 $router->add('financeiro', 'financeiro.php', [$studentAuth]);
 $router->add('logout', '', [static function (): void {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        http_response_code(405);
+        header('Allow: POST');
+        exit;
+    }
+    Csrf::validate();
     Auth::logout(Auth::GUARD_ALUNO);
     header('Location: ' . BASE_URL . 'login');
     exit;

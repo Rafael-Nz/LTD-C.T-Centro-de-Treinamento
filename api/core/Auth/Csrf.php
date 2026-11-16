@@ -40,8 +40,8 @@ class Csrf
 
         setcookie(self::COOKIE_NAME, $token, [
             'expires' => 0,
-            'path' => '/ctt',
-            'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            'path' => Auth::getCookiePath(),
+            'secure' => Auth::isSecure(),
             'httponly' => false,
             'samesite' => 'Lax',
         ]);

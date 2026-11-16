@@ -50,9 +50,10 @@ class Router {
         $uri = $_GET['url'] ?? '';
         $uri = '/' . trim($uri, '/');
         $method = $_SERVER['REQUEST_METHOD'];
+        $lookupMethod = ($method === 'HEAD' && !isset(self::$routes['HEAD'])) ? 'GET' : $method;
 
-        if (isset(self::$routes[$method])) {
-            foreach (self::$routes[$method] as $pattern => $route) {
+        if (isset(self::$routes[$lookupMethod])) {
+            foreach (self::$routes[$lookupMethod] as $pattern => $route) {
                 if (preg_match($pattern, $uri, $matches)) {
                     $params = array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
 

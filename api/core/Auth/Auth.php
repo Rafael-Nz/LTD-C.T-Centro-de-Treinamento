@@ -58,6 +58,8 @@ class Auth
     public const GUARD_ALUNO = 'aluno';
 
     private static ?string $context = null;
+    // Cache apenas desta requisicao; nunca persistir validacao entre requisicoes.
+    private static array $validatedGuards = [];
 
     public static function setContext(string $guard): void
     {
@@ -106,6 +108,26 @@ class Auth
         return new AuthGuard(self::GUARD_ALUNO);
     }
 
+    public static function isSecure(): bool
+    {
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            return true;
+        }
+
+        // X-Forwarded-Proto só é aceito quando vem de um proxy explicitamente confiável
+        // (APP_TRUSTED_PROXIES=ip1,ip2); caso contrário o cliente poderia forjá-lo.
+        $trusted = array_filter(array_map('trim', explode(',', (string) ($_ENV['APP_TRUSTED_PROXIES'] ?? ''))));
+        return $trusted !== []
+            && in_array($_SERVER['REMOTE_ADDR'] ?? '', $trusted, true)
+            && strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+    }
+
+    public static function getCookiePath(): string
+    {
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        return (str_starts_with($uri, '/ctt/') || $uri === '/ctt') ? '/ctt' : '/';
+    }
+
     public static function start(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -115,83 +137,62 @@ class Auth
                 session_name('CTTSESSID');
                 session_set_cookie_params([
                     'lifetime' => 0,
-                    'path' => '/ctt',
-                    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+                    'path' => self::getCookiePath(),
+                    'secure' => self::isSecure(),
                     'httponly' => true,
                     'samesite' => 'Lax',
                 ]);
             }
             @session_start();
         }
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $hasAuth = !empty($_SESSION['auth_admin']) || !empty($_SESSION['auth_aluno']);
+            if ($hasAuth) {
+                $maxIdle = 7200; // 2 horas de inatividade
+                if (isset($_SESSION['_last_activity']) && (time() - $_SESSION['_last_activity'] > $maxIdle)) {
+                    // Não chamar self::logout() aqui: ele chama start() de volta e, como a sessão
+                    // ainda estaria expirada, entraria em recursão infinita (crash do Apache).
+                    $_SESSION = [];
+                    self::$validatedGuards = [];
+                    @session_destroy();
+                } else {
+                    $_SESSION['_last_activity'] = time();
+                }
+            }
+        }
     }
 
-    public static function login($usuario, ?string $guard = null): void
+    public static function login($usuario, ?string $guard = null, ?string $credentialHash = null): void
     {
         self::start();
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            @session_regenerate_id(true);
-        }
-
         if ($guard === null) {
             $guard = (is_array($usuario) && ($usuario['tipo'] ?? null) === self::GUARD_ALUNO)
                 ? self::GUARD_ALUNO
                 : self::GUARD_ADMIN;
         }
 
-        $guardKey = 'auth_' . $guard;
-
-        if (is_array($usuario)) {
-            $guardData = [
-                'user_id' => (int) ($usuario['id'] ?? 0),
-                'user_nome' => $usuario['nome'] ?? '',
-                'user_tipo' => $usuario['tipo'] ?? '',
-                'user_cargo_id' => isset($usuario['cargo_id']) ? (int) $usuario['cargo_id'] : null,
-                'user_cargo_nome' => $usuario['cargo_nome'] ?? null,
-                'user_permissions' => $usuario['permissoes'] ?? (($usuario['tipo'] ?? '') === 'admin' ? ['*'] : []),
-                'user' => $usuario,
-            ];
-
-            $_SESSION[$guardKey] = $guardData;
-
-            // Espelha no nível raiz da sessão para compatibilidade legada se for o contexto ativo
-            if ($guard === self::context() || empty($_SESSION['user_id'])) {
-                $_SESSION['user_id'] = $guardData['user_id'];
-                $_SESSION['user_nome'] = $guardData['user_nome'];
-                $_SESSION['user_tipo'] = $guardData['user_tipo'];
-                $_SESSION['user_cargo_id'] = $guardData['user_cargo_id'];
-                $_SESSION['user_cargo_nome'] = $guardData['user_cargo_nome'];
-                $_SESSION['user_permissions'] = $guardData['user_permissions'];
-                $_SESSION['user'] = $guardData['user'];
-            }
-        } else {
-            $_SESSION[$guardKey] = [
-                'user_id' => (int) $usuario,
-                'user' => ['id' => (int) $usuario],
-                'user_tipo' => $guard === self::GUARD_ALUNO ? 'aluno' : 'admin'
-            ];
-            if ($guard === self::context() || empty($_SESSION['user_id'])) {
-                $_SESSION['user_id'] = (int) $usuario;
-            }
+        $id = is_array($usuario) ? (int) ($usuario['id'] ?? 0) : (int) $usuario;
+        $guardData = self::loadGuardState($id, $guard);
+        if ($guardData === null || ($credentialHash !== null && !hash_equals(
+            $guardData['credential_fingerprint'],
+            hash('sha256', $guard . '|' . $guardData['user_tipo'] . '|' . $credentialHash)
+        ))) {
+            throw new \RuntimeException('Conta indisponivel para esta area.');
+        }
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            @session_regenerate_id(true);
+        }
+        $_SESSION['auth_' . $guard] = $guardData;
+        unset(self::$validatedGuards[$guard]);
+        if ($guard === self::context() || empty($_SESSION['user_id'])) {
+            self::mirrorGuard($guardData);
         }
     }
 
     public static function user(?string $key = null, ?string $guard = null)
     {
-        self::start();
-        $targetGuard = $guard ?? self::context();
-        $guardKey = 'auth_' . $targetGuard;
-
-        $user = $_SESSION[$guardKey]['user'] ?? null;
-
-        // Fallback para raiz da sessão (testes legados ou migração)
-        if (!$user && isset($_SESSION['user'])) {
-            $rootTipo = $_SESSION['user']['tipo'] ?? ($_SESSION['user_tipo'] ?? null);
-            if ($targetGuard === self::GUARD_ALUNO && $rootTipo === 'aluno') {
-                $user = $_SESSION['user'];
-            } elseif ($targetGuard === self::GUARD_ADMIN && in_array($rootTipo, ['admin', 'funcionario'], true)) {
-                $user = $_SESSION['user'];
-            }
-        }
+        $user = self::currentGuard($guard ?? self::context())['user'] ?? null;
 
         if (!$user) {
             return null;
@@ -223,23 +224,7 @@ class Auth
         self::start();
 
         if ($guard !== null) {
-            unset($_SESSION['auth_' . $guard]);
-
-            // Limpa as variáveis de espelhamento raiz associadas a este guard
-            $rootTipo = $_SESSION['user_tipo'] ?? ($_SESSION['user']['tipo'] ?? '');
-            if (($guard === self::GUARD_ALUNO && $rootTipo === 'aluno') ||
-                ($guard === self::GUARD_ADMIN && in_array($rootTipo, ['admin', 'funcionario'], true)) ||
-                ($guard === self::context())) {
-                unset(
-                    $_SESSION['user_id'],
-                    $_SESSION['user_nome'],
-                    $_SESSION['user_tipo'],
-                    $_SESSION['user_cargo_id'],
-                    $_SESSION['user_cargo_nome'],
-                    $_SESSION['user_permissions'],
-                    $_SESSION['user']
-                );
-            }
+            self::forgetGuard($guard);
 
             // Se nenhum outro guard estiver ativo, encerra a sessão PHP por completo e expira o cookie
             if (empty($_SESSION['auth_admin']) && empty($_SESSION['auth_aluno'])) {
@@ -257,6 +242,7 @@ class Auth
 
         // Sem guard específico: encerra completamente
         $_SESSION = [];
+        self::$validatedGuards = [];
         if (ini_get('session.use_cookies') && !headers_sent()) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'] ?? '', (bool) $params['secure'], (bool) $params['httponly']);
@@ -268,26 +254,7 @@ class Auth
 
     public static function id(?string $guard = null): ?int
     {
-        self::start();
-        $targetGuard = $guard ?? self::context();
-        $guardKey = 'auth_' . $targetGuard;
-
-        if (isset($_SESSION[$guardKey]['user_id'])) {
-            return (int) $_SESSION[$guardKey]['user_id'];
-        }
-
-        // Fallback raiz se compatível com o guard
-        if (!empty($_SESSION['user_id'])) {
-            $rootTipo = $_SESSION['user_tipo'] ?? null;
-            if ($targetGuard === self::GUARD_ALUNO && $rootTipo === 'aluno') {
-                return (int) $_SESSION['user_id'];
-            }
-            if ($targetGuard === self::GUARD_ADMIN && in_array($rootTipo, ['admin', 'funcionario'], true)) {
-                return (int) $_SESSION['user_id'];
-            }
-        }
-
-        return null;
+        return self::currentGuard($guard ?? self::context())['user_id'] ?? null;
     }
 
     public static function isAdmin(?string $guard = self::GUARD_ADMIN): bool
@@ -297,64 +264,105 @@ class Auth
 
     public static function userTipo(?string $guard = null): ?string
     {
-        self::start();
-        $targetGuard = $guard ?? self::context();
-        $guardKey = 'auth_' . $targetGuard;
-
-        if (isset($_SESSION[$guardKey]['user_tipo'])) {
-            return $_SESSION[$guardKey]['user_tipo'];
-        }
-
-        if (!empty($_SESSION['user_tipo'])) {
-            $rootTipo = $_SESSION['user_tipo'];
-            if ($targetGuard === self::GUARD_ALUNO && $rootTipo === 'aluno') {
-                return 'aluno';
-            }
-            if ($targetGuard === self::GUARD_ADMIN && in_array($rootTipo, ['admin', 'funcionario'], true)) {
-                return $rootTipo;
-            }
-        }
-
-        return null;
+        return self::currentGuard($guard ?? self::context())['user_tipo'] ?? null;
     }
 
     public static function cargoId(?string $guard = self::GUARD_ADMIN): ?int
     {
-        self::start();
-        $guardKey = 'auth_' . $guard;
-
-        if (isset($_SESSION[$guardKey]['user_cargo_id'])) {
-            return $_SESSION[$guardKey]['user_cargo_id'] !== null ? (int) $_SESSION[$guardKey]['user_cargo_id'] : null;
-        }
-
-        return isset($_SESSION['user_cargo_id']) ? (int) $_SESSION['user_cargo_id'] : null;
+        return self::currentGuard($guard ?? self::context())['user_cargo_id'] ?? null;
     }
 
     public static function cargoNome(?string $guard = self::GUARD_ADMIN): ?string
     {
-        self::start();
-        $guardKey = 'auth_' . $guard;
-
-        if (isset($_SESSION[$guardKey]['user_cargo_nome'])) {
-            return $_SESSION[$guardKey]['user_cargo_nome'];
-        }
-
-        return $_SESSION['user_cargo_nome'] ?? null;
+        return self::currentGuard($guard ?? self::context())['user_cargo_nome'] ?? null;
     }
 
     public static function permissions(?string $guard = self::GUARD_ADMIN): array
     {
+        return self::currentGuard($guard ?? self::context())['user_permissions'] ?? [];
+    }
+
+    private static function loadGuardState(int $id, string $guard): ?array
+    {
+        if ($id < 1 || !in_array($guard, [self::GUARD_ADMIN, self::GUARD_ALUNO], true)) {
+            return null;
+        }
+        $repo = new \Usuario\UsuarioRepository();
+        $state = $repo->findSessionState($id);
+        if (!$state || !(bool) $state['ativo']) return null;
+
+        $type = $guard === self::GUARD_ALUNO ? 'aluno'
+            : ($state['tipo_usuario'] === 'admin' ? 'admin' : 'funcionario');
+        if (($type === 'aluno' && empty($state['aluno_id']))
+            || ($type === 'funcionario' && (empty($state['funcionario_id'])
+                || ($state['cargo_id'] !== null && !(bool) $state['cargo_ativo'])))) {
+            return null;
+        }
+        $passwordHash = $state['senha_' . $type] ?? '';
+        if (!is_string($passwordHash) || $passwordHash === '') return null;
+        $cargoId = $type === 'funcionario' && $state['cargo_id'] !== null ? (int) $state['cargo_id'] : null;
+        $permissions = $type === 'admin' ? ['*']
+            : ($cargoId !== null ? $repo->findPermissionsByCargoId($cargoId) : []);
+        $user = [
+            'id' => (int) $state['id'], 'nome' => $state['nome'], 'tipo' => $type,
+            'cargo_id' => $cargoId,
+            'cargo_nome' => $type === 'admin' ? 'Administrador' : ($type === 'aluno' ? 'Aluno' : $state['cargo_nome']),
+            'permissoes' => $permissions,
+        ];
+        return [
+            'user_id' => $user['id'], 'user_nome' => $user['nome'], 'user_tipo' => $type,
+            'user_cargo_id' => $cargoId, 'user_cargo_nome' => $user['cargo_nome'],
+            'user_permissions' => $permissions, 'user' => $user,
+            'credential_fingerprint' => hash('sha256', $guard . '|' . $type . '|' . $passwordHash),
+        ];
+    }
+
+    private static function currentGuard(string $guard): ?array
+    {
         self::start();
-        if (self::isAdmin($guard)) {
-            return ['*'];
+        $data = $_SESSION['auth_' . $guard] ?? null;
+        // Sessoes antigas sem vinculo com a credencial devem autenticar novamente.
+        if (!is_array($data) || empty($data['credential_fingerprint']) || empty($data['user_id'])) {
+            self::forgetGuard($guard);
+            return null;
         }
-
-        $guardKey = 'auth_' . $guard;
-        if (isset($_SESSION[$guardKey]['user_permissions'])) {
-            return $_SESSION[$guardKey]['user_permissions'];
+        if ((self::$validatedGuards[$guard] ?? null) === $data) return $data;
+        try {
+            $fresh = self::loadGuardState((int) $data['user_id'], $guard);
+        } catch (\Throwable $e) {
+            error_log('[Auth] Nao foi possivel revalidar a sessao.');
+            $fresh = null;
         }
+        if ($fresh === null || !hash_equals($fresh['credential_fingerprint'], (string) $data['credential_fingerprint'])) {
+            self::forgetGuard($guard);
+            return null;
+        }
+        $_SESSION['auth_' . $guard] = $fresh;
+        self::$validatedGuards[$guard] = $fresh;
+        if (($_SESSION['user_id'] ?? null) === $fresh['user_id']
+            && ($_SESSION['user_tipo'] ?? null) === $fresh['user_tipo']) {
+            self::mirrorGuard($fresh);
+        }
+        return $fresh;
+    }
 
-        return $_SESSION['user_permissions'] ?? [];
+    private static function mirrorGuard(array $data): void
+    {
+        foreach (['user_id', 'user_nome', 'user_tipo', 'user_cargo_id', 'user_cargo_nome', 'user_permissions', 'user'] as $key) {
+            $_SESSION[$key] = $data[$key];
+        }
+    }
+
+    private static function forgetGuard(string $guard): void
+    {
+        unset($_SESSION['auth_' . $guard], self::$validatedGuards[$guard]);
+        $rootTipo = $_SESSION['user_tipo'] ?? ($_SESSION['user']['tipo'] ?? null);
+        if (($guard === self::GUARD_ALUNO && $rootTipo === 'aluno')
+            || ($guard === self::GUARD_ADMIN && in_array($rootTipo, ['admin', 'funcionario'], true))) {
+            foreach (['user_id', 'user_nome', 'user_tipo', 'user_cargo_id', 'user_cargo_nome', 'user_permissions', 'user'] as $key) {
+                unset($_SESSION[$key]);
+            }
+        }
     }
 
     public static function can(string $permission, ?string $guard = self::GUARD_ADMIN): bool

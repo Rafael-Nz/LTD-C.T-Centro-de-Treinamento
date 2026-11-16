@@ -50,11 +50,18 @@ spl_autoload_register(function ($class) {
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token, X-Auth-Area');
 header('Access-Control-Expose-Headers: X-Request-ID, X-Correlation-ID');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
+header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none';");
+header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+header('Cross-Origin-Resource-Policy: same-origin');
+header('Cache-Control: no-store');
+if (\Core\Auth\Auth::isSecure()) {
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+}
 
 $allowedOrigin = trim($_ENV['APP_ALLOWED_ORIGIN'] ?? '');
 $requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';

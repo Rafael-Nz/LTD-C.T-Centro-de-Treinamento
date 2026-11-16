@@ -41,7 +41,7 @@ class FinanceiroController extends Controller
             $id = $this->service->criarServico(ServicoDTO::fromArray($this->body()));
             $this->json(['id' => $id], 201);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao cadastrar servico financeiro.', 500);
@@ -54,7 +54,7 @@ class FinanceiroController extends Controller
             $this->service->atualizarServico($id, ServicoDTO::fromArray($this->body()));
             $this->json(['message' => 'Servico atualizado com sucesso.']);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao atualizar servico financeiro.', 500);
@@ -76,18 +76,42 @@ class FinanceiroController extends Controller
             $id = $this->service->criarPlano(PlanoDTO::fromArray($this->body()));
             $this->json(['id' => $id], 201);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao cadastrar plano financeiro.', 500);
         }
     }
 
+    private function getAlunoIdContext(): ?int
+    {
+        if (Auth::context() === Auth::GUARD_ALUNO || (Auth::aluno()->isAuthenticated() && !Auth::admin()->isAuthenticated())) {
+            return Auth::aluno()->id();
+        }
+        if (Auth::user('tipo') === 'aluno') {
+            return (int) Auth::id();
+        }
+        return null;
+    }
+
+    private function sanitizeCsvCell(mixed $value): mixed
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+        $trimmed = ltrim($value);
+        if ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+            return "'" . $value;
+        }
+        return $value;
+    }
+
     public function contratos(): void
     {
         $this->executarJit();
-        if (Auth::user('tipo') === 'aluno') {
-            $_GET['aluno_id'] = (string) Auth::id();
+        $alunoId = $this->getAlunoIdContext();
+        if ($alunoId !== null) {
+            $_GET['aluno_id'] = (string) $alunoId;
         }
 
         if (isset($_GET['draw'])) {
@@ -105,7 +129,8 @@ class FinanceiroController extends Controller
             return;
         }
 
-        if (Auth::user('tipo') === 'aluno' && (int) ($item['aluno_id'] ?? 0) !== (int) Auth::id()) {
+        $alunoId = $this->getAlunoIdContext();
+        if ($alunoId !== null && (int) ($item['aluno_id'] ?? 0) !== $alunoId) {
             $this->error('Acesso negado a este contrato.', 403);
             return;
         }
@@ -119,7 +144,7 @@ class FinanceiroController extends Controller
             $id = $this->service->criarContrato(ContratoDTO::fromArray($this->body()));
             $this->json(['id' => $id], 201);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao cadastrar contrato financeiro.', 500);
@@ -129,8 +154,9 @@ class FinanceiroController extends Controller
     public function cobrancas(): void
     {
         $this->executarJit();
-        if (Auth::user('tipo') === 'aluno') {
-            $_GET['aluno_id'] = (string) Auth::id();
+        $alunoId = $this->getAlunoIdContext();
+        if ($alunoId !== null) {
+            $_GET['aluno_id'] = (string) $alunoId;
         }
 
         if (isset($_GET['draw'])) {
@@ -148,7 +174,8 @@ class FinanceiroController extends Controller
             return;
         }
 
-        if (Auth::user('tipo') === 'aluno' && (int) ($item['aluno_id'] ?? 0) !== (int) Auth::id()) {
+        $alunoId = $this->getAlunoIdContext();
+        if ($alunoId !== null && (int) ($item['aluno_id'] ?? 0) !== $alunoId) {
             $this->error('Acesso negado a esta cobranca.', 403);
             return;
         }
@@ -170,7 +197,7 @@ class FinanceiroController extends Controller
             $id = $this->service->gerarCobranca($contratoId, $this->body());
             $this->json(['id' => $id], 201);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao gerar cobranca.', 500);
@@ -190,7 +217,7 @@ class FinanceiroController extends Controller
             error_log('[Financeiro] Falha no pagamento: ' . $e->getCode());
             $this->error('Nao foi possivel registrar. Consulte a cobranca e tente novamente com a mesma operacao.', 409);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao registrar pagamento.', 500);
@@ -205,7 +232,7 @@ class FinanceiroController extends Controller
     public function metricas(): void
     {
         $this->executarJit();
-        $alunoId = Auth::user('tipo') === 'aluno' ? (int) Auth::id() : null;
+        $alunoId = $this->getAlunoIdContext();
         $competencia = $_GET['competencia'] ?? null;
         $metricas = $this->service->metricas($competencia, $alunoId);
         $competencias = $this->service->competenciasDisponiveis($alunoId);
@@ -218,7 +245,7 @@ class FinanceiroController extends Controller
 
     public function exportar(): void
     {
-        $alunoId = Auth::user('tipo') === 'aluno' ? (int) Auth::id() : null;
+        $alunoId = $this->getAlunoIdContext();
         $competencia = $_GET['competencia'] ?? null;
         $status = $_GET['status'] ?? null;
         $rows = $this->service->exportarCobrancas($competencia, $status, $alunoId);
@@ -231,7 +258,7 @@ class FinanceiroController extends Controller
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
         fputcsv($output, ['ID', 'Aluno', 'Descrição', 'Competência', 'Vencimento', 'Status', 'Valor Original (R$)', 'Desconto (R$)', 'Multa (R$)', 'Juros (R$)', 'Valor Final (R$)', 'Total Pago (R$)', 'Saldo (R$)'], ';');
         foreach ($rows as $r) {
-            fputcsv($output, [
+            fputcsv($output, array_map([$this, 'sanitizeCsvCell'], [
                 $r['id'],
                 $r['aluno_nome'],
                 $r['descricao'],
@@ -245,7 +272,7 @@ class FinanceiroController extends Controller
                 number_format((float) $r['valor_final'], 2, ',', '.'),
                 number_format((float) $r['total_pago'], 2, ',', '.'),
                 number_format((float) $r['saldo'], 2, ',', '.'),
-            ], ';');
+            ]), ';');
         }
         fclose($output);
         exit;
@@ -259,7 +286,8 @@ class FinanceiroController extends Controller
                 $this->error('Cobrança não encontrada.', 404);
                 return;
             }
-            if (Auth::user('tipo') === 'aluno' && (int) ($cobranca['aluno_id'] ?? 0) !== (int) Auth::id()) {
+            $alunoId = $this->getAlunoIdContext();
+            if ($alunoId !== null && (int) ($cobranca['aluno_id'] ?? 0) !== $alunoId) {
                 $this->error('Acesso negado a esta cobrança.', 403);
                 return;
             }
@@ -275,13 +303,14 @@ class FinanceiroController extends Controller
     {
         try {
             $recibo = $this->service->recibo($id, $pagamento_id);
-            if (Auth::user('tipo') === 'aluno' && (int) ($recibo['aluno_id'] ?? 0) !== (int) Auth::id()) {
+            $alunoId = $this->getAlunoIdContext();
+            if ($alunoId !== null && (int) ($recibo['aluno_id'] ?? 0) !== $alunoId) {
                 $this->error('Acesso negado a este recibo.', 403);
                 return;
             }
             $this->json($recibo);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log($e);
             $this->error('Erro ao gerar comprovante de pagamento.', 500);
@@ -319,7 +348,7 @@ class FinanceiroController extends Controller
             error_log('[Financeiro] Falha transacional: ' . $e->getCode());
             $this->error('Nao foi possivel concluir a operacao. Atualize e tente novamente.', 409);
         } catch (\InvalidArgumentException | \RuntimeException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[Financeiro] Falha: ' . get_class($e));
             $this->error('Erro ao processar a operacao financeira.', 500);

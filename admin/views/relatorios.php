@@ -1,3 +1,6 @@
+<?php
+$tipoInicial = $tipo ?? ($_GET['tipo'] ?? '');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 
@@ -45,14 +48,30 @@
               <form id="filtroRelatorios" class="row g-3">
                 <div class="col-md-6">
                   <label for="tipoRelatorio" class="form-label">Tipo de Relatório</label>
-                  <select class="form-select select2" id="tipoRelatorio" name="tipoRelatorio">
+                  <select class="form-select select2" id="tipoRelatorio" name="tipoRelatorio" data-tipo-inicial="<?= htmlspecialchars((string) $tipoInicial) ?>">
                     <option value="">Selecione um relatório</option>
                     <option value="alunos">Alunos</option>
+                    <option value="contratos_planos">Contratos de Planos</option>
+                    <option value="contratos_servicos">Contratos de Serviços Avulsos</option>
                     <option value="presenca">Presença em Treinos</option>
                     <option value="avaliacoes">Avaliações Físicas</option>
                     <option value="turmas">Turmas</option>
                     <option value="funcionarios">Funcionários</option>
                     <option value="treinos">Agenda de treinos</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6" id="filtroPlano" style="display: none;">
+                  <label for="plano" class="form-label">Plano</label>
+                  <select class="form-select select2" id="plano" name="plano">
+                    <option value="">Todos os planos</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6" id="filtroServico" style="display: none;">
+                  <label for="servico" class="form-label">Serviço Avulso</label>
+                  <select class="form-select select2" id="servico" name="servico">
+                    <option value="">Todos os serviços</option>
                   </select>
                 </div>
 
@@ -147,7 +166,7 @@
             </div>
             <div class="card-body">
               <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table class="table table-striped table-hover align-middle">
                   <thead id="cabecalhoTabela">
                     <tr>
                     </tr>

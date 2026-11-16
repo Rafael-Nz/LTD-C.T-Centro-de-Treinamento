@@ -238,8 +238,14 @@ class FinanceiroRepository extends Repository
             $where[] = 'c.status IN (' . implode(',', array_fill(0, count($statuses), '?')) . ')';
             $params = array_merge($params, $statuses);
         }
+        if (!empty($filters['aluno_id'])) {
+            $where[] = 'c.aluno_id = ?';
+            $params[] = (int) $filters['aluno_id'];
+        }
         $clause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
-        $total = (int) $this->fetch('SELECT COUNT(*) AS total' . $from)['total'];
+        $totalClause = !empty($filters['aluno_id']) ? ' WHERE c.aluno_id = ?' : '';
+        $totalParams = !empty($filters['aluno_id']) ? [(int) $filters['aluno_id']] : [];
+        $total = (int) $this->fetch('SELECT COUNT(*) AS total' . $from . $totalClause, $totalParams)['total'];
         $filtered = (int) $this->fetch('SELECT COUNT(*) AS total' . $from . $clause, $params)['total'];
         $length = min(100, max(1, (int) ($filters['length'] ?? 10)));
         $start = max(0, (int) ($filters['start'] ?? 0));

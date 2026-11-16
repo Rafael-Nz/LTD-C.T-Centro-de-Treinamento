@@ -27,17 +27,30 @@ use Docs\DocsController;
 
 // Helpers de autorização
 $auth   = [AuthMiddleware::class];
-$admin  = [AuthMiddleware::class, RoleMiddleware::admin()];
-$can    = fn(string ...$perms) => [AuthMiddleware::class, PermissionMiddleware::require(...$perms)];
-$canAny = fn(string ...$perms) => [AuthMiddleware::class, PermissionMiddleware::any(...$perms)];
+$admin  = [AuthMiddleware::guard('admin'), RoleMiddleware::admin()];
+$can    = fn(string ...$perms) => [AuthMiddleware::guard('admin'), PermissionMiddleware::require(...$perms)];
+$canAny = fn(string ...$perms) => [AuthMiddleware::guard('admin'), PermissionMiddleware::any(...$perms)];
 $canOrStudent = fn(string ...$perms) => [new class($perms) {
     public function __construct(private array $perms) {}
     public function handle(): bool {
-        if (\Core\Auth\Auth::aluno()->isAuthenticated()) {
+        if (in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+            \Core\Auth\Csrf::validate();
+        }
+
+        $area = strtolower(trim($_SERVER['HTTP_X_AUTH_AREA'] ?? ''));
+        if ($area !== '' && !in_array($area, ['admin', 'aluno'], true)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Area de autenticacao invalida.']);
+            return false;
+        }
+        $guard = \Core\Auth\Auth::context();
+        \Core\Auth\Auth::setContext($guard);
+
+        if ($guard === \Core\Auth\Auth::GUARD_ALUNO && \Core\Auth\Auth::aluno()->isAuthenticated()) {
             return true;
         }
 
-        if (\Core\Auth\Auth::admin()->isAuthenticated()) {
+        if ($guard === \Core\Auth\Auth::GUARD_ADMIN && \Core\Auth\Auth::admin()->isAuthenticated()) {
             if (\Core\Auth\Auth::isAdmin()) {
                 return true;
             }
@@ -53,10 +66,48 @@ $canOrStudent = fn(string ...$perms) => [new class($perms) {
     }
 }];
 
+// Helper de acesso à documentação da API: sempre restrita a administradores autenticados,
+// exceto se APP_DOCS_PUBLIC=true em ambiente de desenvolvimento local (loopback).
+$docsAuth = fn() => [new class {
+    public function handle(): bool {
+        $env = $_ENV['APP_ENV'] ?? 'production';
+        $docsPublic = filter_var($_ENV['APP_DOCS_PUBLIC'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $isLoopback = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true);
+        if ($env === 'development' && $docsPublic && $isLoopback) {
+            return true;
+        }
+
+        \Core\Auth\Auth::start();
+        \Core\Auth\Auth::setContext(\Core\Auth\Auth::GUARD_ADMIN);
+        $isAdmin = \Core\Auth\Auth::admin()->isAuthenticated() && \Core\Auth\Auth::isAdmin();
+        if ($isAdmin) {
+            return true;
+        }
+
+        http_response_code(403);
+        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+        if (str_ends_with($uri, 'openapi.json')) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => false,
+                'message' => 'A especificação OpenAPI está restrita a administradores em ambiente de produção.'
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            header('Content-Type: text/html; charset=utf-8');
+            header('X-Frame-Options: SAMEORIGIN');
+            header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';");
+            $errorTitle = 'Ops! Documentação restrita';
+            $errorMessage = 'A documentação Swagger da API está disponível apenas para administradores autenticados.';
+            include dirname(__DIR__) . '/src/docs/403.php';
+        }
+        return false;
+    }
+}];
+
 // Documentação da API (Swagger UI / OpenAPI)
-Router::get('/docs', [DocsController::class, 'ui']);
-Router::get('/openapi.json', [DocsController::class, 'openapi']);
-Router::get('/docs/openapi.json', [DocsController::class, 'openapi']);
+Router::get('/docs', [DocsController::class, 'ui'], $docsAuth());
+Router::get('/openapi.json', [DocsController::class, 'openapi'], $docsAuth());
+Router::get('/docs/openapi.json', [DocsController::class, 'openapi'], $docsAuth());
 
 // Relatórios e Agenda
 Router::get('/relatorios/metricas', [RelatorioController::class, 'metricas'], $can('relatorios.visualizar'));
@@ -67,7 +118,7 @@ Router::get('/agenda/treinos', [RelatorioController::class, 'agenda'], $canOrStu
 // Financeiro
 Router::get('/financeiro/metricas', [FinanceiroController::class, 'metricas'], $canOrStudent('financeiro.visualizar'));
 Router::get('/financeiro/exportar', [FinanceiroController::class, 'exportar'], $can('financeiro.visualizar'));
-Router::get('/financeiro/servicos', [FinanceiroController::class, 'servicos'], $can('financeiro.visualizar'));
+Router::get('/financeiro/servicos', [FinanceiroController::class, 'servicos'], $canAny('financeiro.visualizar', 'relatorios.visualizar'));
 Router::get('/financeiro/servicos/{id}', [FinanceiroController::class, 'servico'], $can('financeiro.visualizar'));
 Router::put('/financeiro/servicos/{id}/status', [FinanceiroController::class, 'statusServico'], $can('financeiro.gerenciar'));
 Router::get('/financeiro/planos/{id}', [FinanceiroController::class, 'plano'], $can('financeiro.visualizar'));
@@ -77,7 +128,7 @@ Router::put('/financeiro/contratos/{id}/status', [FinanceiroController::class, '
 Router::post('/financeiro/servicos', [FinanceiroController::class, 'criarServico'], $can('financeiro.gerenciar'));
 Router::put('/financeiro/servicos/{id}', [FinanceiroController::class, 'atualizarServico'], $can('financeiro.gerenciar'));
 
-Router::get('/financeiro/planos', [FinanceiroController::class, 'planos'], $can('financeiro.visualizar'));
+Router::get('/financeiro/planos', [FinanceiroController::class, 'planos'], $canAny('financeiro.visualizar', 'relatorios.visualizar'));
 Router::post('/financeiro/planos', [FinanceiroController::class, 'criarPlano'], $can('financeiro.gerenciar'));
 
 Router::get('/financeiro/contratos', [FinanceiroController::class, 'contratos'], $canOrStudent('financeiro.visualizar'));
@@ -163,7 +214,7 @@ Router::get('/turmas/{id}/gerenciar', [TurmaController::class, 'manage'], $can('
 Router::post('/turmas/{id}/treinos', [TurmaController::class, 'confirmTreino'], $can('turmas.gerenciar'));
 Router::put('/turmas/{id}/treinos/{treino_id}/cancelar', [TurmaController::class, 'cancelTreino'], $can('turmas.gerenciar'));
 Router::put('/turmas/{id}/treinos/{treino_id}/presencas', [TurmaController::class, 'savePresencas'], $can('turmas.gerenciar'));
-Router::get('/turmas/{id}', [TurmaController::class, 'show'], $canOrStudent('turmas.visualizar'));
+Router::get('/turmas/{id}', [TurmaController::class, 'show'], $can('turmas.visualizar'));
 Router::post('/turmas', [TurmaController::class, 'store'], $can('turmas.criar'));
 Router::put('/turmas/{id}', [TurmaController::class, 'update'], $can('turmas.editar'));
 Router::put('/turmas/{id}/desativar', [TurmaController::class, 'deactivate'], $can('turmas.desativar'));

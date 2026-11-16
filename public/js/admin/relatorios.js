@@ -41,6 +41,11 @@ $(document).ready(function () {
 
     inicializarDatePicker('datetimepicker_inicio');
     inicializarDatePicker('datetimepicker_fim');
+
+    const tipoInicial = $('#tipoRelatorio').data('tipo-inicial') || new URLSearchParams(window.location.search).get('tipo');
+    if (tipoInicial && $(`#tipoRelatorio option[value="${tipoInicial}"]`).length) {
+        $('#tipoRelatorio').val(tipoInicial).trigger('change');
+    }
 });
 
 function inicializarDatePicker(elementId) {
@@ -104,6 +109,32 @@ function carregarFiltros() {
         }
     });
 
+    $.ajax({
+        url: '/ctt/api/financeiro/planos?ativos=false',
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            const items = data.data || data || [];
+            const select = $('#plano');
+            select.empty();
+            select.append('<option value="">Todos os planos</option>');
+            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
+        }
+    });
+
+    $.ajax({
+        url: '/ctt/api/financeiro/servicos?ativos=false',
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            const items = data.data || data || [];
+            const select = $('#servico');
+            select.empty();
+            select.append('<option value="">Todos os serviços</option>');
+            items.forEach(item => select.append(`<option value="${escapeHtml(item.id)}">${escapeHtml(item.nome)}</option>`));
+        }
+    });
+
     carregarAlunosRelatorio();
 }
 
@@ -142,6 +173,7 @@ function carregarAlunosRelatorio() {
 }
 
 function textoPlaceholderAluno(tipoRelatorio) {
+    if (['contratos_planos', 'contratos_servicos'].includes(tipoRelatorio)) return 'Todos os alunos';
     return tipoRelatorio === 'avaliacoes' ? 'Selecione um aluno' : 'Selecione um aluno';
 }
 
@@ -209,7 +241,7 @@ function limparResultadoRelatorio() {
 }
 
 function atualizarFiltros(tipoRelatorio) {
-    $('#filtroModalidade, #filtroAluno, #filtroTurma, #filtroPeriodo, #filtroDataFim, #filtroStatus, #filtroCargo').hide();
+    $('#filtroModalidade, #filtroAluno, #filtroTurma, #filtroPeriodo, #filtroDataFim, #filtroStatus, #filtroCargo, #filtroPlano, #filtroServico').hide();
     $('#btnExportar').hide();
     configurarStatus(tipoRelatorio);
     atualizarFiltroAluno(tipoRelatorio);
@@ -218,27 +250,27 @@ function atualizarFiltros(tipoRelatorio) {
     switch (tipoRelatorio) {
         case 'alunos':
             $('#filtroStatus').show();
-
+            break;
+        case 'contratos_planos':
+            $('#filtroAluno, #filtroPlano, #filtroPeriodo, #filtroDataFim, #filtroStatus').show();
+            break;
+        case 'contratos_servicos':
+            $('#filtroAluno, #filtroServico, #filtroPeriodo, #filtroDataFim, #filtroStatus').show();
             break;
         case 'presenca':
             $('#filtroAluno, #filtroModalidade, #filtroTurma, #filtroPeriodo, #filtroDataFim').show();
-
             break;
         case 'avaliacoes':
             $('#filtroAluno, #filtroPeriodo, #filtroDataFim').show();
-
             break;
         case 'turmas':
             $('#filtroModalidade').show();
-
             break;
         case 'funcionarios':
             $('#filtroStatus, #filtroCargo').show();
-
             break;
         case 'treinos':
             $('#filtroTurma, #filtroPeriodo, #filtroDataFim, #filtroStatus').show();
-
             break;
     }
 }
@@ -249,6 +281,8 @@ function configurarStatus(tipoRelatorio) {
 
     if (tipoRelatorio === 'treinos') {
         status.append('<option value="agendado">Agendado</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option>');
+    } else if (['contratos_planos', 'contratos_servicos'].includes(tipoRelatorio)) {
+        status.append('<option value="ativo">Ativo</option><option value="pausado">Pausado</option><option value="encerrado">Encerrado</option><option value="cancelado">Cancelado</option>');
     } else {
         status.append('<option value="ativo">Ativo</option><option value="inativo">Inativo</option>');
     }
@@ -277,6 +311,8 @@ function gerarRelatorio() {
         aluno: $('#aluno').val(),
         turma: $('#turma').val(),
         cargo: $('#cargo').val(),
+        plano: $('#plano').val(),
+        servico: $('#servico').val(),
         dataInicio: $('#dataInicio').val(),
         dataFim: $('#dataFim').val(),
         status: $('#status').val()
@@ -289,7 +325,7 @@ function gerarRelatorio() {
         dataType: 'json',
         beforeSend: () => {
             $('#btnExportar').hide();
-            $('#tabelaRelatorios').html('<tr><td colspan="6"><div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div></div></td></tr>');
+            $('#tabelaRelatorios').html('<tr><td colspan="10"><div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div></div></td></tr>');
         },
         success: (data) => {
             if (versaoConsulta !== versaoRelatorio) return;
@@ -317,6 +353,75 @@ function renderizarRelatorio(data, tipoRelatorio) {
                 html += `<tr><td>${escapeHtml(a.codigo_matricula)}</td><td>${escapeHtml(a.nome)} ${escapeHtml(a.sobrenome)}</td><td>${escapeHtml(mascararCpf(a.cpf))}</td><td>${escapeHtml(a.email)}</td><td>${escapeHtml(new Date(a.data_matricula).toLocaleDateString('pt-BR'))}</td><td>${status}</td></tr>`;
             });
             $('#tituloTabela').text('Relatório de Alunos');
+            break;
+
+        case 'contratos_planos':
+            cabecalho = '<tr><th>Contrato</th><th>Aluno</th><th>Plano</th><th>Periodicidade</th><th>Início</th><th>Término</th><th>Vencimento</th><th>Valor Contratado</th><th>Status</th></tr>';
+            data.registros.forEach(c => {
+                const statusLabels = { ativo: 'Ativo', pausado: 'Pausado', encerrado: 'Encerrado', cancelado: 'Cancelado' };
+                const statusColors = { ativo: 'success', pausado: 'warning', encerrado: 'secondary', cancelado: 'danger' };
+                const st = c.status || 'ativo';
+                const badge = `<span class="badge bg-${statusColors[st] || 'secondary'}-subtle text-${statusColors[st] || 'secondary'}-emphasis">${escapeHtml(statusLabels[st] || st)}</span>`;
+
+                const periodicidadeFormatada = formatarPeriodicidade(c.periodicidade);
+                const dataInicio = c.data_inicio ? formatarData(c.data_inicio) : '—';
+                const dataFim = c.data_fim ? formatarData(c.data_fim) : 'Indeterminado';
+                const diaVenc = c.dia_vencimento ? `Dia ${c.dia_vencimento}` : '—';
+
+                const valorContratado = formatarMoeda(c.valor_contratado);
+                let descontoInfo = '';
+                if (Number(c.desconto) > 0) {
+                    descontoInfo = `<small class="d-block text-muted">Desc: ${escapeHtml(formatarMoeda(c.desconto))}</small>`;
+                }
+
+                html += `<tr>
+                    <td><strong>#${escapeHtml(c.contrato_id || c.id)}</strong></td>
+                    <td>
+                        <div class="fw-semibold">${escapeHtml(c.aluno)}</div>
+                        <small class="text-muted">${escapeHtml(mascararCpf(c.cpf))}</small>
+                    </td>
+                    <td><span class="badge bg-primary-subtle text-primary-emphasis">${escapeHtml(c.plano)}</span></td>
+                    <td>${escapeHtml(periodicidadeFormatada)}</td>
+                    <td>${escapeHtml(dataInicio)}</td>
+                    <td>${escapeHtml(dataFim)}</td>
+                    <td>${escapeHtml(diaVenc)}</td>
+                    <td class="text-end fw-semibold">${escapeHtml(valorContratado)}${descontoInfo}</td>
+                    <td class="text-center">${badge}</td>
+                </tr>`;
+            });
+            $('#tituloTabela').text('Relatório de Contratos de Planos');
+            break;
+
+        case 'contratos_servicos':
+            cabecalho = '<tr><th>Item</th><th>Contrato</th><th>Aluno</th><th>Serviço Avulso</th><th>Qtd</th><th>Valor Unit.</th><th>Desconto</th><th>Total Líquido</th><th>Data Início</th><th>Status</th></tr>';
+            data.registros.forEach(s => {
+                const statusLabels = { ativo: 'Ativo', pausado: 'Pausado', encerrado: 'Encerrado', cancelado: 'Cancelado' };
+                const statusColors = { ativo: 'success', pausado: 'warning', encerrado: 'secondary', cancelado: 'danger' };
+                const st = s.status || 'ativo';
+                const badge = `<span class="badge bg-${statusColors[st] || 'secondary'}-subtle text-${statusColors[st] || 'secondary'}-emphasis">${escapeHtml(statusLabels[st] || st)}</span>`;
+
+                const dataInicio = s.data_inicio ? formatarData(s.data_inicio) : '—';
+                const valorUnit = formatarMoeda(s.valor_unitario);
+                const valorDesc = Number(s.valor_desconto) > 0 ? formatarMoeda(s.valor_desconto) : '—';
+                const valorTotal = formatarMoeda(s.valor_total);
+
+                html += `<tr>
+                    <td><strong>#${escapeHtml(s.item_id || s.id)}</strong></td>
+                    <td>#${escapeHtml(s.contrato_id)}</td>
+                    <td>
+                        <div class="fw-semibold">${escapeHtml(s.aluno)}</div>
+                        <small class="text-muted">${escapeHtml(mascararCpf(s.cpf))}</small>
+                    </td>
+                    <td><span class="badge bg-info-subtle text-info-emphasis">${escapeHtml(s.servico)}</span></td>
+                    <td class="text-center">${escapeHtml(s.quantidade)}</td>
+                    <td class="text-end">${escapeHtml(valorUnit)}</td>
+                    <td class="text-end text-muted">${escapeHtml(valorDesc)}</td>
+                    <td class="text-end fw-semibold">${escapeHtml(valorTotal)}</td>
+                    <td>${escapeHtml(dataInicio)}</td>
+                    <td class="text-center">${badge}</td>
+                </tr>`;
+            });
+            $('#tituloTabela').text('Relatório de Contratos de Serviços Avulsos');
             break;
 
         case 'presenca':
@@ -361,11 +466,10 @@ function renderizarRelatorio(data, tipoRelatorio) {
             data.registros.forEach(t => { html += `<tr><td>${escapeHtml(new Date(t.data_hora_inicio).toLocaleString('pt-BR'))}</td><td>${escapeHtml(t.treino)}</td><td>${escapeHtml(t.turma || '-')}</td><td>${escapeHtml(t.espaco)}</td><td>${escapeHtml(t.instrutor || '-')}</td><td>${escapeHtml(t.status)}</td></tr>`; });
             $('#tituloTabela').text('Agenda de Treinos');
             break;
-
     }
 
     $('#cabecalhoTabela').html(cabecalho);
-    const quantidadeColunas = $('#cabecalhoTabela th').length;
+    const quantidadeColunas = $('#cabecalhoTabela th').length || 1;
     $('#tabelaRelatorios').html(html || `<tr><td colspan="${quantidadeColunas}" class="text-center text-muted">Nenhum registro encontrado</td></tr>`);
 }
 
@@ -373,6 +477,23 @@ function mascararCpf(cpf) {
     const digitos = String(cpf || '').replace(/\D/g, '');
     if (digitos.length <= 4) return digitos || '-';
     return '*'.repeat(digitos.length - 4) + digitos.slice(-4);
+}
+
+function formatarPeriodicidade(valor) {
+    const mapa = {
+        mensal: 'Mensal',
+        trimestral: 'Trimestral',
+        semestral: 'Semestral',
+        anual: 'Anual',
+        avulso: 'Avulso'
+    };
+    return mapa[String(valor || '').toLowerCase()] || (valor ? String(valor) : '—');
+}
+
+function formatarMoeda(valor) {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero)) return 'R$ 0,00';
+    return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 function renderizarGraficos(data, tipoRelatorio) {
@@ -393,6 +514,22 @@ function renderizarGraficos(data, tipoRelatorio) {
             tipo2: 'bar',
             dados1: agruparModalidades(registros),
             dados2: agruparStatus(registros)
+        },
+        contratos_planos: {
+            titulo1: 'Planos Mais Contratados',
+            titulo2: 'Receita Contratada por Plano',
+            tipo1: 'doughnut',
+            tipo2: 'bar',
+            dados1: agruparCampo(registros, 'plano', 'Sem plano'),
+            dados2: agruparSoma(registros, 'plano', 'valor_liquido')
+        },
+        contratos_servicos: {
+            titulo1: 'Serviços Avulsos Mais Contratados',
+            titulo2: 'Receita por Serviço Avulso',
+            tipo1: 'bar',
+            tipo2: 'bar',
+            dados1: agruparSoma(registros, 'servico', 'quantidade'),
+            dados2: agruparSoma(registros, 'servico', 'valor_total')
         },
         presenca: {
             titulo1: 'Evolução Temporal da Taxa de Presença',
@@ -568,6 +705,29 @@ function agruparCampo(registros, campo, valorPadrao) {
     return { labels: Object.keys(agrupado), valores: Object.values(agrupado) };
 }
 
+function agruparSoma(registros, campoLabel, campoValor) {
+    const soma = {};
+    registros.forEach(registro => {
+        const rotulo = registro[campoLabel] || 'Outro';
+        const valor = Number(registro[campoValor]) || 0;
+        soma[rotulo] = (soma[rotulo] || 0) + valor;
+    });
+    return {
+        labels: Object.keys(soma),
+        valores: Object.values(soma).map(v => Math.round(v * 100) / 100)
+    };
+}
+
+function agruparStatusContrato(registros) {
+    const statusLabels = { ativo: 'Ativo', pausado: 'Pausado', encerrado: 'Encerrado', cancelado: 'Cancelado' };
+    const agrupado = { 'Ativo': 0, 'Pausado': 0, 'Encerrado': 0, 'Cancelado': 0 };
+    registros.forEach(registro => {
+        const rotulo = statusLabels[registro.status] || 'Outro';
+        agrupado[rotulo] = (agrupado[rotulo] || 0) + 1;
+    });
+    return { labels: Object.keys(agrupado), valores: Object.values(agrupado) };
+}
+
 function agruparValor(registros, campoLabel, campoValor) {
     return {
         labels: registros.map(registro => registro[campoLabel] || '-'),
@@ -631,19 +791,22 @@ function agruparPresencaPorTurma(registros) {
 }
 
 function exportarRelatorio(formato) {
-    if (!validarTurmaRelatorio($('#tipoRelatorio').val())) return;
-    if (['avaliacoes', 'presenca'].includes($('#tipoRelatorio').val()) && !$('#aluno').val()) {
-        const nomeRelatorio = $('#tipoRelatorio').val() === 'presenca' ? 'presença' : 'avaliações físicas';
+    const tipoRelatorio = $('#tipoRelatorio').val();
+    if (!validarTurmaRelatorio(tipoRelatorio)) return;
+    if (['avaliacoes', 'presenca'].includes(tipoRelatorio) && !$('#aluno').val()) {
+        const nomeRelatorio = tipoRelatorio === 'presenca' ? 'presença' : 'avaliações físicas';
         Swal.fire('Atenção', `Selecione um aluno para exportar o relatório de ${nomeRelatorio}.`, 'warning');
         return;
     }
 
     const params = new URLSearchParams({
-        tipo: $('#tipoRelatorio').val(),
+        tipo: tipoRelatorio,
         modalidade: $('#modalidade').val(),
         aluno: $('#aluno').val(),
         turma: $('#turma').val(),
         cargo: $('#cargo').val(),
+        plano: $('#plano').val(),
+        servico: $('#servico').val(),
         dataInicio: $('#dataInicio').val(),
         dataFim: $('#dataFim').val(),
         status: $('#status').val(),

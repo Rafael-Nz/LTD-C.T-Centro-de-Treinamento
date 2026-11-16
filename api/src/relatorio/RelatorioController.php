@@ -35,7 +35,7 @@ class RelatorioController extends Controller
         try {
             $this->json($this->service->gerar((string) $this->input('tipo', ''), $this->filters()));
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[RelatorioController::gerar] ' . $e->getMessage());
             $this->error('Erro ao gerar relatorio.', 500);
@@ -59,7 +59,7 @@ class RelatorioController extends Controller
 
             $this->enviarCsv($result['tipo'], $rows);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         }
     }
 
@@ -73,6 +73,9 @@ class RelatorioController extends Controller
             'dataInicio' => $this->input('dataInicio', ''),
             'dataFim' => $this->input('dataFim', ''),
             'status' => $this->input('status', ''),
+            'plano' => $this->input('plano', ''),
+            'servico' => $this->input('servico', ''),
+            'tipoContrato' => $this->input('tipoContrato', ''),
         ];
     }
 
@@ -96,16 +99,33 @@ class RelatorioController extends Controller
         return $rows;
     }
 
+    private function sanitizeCsvCell(mixed $value): mixed
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+        $trimmed = ltrim($value);
+        if ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+            return "'" . $value;
+        }
+        return $value;
+    }
+
+    private function safeFilename(string $name): string
+    {
+        return preg_replace('/[^A-Za-z0-9_-]/', '', $name) ?: 'export';
+    }
+
     private function enviarCsv(string $tipo, array $rows): void
     {
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="relatorio-' . $tipo . '.csv"');
+        header('Content-Disposition: attachment; filename="relatorio-' . $this->safeFilename($tipo) . '.csv"');
         $output = fopen('php://output', 'w');
         fprintf($output, "\xEF\xBB\xBF");
         if ($rows) {
-            fputcsv($output, array_keys($rows[0]), ';');
+            fputcsv($output, array_map([$this, 'sanitizeCsvCell'], array_keys($rows[0])), ';');
             foreach ($rows as $row) {
-                fputcsv($output, $row, ';');
+                fputcsv($output, array_map([$this, 'sanitizeCsvCell'], $row), ';');
             }
         }
         fclose($output);
@@ -121,10 +141,10 @@ class RelatorioController extends Controller
         $headers = $rows ? array_keys($rows[0]) : [];
         $sheetRows = [];
         if ($headers) {
-            $sheetRows[] = $headers;
+            $sheetRows[] = array_map([$this, 'sanitizeCsvCell'], $headers);
         }
         foreach ($rows as $row) {
-            $sheetRows[] = array_values($row);
+            $sheetRows[] = array_map([$this, 'sanitizeCsvCell'], array_values($row));
         }
 
         $zip = new \ZipArchive();
@@ -140,7 +160,7 @@ class RelatorioController extends Controller
         $zip->close();
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="relatorio-' . $tipo . '.xlsx"');
+        header('Content-Disposition: attachment; filename="relatorio-' . $this->safeFilename($tipo) . '.xlsx"');
         readfile($arquivo);
         unlink($arquivo);
         exit;

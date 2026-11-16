@@ -37,7 +37,13 @@ $guest = function () use ($startSession) {
 return function ($router) use ($auth, $guest, $startSession) {
 
     $logout = function () use ($startSession): void {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            http_response_code(405);
+            header('Allow: POST');
+            exit;
+        }
         $startSession();
+        \Core\Auth\Csrf::validate();
         \Core\Auth\Auth::logout(\Core\Auth\Auth::GUARD_ADMIN);
         header('Location: /ctt/admin/login');
         exit;
@@ -113,6 +119,9 @@ return function ($router) use ($auth, $guest, $startSession) {
     // Relatórios
     $router->add('relatorios', 'relatorios.php', [], [$can('relatorios.visualizar')]);
     $router->add('relatorios/alunos', 'relatorios.php', ['tipo' => 'alunos'], [$can('relatorios.visualizar')]);
+    $router->add('relatorios/contratos-planos', 'relatorios.php', ['tipo' => 'contratos_planos'], [$can('relatorios.visualizar')]);
+    $router->add('relatorios/contratos-servicos', 'relatorios.php', ['tipo' => 'contratos_servicos'], [$can('relatorios.visualizar')]);
+    $router->add('relatorios/contratos', 'relatorios.php', ['tipo' => 'contratos_planos'], [$can('relatorios.visualizar')]);
     $router->add('relatorios/financeiro', 'relatorios.php', ['tipo' => 'financeiro'], [$can('relatorios.visualizar')]);
 
     // Financeiro

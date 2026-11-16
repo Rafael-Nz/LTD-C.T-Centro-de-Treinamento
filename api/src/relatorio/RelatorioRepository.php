@@ -198,6 +198,108 @@ class RelatorioRepository extends Repository
             " . $this->where($where) . " ORDER BY ta.data_hora_inicio DESC", $params);
     }
 
+    public function contratos(array $filters): array
+    {
+        $tipoContrato = strtolower((string) ($filters['tipoContrato'] ?? 'plano'));
+        if ($tipoContrato === 'servico' || $tipoContrato === 'servicos') {
+            return $this->contratos_servicos($filters);
+        }
+        return $this->contratos_planos($filters);
+    }
+
+    public function contratos_planos(array $filters): array
+    {
+        $where = ['c.plano_id IS NOT NULL'];
+        $params = [];
+
+        if (!empty($filters['aluno'])) {
+            $where[] = 'c.aluno_id = ?';
+            $params[] = (int) $filters['aluno'];
+        }
+
+        if (!empty($filters['plano'])) {
+            $where[] = 'c.plano_id = ?';
+            $params[] = (int) $filters['plano'];
+        }
+
+        if (!empty($filters['status']) && in_array($filters['status'], ['ativo', 'pausado', 'encerrado', 'cancelado'], true)) {
+            $where[] = 'c.status = ?';
+            $params[] = $filters['status'];
+        }
+
+        $this->addDateFilter($where, $params, 'c.data_inicio', $filters);
+
+        return $this->fetchAll("SELECT c.id AS contrato_id, c.aluno_id,
+                CONCAT(u.nome, ' ', u.sobrenome) AS aluno,
+                u.cpf, u.email,
+                p.nome AS plano,
+                p.id AS plano_id,
+                c.periodicidade,
+                c.data_inicio, c.data_fim, c.dia_vencimento,
+                c.valor_contratado, c.desconto,
+                ROUND(c.valor_contratado - c.desconto, 2) AS valor_liquido,
+                c.status
+            FROM contrato c
+            INNER JOIN usuario u ON u.id = c.aluno_id
+            INNER JOIN plano p ON p.id = c.plano_id
+            " . $this->where($where) . " ORDER BY c.data_inicio DESC, c.id DESC", $params);
+    }
+
+    public function contratos_servicos(array $filters): array
+    {
+        $where = ['(c.plano_id IS NULL OR (ci.id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM plano_item pi WHERE pi.plano_id = c.plano_id AND pi.servico_id = ci.servico_id)))'];
+        $params = [];
+
+        if (!empty($filters['aluno'])) {
+            $where[] = 'c.aluno_id = ?';
+            $params[] = (int) $filters['aluno'];
+        }
+
+        if (!empty($filters['servico'])) {
+            $servicoId = (int) $filters['servico'];
+            $where[] = '(ci.servico_id = ? OR s.id = ?)';
+            $params[] = $servicoId;
+            $params[] = $servicoId;
+        }
+
+        if (!empty($filters['status']) && in_array($filters['status'], ['ativo', 'pausado', 'encerrado', 'cancelado'], true)) {
+            $where[] = 'c.status = ?';
+            $params[] = $filters['status'];
+        }
+
+        $this->addDateFilter($where, $params, 'c.data_inicio', $filters);
+
+        return $this->fetchAll("SELECT 
+                COALESCE(ci.id, 0) AS item_id,
+                c.id AS contrato_id,
+                c.aluno_id,
+                CONCAT(u.nome, ' ', u.sobrenome) AS aluno,
+                u.cpf,
+                u.email,
+                COALESCE(s.nome, ci.descricao, 'Serviço Avulso') AS servico,
+                COALESCE(s.id, ci.servico_id) AS servico_id,
+                COALESCE(ci.quantidade, 1) AS quantidade,
+                COALESCE(ci.valor_unitario, c.valor_contratado) AS valor_unitario,
+                COALESCE(ci.valor_desconto, c.desconto) AS valor_desconto,
+                ROUND(
+                    COALESCE(
+                        (ci.quantidade * ci.valor_unitario) - ci.valor_desconto,
+                        c.valor_contratado - c.desconto
+                    ), 2
+                ) AS valor_total,
+                c.data_inicio,
+                c.data_fim,
+                c.dia_vencimento,
+                c.status,
+                COALESCE(p.nome, 'Contrato Avulso') AS origem_contrato
+            FROM contrato c
+            INNER JOIN usuario u ON u.id = c.aluno_id
+            LEFT JOIN contrato_item ci ON ci.contrato_id = c.id
+            LEFT JOIN servico s ON s.id = ci.servico_id
+            LEFT JOIN plano p ON p.id = c.plano_id
+            " . $this->where($where) . " ORDER BY c.data_inicio DESC, ci.id DESC, c.id DESC", $params);
+    }
+
     private function where(array $where): string
     {
         return $where ? ' WHERE ' . implode(' AND ', $where) : '';

@@ -29,6 +29,9 @@ class RelatorioService
             'turmas' => 'turmas',
             'funcionarios' => 'funcionarios',
             'treinos' => 'treinos',
+            'contratos' => 'contratos',
+            'contratos_planos' => 'contratos_planos',
+            'contratos_servicos' => 'contratos_servicos',
         ];
         if (!isset($relatorios[$tipo])) {
             throw new \InvalidArgumentException('Tipo de relatorio invalido.');

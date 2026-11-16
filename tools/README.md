@@ -1,39 +1,54 @@
 # Ferramentas do projeto
 
-Os comandos auxiliares ficam separados pela finalidade para evitar que testes sejam confundidos com rotinas usadas pelo sistema.
+Os comandos auxiliares ficam separados pela finalidade para manter a aplicação organizada, leve e 100% multiplataforma em qualquer ambiente com XAMPP (Windows, Linux e macOS).
 
-## Operacao financeira
+## Operação financeira & Automação JIT
 
-A pasta `tools/financeiro/` faz parte da instalacao e da operacao normal:
+O sistema utiliza arquitetura **Just-In-Time (JIT)** aliada a triggers dinâmicas do banco de dados (`cobrancas_dinamicas_jit.sql`), gerando e atualizando faturas sob demanda diretamente na API. Todas as ferramentas legadas do Agendador do Windows foram expurgadas.
+
+A pasta `tools/financeiro/` concentra scripts e arquivos de controle:
 
 - `financeiro_bootstrap.php`: inicializa os comandos PHP executados pelo terminal;
-- `financeiro_status.php`: verifica se o banco possui a estrutura financeira atual;
-- `gerar_cobrancas.php`: gera competencias faltantes e atualiza cobrancas vencidas;
-- `rotina_financeiro.ps1`: executa a geracao e grava o log;
-- `instalar_rotina_financeiro.ps1`: instala a tarefa diaria no Agendador do Windows;
-- `ativar_cobranca_obrigatoria.php`: ajusta uma vez o indicador legado dos contratos;
-- `financeiro_rotina.log`: arquivo local criado pela rotina e ignorado pelo Git.
+- `financeiro_status.php`: verifica se o banco possui a estrutura financeira e migrações aplicadas;
+- `gerar_cobrancas.php`: script CLI em PHP puro para geração manual sob demanda ou integração via cron em servidores Linux;
+- `financeiro_jit_state.json`: arquivo de controle e cache/throttle diário da rotina Just-In-Time executada pela API.
 
-## Administracao e verificacao do sistema
+## Administração e verificação do sistema
 
-A pasta `tools/sistema/` concentra rotinas de inicializacao e checagem:
+A pasta `tools/sistema/` concentra rotinas de inicialização e checagem:
 
 - `criar_admin.php`: define de forma interativa ou via CLI o e-mail e a senha mestra do administrador inicial (ou redefine senha existente);
-- `criar_admin.ps1`: wrapper PowerShell para execucao simplificada no Windows;
-- `verify_audit.php`: valida a cadeia criptografica de auditoria usando a conta configurada no `.env`.
+- `verify_audit.php`: valida a integridade da cadeia criptográfica de auditoria (blockchain interna SHA-256) usando a conta configurada no `.env`.
 
-## Testes
+## Testes automatizados
 
-`tools/testes/financeiro/` contem somente testes. Execute a suite rapida pela raiz:
+`tools/testes/` contém a suíte completa de testes do sistema:
 
-```powershell
-composer test
-```
+- **Segurança e RBAC, com banco e sessões em memória:**
+  ```powershell
+  php tools/testes/rbac/test_security.php
+  ```
+  Exige `pdo_sqlite`; cobre coexistência e revogação de guards, propriedade de cadastro, proteção do detalhe de turma, logout e renderização do painel, sem conectar ao banco configurado no `.env`.
+- **Suite rápida:**
+  ```powershell
+  composer test
+  ```
+- **Testes de integração e triggers JIT:**
+  - `tools/testes/financeiro/test_jit_triggers.php`: valida as triggers do MySQL e o throttle do cache JIT;
+  - `tools/testes/financeiro/test_financeiro_rapido.php`: valida regras de negócio e cálculo de encargos;
+  - `tools/testes/test_email_templates.php`: valida a compilação e substituição dos templates HTML de e-mail;
+  - `tools/testes/test_seed_logins.php`: valida logins de teste com e-mail, CPF e matrícula;
+  - `tools/testes/rbac/`: testes de isolamento de sessão, guards e controle de acesso RBAC.
 
-Os testes completos exigem o MariaDB isolado descrito em `docs/modules/financeiro.md` e nunca devem usar o banco normal.
+## E-mails e templates (MJML)
 
-## Desenvolvimento
+`tools/email/` contém os fontes editáveis e dependências para compilar os e-mails responsivos via MJML:
+- `templates/account-activation.mjml`: e-mail de ativação de conta;
+- `templates/initial-password.mjml`: credenciais e matrícula do novo aluno;
+- `templates/password-reset.mjml`: redefinição de senha com token seguro.
 
-`tools/desenvolvimento/` nao faz parte da operacao diaria. O gerador de migracao financeira altera arquivos SQL do repositorio e deve ser usado apenas por desenvolvedores, com revisao posterior do `git diff`.
+## Desenvolvimento & Assets
 
-`tools/email/` contem o template e as dependencias para compilar os e-mails MJML durante o desenvolvimento ou a preparacao do pacote.
+- `tools/download_all_plugins.php`: script multiplataforma em PHP puro para atualização e manutenção das bibliotecas offline em `plugins/`;
+- `tools/desenvolvimento/build_financeiro_migration.php`: gerador de migração financeira para revisão no Git;
+- `tools/wiki/sincronizar_wiki.php`: script PHP puro para sincronizar e publicar os arquivos em `docs/` para a Wiki oficial do repositório.

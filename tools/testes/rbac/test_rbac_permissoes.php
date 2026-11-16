@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__, 2) . '/financeiro/financeiro_bootstrap.php';
+require_once __DIR__ . '/security_fixture.php';
+$pdo = securityTestDatabase();
 
 use Core\Auth\Auth;
 use Core\Auth\PermissionMiddleware;
@@ -24,15 +25,14 @@ echo "\n=== INICIANDO TESTES DO SISTEMA RBAC ===\n\n";
 // ---------------------------------------------------------
 // 1. Integridade do Banco de Dados
 // ---------------------------------------------------------
-echo "1. Verificando integridade das tabelas e seeds no Banco de Dados...\n";
-$pdo = Database::getConnection();
+echo "1. Verificando tabelas e perfis na fixture em memoria...\n";
 
 $permStmt = $pdo->query("SELECT COUNT(*) FROM permissao");
 $permCount = (int) $permStmt->fetchColumn();
 testAssert($permCount >= 30, "Tabela 'permissao' possui pelo menos 30 permissões cadastradas (atual: {$permCount}).");
 
-$colStmt = $pdo->query("SHOW COLUMNS FROM permissao LIKE 'modulo'");
-testAssert((bool) $colStmt->fetch(), "Coluna 'modulo' existe na tabela 'permissao'.");
+$columns = $pdo->query('PRAGMA table_info(permissao)')->fetchAll(PDO::FETCH_ASSOC);
+testAssert(in_array('modulo', array_column($columns, 'name'), true), "Coluna 'modulo' existe na tabela 'permissao'.");
 
 $cargoPermStmt = $pdo->query("SELECT COUNT(*) FROM cargo_permissao");
 $cargoPermCount = (int) $cargoPermStmt->fetchColumn();
@@ -44,12 +44,7 @@ testAssert($cargoPermCount > 0, "Tabela 'cargo_permissao' possui registros popul
 echo "\n2. Verificando Auth::can() e Auth::canAny()...\n";
 
 // Teste 2.1: Admin Superuser Bypass
-$_SESSION['user_id'] = 1;
-$_SESSION['user_tipo'] = 'admin';
-$_SESSION['user_permissions'] = ['*'];
-$_SESSION['permissoes'] = ['*'];
-$_SESSION['cargo_id'] = null;
-$_SESSION['cargo_nome'] = 'Administrador';
+Auth::login(['id' => 1], 'admin');
 
 testAssert(Auth::isAdmin() === true, "Auth::isAdmin() retorna true para tipo 'admin'.");
 testAssert(Auth::can('qualquer.coisa') === true, "Admin tem bypass total em Auth::can().");
@@ -57,19 +52,7 @@ testAssert(Auth::can('financeiro.gerenciar') === true, "Admin tem acesso a permi
 testAssert(Auth::canAny(['inexistente.1', 'inexistente.2']) === true, "Admin tem bypass em Auth::canAny().");
 
 // Teste 2.2: Funcionário Instrutor (escopo limitado)
-$_SESSION['user_id'] = 2;
-$_SESSION['user_tipo'] = 'funcionario';
-$_SESSION['cargo_id'] = 2;
-$_SESSION['cargo_nome'] = 'Instrutor';
-$_SESSION['user_permissions'] = [
-    'turmas.visualizar',
-    'treinos.visualizar',
-    'treinos.criar',
-    'treinos.editar',
-    'avaliacoes.visualizar',
-    'avaliacoes.criar',
-];
-$_SESSION['permissoes'] = $_SESSION['user_permissions'];
+Auth::login(['id' => 2], 'admin');
 
 testAssert(Auth::isAdmin() === false, "Funcionário não é identificado como admin.");
 testAssert(Auth::can('turmas.visualizar') === true, "Instrutor pode visualizar turmas.");
@@ -83,12 +66,8 @@ testAssert(Auth::canAny(['financeiro.gerenciar', 'turmas.visualizar']) === true,
 testAssert(Auth::canAny(['financeiro.visualizar', 'financeiro.gerenciar']) === false, "Instrutor falha em canAny quando não tem nenhuma permissão.");
 
 // Teste 2.3: Aluno (sem permissões administrativas)
-$_SESSION['user_id'] = 99;
-$_SESSION['user_tipo'] = 'aluno';
-$_SESSION['cargo_id'] = null;
-$_SESSION['cargo_nome'] = null;
-$_SESSION['user_permissions'] = [];
-$_SESSION['permissoes'] = [];
+Auth::logout('admin');
+Auth::login(['id' => 99], 'aluno');
 
 testAssert(Auth::can('turmas.visualizar') === false, "Aluno não pode visualizar turmas do admin.");
 testAssert(Auth::can('financeiro.visualizar') === false, "Aluno não pode visualizar financeiro administrativo.");
@@ -99,10 +78,8 @@ testAssert(Auth::can('financeiro.visualizar') === false, "Aluno não pode visual
 echo "\n3. Verificando PermissionMiddleware...\n";
 
 // Simulando usuário Instrutor
-$_SESSION['user_id'] = 2;
-$_SESSION['user_tipo'] = 'funcionario';
-$_SESSION['user_permissions'] = ['turmas.visualizar'];
-$_SESSION['permissoes'] = ['turmas.visualizar'];
+Auth::login(['id' => 2], 'admin');
+Auth::setContext(Auth::GUARD_ADMIN);
 
 $middleware = PermissionMiddleware::require('turmas.visualizar');
 $result = $middleware->handle();

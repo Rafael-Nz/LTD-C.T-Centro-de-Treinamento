@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/security_fixture.php';
+securityTestDatabase();
+\Core\Auth\Auth::login(['id' => 1], 'admin');
+
 // Teste de carga do router admin e das views com a nova autenticação/RBAC
 $_GET['url'] = 'inicio';
-session_start();
-$_SESSION['user_id'] = 1;
-$_SESSION['user_tipo'] = 'admin';
-$_SESSION['user_permissions'] = ['*'];
 
 ob_start();
 require dirname(__DIR__, 3) . '/admin/index.php';
@@ -21,9 +21,8 @@ if (str_contains($html, 'Centro de Treinamento') && str_contains($html, 'Dashboa
 }
 
 // Teste com Instrutor
-$_SESSION['user_tipo'] = 'funcionario';
-$_SESSION['user_permissions'] = ['turmas.visualizar', 'treinos.visualizar'];
-$_SESSION['permissoes'] = $_SESSION['user_permissions'];
+\Core\Auth\Auth::login(['id' => 2], 'admin');
+securityNextRequest('admin');
 
 ob_start();
 include dirname(__DIR__, 3) . '/admin/views/partials/sidebar.php';

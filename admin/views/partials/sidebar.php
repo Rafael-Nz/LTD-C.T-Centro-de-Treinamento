@@ -80,10 +80,10 @@ $canConfiguracoes = \Core\Auth\Auth::canAny(['cargos.visualizar', 'cargos.gerenc
 ?>
 <script>
   window.CTT_USER = {
-    tipo: <?= json_encode(\Core\Auth\Auth::userTipo()) ?>,
-    cargo_id: <?= json_encode(\Core\Auth\Auth::cargoId()) ?>,
-    cargo_nome: <?= json_encode(\Core\Auth\Auth::cargoNome()) ?>,
-    permissoes: <?= json_encode(\Core\Auth\Auth::permissions()) ?>
+    tipo: <?= json_encode(\Core\Auth\Auth::userTipo(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>,
+    cargo_id: <?= json_encode(\Core\Auth\Auth::cargoId(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>,
+    cargo_nome: <?= json_encode(\Core\Auth\Auth::cargoNome(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>,
+    permissoes: <?= json_encode(\Core\Auth\Auth::permissions(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>
   };
   window.can = function(permission) {
     if (!window.CTT_USER) return false;

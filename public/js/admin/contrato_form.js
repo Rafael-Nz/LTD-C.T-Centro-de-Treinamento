@@ -27,6 +27,7 @@
     };
 
     const money = value => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const showError = error => window.Swal ? Swal.fire({ icon: 'error', title: 'Atenção', text: error.message }) : window.alert(error.message);
 
     const atualizarTotaisContrato = () => {
@@ -72,7 +73,7 @@
         const tr = document.createElement('tr');
         const options = listaServicos.map(s => {
             const selected = Number(s.id) === servicoId ? 'selected' : '';
-            return `<option value="${s.id}" data-nome="${encodeURIComponent(s.nome)}" data-valor="${s.valor_base}" ${selected}>${s.nome} (${money(s.valor_base)})</option>`;
+            return `<option value="${s.id}" data-nome="${encodeURIComponent(s.nome)}" data-valor="${s.valor_base}" ${selected}>${esc(s.nome)} (${money(s.valor_base)})</option>`;
         }).join('');
 
         tr.innerHTML = `
@@ -158,12 +159,12 @@
         alunoSelect.innerHTML = '<option value="">Selecione um aluno...</option>' +
             alunos.map(item => {
                 const matricula = item.codigo_matricula ? ` (${item.codigo_matricula})` : '';
-                return `<option value="${item.id}">${item.nome} ${item.sobrenome}${matricula}</option>`;
+                return `<option value="${item.id}">${esc(item.nome)} ${esc(item.sobrenome)}${esc(matricula)}</option>`;
             }).join('');
 
         const planoSelect = document.querySelector('#planoId');
         planoSelect.innerHTML = '<option value="">Selecione um plano comercial...</option>' +
-            (planos || []).map(item => `<option value="${item.id}">${item.nome} (${item.periodicidade}) - ${money(item.valor)}</option>`).join('');
+            (planos || []).map(item => `<option value="${item.id}">${esc(item.nome)} (${esc(item.periodicidade)}) - ${money(item.valor)}</option>`).join('');
 
         if (window.jQuery?.fn.select2) {
             $('#alunoId').select2({

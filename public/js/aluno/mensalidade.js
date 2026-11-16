@@ -6,7 +6,7 @@
 
     async function request(url, options = {}) {
         const csrf = document.cookie.split('; ').find(item => item.startsWith('CTT_CSRF_TOKEN='))?.split('=').slice(1).join('=');
-        const response = await fetch(url, { credentials: 'same-origin', ...options, headers: { ...(options.headers || {}), ...(csrf ? { 'X-CSRF-Token': decodeURIComponent(csrf) } : {}) } });
+        const response = await fetch(url, { credentials: 'same-origin', ...options, headers: { 'X-Auth-Area': 'aluno', ...(options.headers || {}), ...(csrf ? { 'X-CSRF-Token': decodeURIComponent(csrf) } : {}) } });
         const text = await response.text();
         let payload;
         try {

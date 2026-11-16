@@ -9,7 +9,8 @@ if (!$canConfiguracoes) {
     exit;
 }
 
-$tabInicial = $_GET['tab'] ?? '';
+$tabPermitidas = ['cargos', 'modalidades', 'empresa', 'sobre'];
+$tabInicial = in_array($_GET['tab'] ?? '', $tabPermitidas, true) ? $_GET['tab'] : '';
 
 $activeTab = 'sobre';
 if ($canCargos) {
@@ -324,7 +325,7 @@ if ($tabInicial) {
     <script src="/ctt/plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const tabInicial = <?= json_encode($tabInicial, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+            const tabInicial = <?= json_encode($tabInicial, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
             const tabSalva = localStorage.getItem('abaConfigAtiva');
             const tabDesejada = tabInicial || tabSalva;
 

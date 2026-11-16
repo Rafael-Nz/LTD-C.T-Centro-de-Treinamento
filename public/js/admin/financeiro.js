@@ -52,8 +52,8 @@
         if (!table) return;
         try {
             const rows = await request(`${api}/servicos`);
-            table.innerHTML = rows.length ? rows.map(item => `<tr><td>${item.nome}</td><td>${item.tipo}</td><td class="text-end">${money(item.valor_base)}</td><td>${status(item.ativo == 1 ? 'ativo' : 'inativo')}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum serviço cadastrado.</td></tr>';
-        } catch (error) { table.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`; }
+            table.innerHTML = rows.length ? rows.map(item => `<tr><td>${esc(item.nome)}</td><td>${esc(item.tipo)}</td><td class="text-end">${money(item.valor_base)}</td><td>${status(item.ativo == 1 ? 'ativo' : 'inativo')}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum serviço cadastrado.</td></tr>';
+        } catch (error) { table.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${esc(error.message)}</td></tr>`; }
     }
 
     async function loadPlanos() {
@@ -61,8 +61,8 @@
         if (!table) return;
         try {
             const rows = await request(`${api}/planos`);
-            table.innerHTML = rows.length ? rows.map(item => `<tr><td>${item.nome}</td><td>${item.periodicidade}</td><td class="text-end">${money(item.valor)}</td><td>${status(item.ativo == 1 ? 'ativo' : 'inativo')}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum plano cadastrado.</td></tr>';
-        } catch (error) { table.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`; }
+            table.innerHTML = rows.length ? rows.map(item => `<tr><td>${esc(item.nome)}</td><td>${esc(item.periodicidade)}</td><td class="text-end">${money(item.valor)}</td><td>${status(item.ativo == 1 ? 'ativo' : 'inativo')}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum plano cadastrado.</td></tr>';
+        } catch (error) { table.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${esc(error.message)}</td></tr>`; }
     }
 
     async function loadContratos() {

@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
     restoreProfileSummary();
     loadProfileSummary();
 
-    document.querySelector('a[href="/ctt/admin/logout"]')?.addEventListener('click', async (event) => {
+    document.querySelectorAll('a[href="/ctt/admin/logout"]').forEach((button) => button.addEventListener('click', async (event) => {
         event.preventDefault();
         sessionStorage.removeItem(PROFILE_SUMMARY_KEY);
         try {
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } finally {
             window.location.href = '/ctt/admin/login';
         }
-    });
+    }));
 
     // OverlayScrollbars
     const sidebarScrollContainer = document.querySelector('.sidebar-scrollable-content');

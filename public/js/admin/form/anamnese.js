@@ -87,7 +87,13 @@ class AnamneseEngine {
 
             const label = document.createElement('label');
             label.className = `form-label fw-semibold ${pergunta.obrigatoria ? 'required' : ''}`;
-            label.innerHTML = `${pergunta.pergunta}${pergunta.obrigatoria ? ' <span class="text-danger">*</span>' : ''}`;
+            label.textContent = pergunta.pergunta ?? '';
+            if (pergunta.obrigatoria) {
+                const star = document.createElement('span');
+                star.className = 'text-danger';
+                star.textContent = ' *';
+                label.appendChild(star);
+            }
 
             const inputContainer = document.createElement('div');
             inputContainer.className = 'anamnese-input-wrapper';
@@ -424,6 +430,9 @@ class AnamneseEngine {
     }
 
     renderError(message) {
-        this.container.innerHTML = `<div class="alert alert-warning">${message}</div>`;
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert alert-warning';
+        alertBox.textContent = message;
+        this.container.replaceChildren(alertBox);
     }
 }

@@ -1,4 +1,5 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+const csrfHeader = () => { const m = document.cookie.match(/(?:^|; )CTT_CSRF_TOKEN=([^;]*)/); return m ? { 'X-CSRF-Token': decodeURIComponent(m[1]) } : {}; };
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('account-activation-form');
     const token = form?.dataset.token || '';
     const error = document.getElementById('activation-error');
@@ -39,7 +40,7 @@
         try {
             const response = await fetch('/ctt/api/auth/ativar-conta', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...csrfHeader() },
                 body: JSON.stringify({ token, nova_senha: novaSenha, confirmar_senha: confirmarSenha })
             });
             const result = await response.json();

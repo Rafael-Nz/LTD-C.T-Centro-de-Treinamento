@@ -1,4 +1,5 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+const csrfHeader = () => { const m = document.cookie.match(/(?:^|; )CTT_CSRF_TOKEN=([^;]*)/); return m ? { 'X-CSRF-Token': decodeURIComponent(m[1]) } : {}; };
+document.addEventListener('DOMContentLoaded', () => {
     const passwordResetForm = document.getElementById('password-reset-form');
     const resetSubmit = document.getElementById('reset-submit');
     const resetError = document.getElementById('reset-error');
@@ -79,7 +80,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    ...csrfHeader()
                 },
                 body: JSON.stringify({
                     token: resetToken,

@@ -25,12 +25,17 @@ overlay?.addEventListener('click', function() {
 document.querySelectorAll('a[href="/ctt/logout"]').forEach(btn => {
     btn.addEventListener('click', async function (event) {
         event.preventDefault();
+        const csrf = document.cookie
+            .split('; ')
+            .find((item) => item.startsWith('CTT_CSRF_TOKEN='))
+            ?.split('=').slice(1).join('=');
         try {
             await fetch('/ctt/api/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Auth-Area': 'aluno'
+                    'X-Auth-Area': 'aluno',
+                    ...(csrf ? { 'X-CSRF-Token': decodeURIComponent(csrf) } : {})
                 },
                 body: JSON.stringify({ area: 'aluno' })
             });

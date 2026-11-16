@@ -1,4 +1,6 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const csrfHeader = () => { const m = document.cookie.match(/(?:^|; )CTT_CSRF_TOKEN=([^;]*)/); return m ? { 'X-CSRF-Token': decodeURIComponent(m[1]) } : {}; };
+document.addEventListener("DOMContentLoaded", () => {
     const formLogin = document.getElementById('formLogin');
     const emailInput = document.getElementById('email');
     const senhaInput = document.getElementById('senha');
@@ -32,7 +34,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    ...csrfHeader()
                 },
                 body: JSON.stringify({
                     area: 'admin',
@@ -51,7 +54,7 @@
                         <div class="alert alert-danger alert-custom border-0 fade show" role="alert" style="background-color: #dc3545; color: white;">
                             <div class="d-flex align-items-center small">
                                 <i class="ph ph-warning-circle me-2" style="font-size: 1rem;"></i>
-                                <div>${data.message || 'As informações de login que você inseriu estão incorretas.'}</div>
+                                <div>${escapeHtml(data.message || 'As informações de login que você inseriu estão incorretas.')}</div>
                             </div>
                         </div>
                     `;

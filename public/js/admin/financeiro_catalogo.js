@@ -54,7 +54,7 @@
             const tr = document.createElement('tr');
             const options = listaServicos.map(s => {
                 const selected = Number(s.id) === Number(servicoId) ? 'selected' : '';
-                return `<option value="${s.id}" data-valor="${s.valor_base}" ${selected}>${s.nome} (${formatarMoedaLocal(s.valor_base)})</option>`;
+                return `<option value="${s.id}" data-valor="${s.valor_base}" ${selected}>${$('<span>').text(s.nome ?? '').html()} (${formatarMoedaLocal(s.valor_base)})</option>`;
             }).join('');
 
             tr.innerHTML = `

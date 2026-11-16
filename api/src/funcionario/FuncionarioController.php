@@ -51,12 +51,22 @@ class FuncionarioController extends Controller {
             $message = $result['email_enviado']
                 ? 'Funcionário criado com sucesso. O convite de ativação foi enviado para o e-mail cadastrado.'
                 : 'Funcionário criado com sucesso, mas o convite não foi enviado. Verifique a configuração de e-mail e o log do servidor.';
-            if ($result['conta_reutilizada']) {
-                $message = 'Perfil de funcionario adicionado a conta existente. O usuario deve usar as mesmas credenciais.';
-            }
-            $this->json(['id' => $result['id'], 'email_enviado' => $result['email_enviado'], 'conta_reutilizada' => $result['conta_reutilizada'], 'message' => $message], 201);
+            $this->json(['id' => $result['id'], 'email_enviado' => $result['email_enviado'], 'conta_reutilizada' => false, 'message' => $message], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
+        } catch (\PDOException $e) {
+            $errorCode = (int) ($e->errorInfo[1] ?? 0);
+            $details = strtolower($e->getMessage());
+
+            if ($errorCode === 1062) {
+                $field = str_contains($details, 'cpf')
+                    ? 'CPF'
+                    : (str_contains($details, 'email') ? 'e-mail' : 'CPF ou e-mail');
+                $this->error("Este {$field} já está cadastrado.", 409);
+            }
+
+            error_log('[FuncionarioController::store] ' . $e->getMessage());
+            $this->error('Não foi possível salvar o funcionário no banco de dados.', 500);
         } catch (\Throwable $e) {
             error_log('[FuncionarioController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error("Erro interno ao salvar funcionário.", 500);

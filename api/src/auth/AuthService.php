@@ -29,6 +29,7 @@ class AuthService extends Service
 
         $identifier = strtolower(trim($dto->login));
         $this->assertRateLimit('login', $identifier, 5, 900);
+        $this->assertRateLimit('login_ip', 'global_ip', 25, 900);
 
         // Busca o usuário pelo identificador correspondente à área (e-mail ou matrícula para aluno; e-mail ou CPF para admin)
         $usuario = $this->usuarioRepo->findByLogin($dto->login, $area);
@@ -41,11 +42,13 @@ class AuthService extends Service
 
         if (!$usuario || !$senhaHash || !password_verify($dto->senha, $senhaHash)) {
             $this->usuarioRepo->recordAuthAttempt('login', $identifier, $this->requestIp(), 5, 900, 900);
+            $this->usuarioRepo->recordAuthAttempt('login_ip', 'global_ip', $this->requestIp(), 25, 900, 900);
             throw new Exception("As informações de login que você inseriu estão incorretas.");
         }
 
         if (!(bool)$usuario['ativo']) {
             $this->usuarioRepo->recordAuthAttempt('login', $identifier, $this->requestIp(), 5, 900, 900);
+            $this->usuarioRepo->recordAuthAttempt('login_ip', 'global_ip', $this->requestIp(), 25, 900, 900);
             throw new Exception("As informações de login que você inseriu estão incorretas.");
         }
 
@@ -99,7 +102,7 @@ class AuthService extends Service
             'cargo_id' => $cargoId,
             'cargo_nome' => $cargoNome,
             'permissoes' => $permissoes
-        ], $area);
+        ], $area, $senhaHash);
 
         return [
             'id' => (int) $usuario['id'],
@@ -141,7 +144,7 @@ class AuthService extends Service
         $token = bin2hex(random_bytes(32));
         $expiresAt = date('Y-m-d H:i:s', time() + 900);
 
-        $this->transaction(function () use ($usuario, $token, $expiresAt): void {
+        $this->transaction(function () use ($usuario, $perfil, $token, $expiresAt): void {
             $this->usuarioRepo->deletePasswordResetTokens((int) $usuario['id']);
             $this->usuarioRepo->createPasswordResetToken(
                 (int) $usuario['id'],
@@ -162,6 +165,9 @@ class AuthService extends Service
             throw new Exception("Token de recuperação inválido.");
         }
 
+        $ip = $this->requestIp();
+        $this->assertRateLimit('password_reset_confirm', $ip, 10, 900);
+
         if ($novaSenha !== $confirmarSenha) {
             throw new Exception("As senhas não coincidem.");
         }
@@ -170,18 +176,20 @@ class AuthService extends Service
 
         $reset = $this->usuarioRepo->findValidPasswordReset(hash('sha256', $token));
         if (!$reset) {
+            $this->usuarioRepo->recordAuthAttempt('password_reset_confirm', $ip, $ip, 10, 900, 900);
             throw new Exception("Link inválido ou expirado.");
         }
 
         $passwordHash = password_hash($novaSenha, PASSWORD_ARGON2ID);
 
-        $this->transaction(function () use ($reset, $passwordHash): void {
+        $this->transaction(function () use ($reset, $passwordHash, $ip): void {
             if ($reset['perfil'] === 'admin') {
                 $this->usuarioRepo->updatePassword((int) $reset['usuario_id'], $passwordHash);
             } else {
                 $this->usuarioRepo->updateProfilePassword((int) $reset['usuario_id'], $reset['perfil'], $passwordHash);
             }
             $this->usuarioRepo->invalidatePasswordResetToken((int) $reset['id']);
+            $this->usuarioRepo->clearAuthAttempts('password_reset_confirm', $ip, $ip);
         });
     }
 
@@ -200,6 +208,10 @@ class AuthService extends Service
         if (!in_array($perfil, ['aluno', 'funcionario'], true)) {
             throw new Exception('Perfil de ativacao invalido.');
         }
+
+        $identifier = 'activation_resend_' . $usuarioId;
+        $this->assertRateLimit('activation_resend', $identifier, 3, 900);
+        $this->usuarioRepo->recordAuthAttempt('activation_resend', $identifier, $this->requestIp(), 3, 900, 900);
 
         $usuario = $this->usuarioRepo->findById($usuarioId);
         if (!$usuario || !(bool) $usuario['ativo']) {
@@ -239,19 +251,24 @@ class AuthService extends Service
             throw new Exception('Link ou senhas invalidos.');
         }
 
+        $ip = $this->requestIp();
+        $this->assertRateLimit('account_activation_confirm', $ip, 10, 900);
+
         PasswordPolicy::validate($novaSenha);
         $activation = $this->usuarioRepo->findValidAccountActivation(hash('sha256', $token));
         if (!$activation) {
+            $this->usuarioRepo->recordAuthAttempt('account_activation_confirm', $ip, $ip, 10, 900, 900);
             throw new Exception('Link invalido ou expirado.');
         }
 
-        $this->transaction(function () use ($activation, $novaSenha): void {
+        $this->transaction(function () use ($activation, $novaSenha, $ip): void {
             $this->usuarioRepo->activateProfileAccount(
                 (int) $activation['usuario_id'],
                 (int) $activation['id'],
                 (string) $activation['perfil'],
                 password_hash($novaSenha, PASSWORD_ARGON2ID)
             );
+            $this->usuarioRepo->clearAuthAttempts('account_activation_confirm', $ip, $ip);
         });
     }
 

@@ -53,9 +53,9 @@ class LocalController extends Controller
             $id = $this->service->create($dto);
             $this->json(['id' => $id, 'message' => 'Local de treino cadastrado com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 409);
+            $this->errorFrom($e, 409);
         } catch (\Throwable $e) {
             error_log('[LocalController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error("Erro interno ao processar requisição.", 500);
@@ -70,9 +70,9 @@ class LocalController extends Controller
             $this->service->update($id, $dto);
             $this->json(['message' => 'Local de treino atualizado com sucesso.']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[LocalController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error("Erro ao atualizar local de treino.", 500);
@@ -85,7 +85,7 @@ class LocalController extends Controller
             $this->service->deactivate($id);
             $this->json(['message' => 'Local de treino desativado com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[LocalController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error("Erro ao desativar local de treino.", 500);
@@ -98,7 +98,7 @@ class LocalController extends Controller
             $this->service->reactivate($id);
             $this->json(['message' => 'Local de treino reativado com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[LocalController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error("Erro ao reativar local de treino.", 500);

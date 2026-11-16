@@ -50,9 +50,9 @@ class ModalidadeController extends Controller {
             $id = $this->service->create($dto);
             $this->json(['id' => $id, 'message' => 'Modalidade cadastrada com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 409);
+            $this->errorFrom($e, 409);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro interno ao processar requisicao.', 500);
@@ -66,9 +66,9 @@ class ModalidadeController extends Controller {
             $this->service->update($id, $dto);
             $this->json(['message' => 'Modalidade atualizada com sucesso.']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro ao atualizar modalidade.', 500);
@@ -80,7 +80,7 @@ class ModalidadeController extends Controller {
             $this->service->deactivate($id);
             $this->json(['message' => 'Modalidade desativada com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro ao desativar modalidade.', 500);
@@ -92,7 +92,7 @@ class ModalidadeController extends Controller {
             $this->service->reactivate($id);
             $this->json(['message' => 'Modalidade reativada com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[ModalidadeController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro ao reativar modalidade.', 500);

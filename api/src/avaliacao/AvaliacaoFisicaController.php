@@ -22,7 +22,7 @@ class AvaliacaoFisicaController extends Controller {
         try {
             $this->json($this->service->listByAlunoId($alunoId));
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[AvaliacaoFisicaController::indexByAluno] ' . $e->getMessage());
             $this->error('Erro ao carregar avaliacoes.', 500);
@@ -58,9 +58,9 @@ class AvaliacaoFisicaController extends Controller {
             $id = $this->service->createForAluno($alunoId, $avaliadorId, $dto);
             $this->json(['id' => $id, 'message' => 'Avaliacao criada com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 500);
+            $this->errorFrom($e, 500);
         } catch (\Throwable $e) {
             error_log('[AvaliacaoFisicaController::storeByAluno] ' . $e->getMessage());
             $this->error('Erro ao salvar avaliacao.', 500);
@@ -74,7 +74,7 @@ class AvaliacaoFisicaController extends Controller {
             $this->service->update($id, $dto);
             $this->json(['message' => 'Avaliacao atualizada com sucesso.']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
             $status = $e->getMessage() === 'Avaliacao nao encontrada.' ? 404 : 500;
             $this->error($e->getMessage(), $status);

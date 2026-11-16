@@ -49,7 +49,7 @@ class AnamneseController extends Controller {
             $data = $this->service->getFormulario($id);
             $this->json($data);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 400);
+            $this->errorFrom($e, 400);
         } catch (\Throwable $e) {
             $this->error('Erro ao carregar perguntas da anamnese', 500);
         }
@@ -64,7 +64,7 @@ class AnamneseController extends Controller {
 
         $userTipo = \Core\Auth\Auth::user('tipo');
         if ($userTipo === 'aluno' && (int) \Core\Auth\Auth::id() !== $alunoId) {
-            $this->error('Acesso negado às respostas informadas.', 403);
+            $this->error('Acesso negado ï¿½s respostas informadas.', 403);
             return;
         }
 
@@ -72,7 +72,7 @@ class AnamneseController extends Controller {
             $respostas = $this->service->getRespostas($alunoId);
             $this->json($respostas);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 400);
+            $this->errorFrom($e, 400);
         }
     }
 
@@ -91,7 +91,7 @@ class AnamneseController extends Controller {
             $this->service->salvar($dto);
             $this->json(['message' => 'Salvo com sucesso']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             // Log do erro interno aqui se necessÃ¡rio
             $this->error('Erro interno ao salvar anamnese', 500);

@@ -249,6 +249,21 @@ class UsuarioRepository extends Repository implements DataTablesRepositoryInterf
         return array_column($rows, 'slug');
     }
 
+    public function findSessionState(int $usuarioId): ?array
+    {
+        return $this->fetch('
+            SELECT u.id, u.nome, u.ativo, u.tipo_usuario, u.senha AS senha_admin,
+                   a.usuario_id AS aluno_id, a.senha AS senha_aluno,
+                   f.usuario_id AS funcionario_id, f.senha AS senha_funcionario,
+                   f.cargo_id, c.nome AS cargo_nome, c.ativo AS cargo_ativo
+            FROM usuario u
+            LEFT JOIN aluno a ON a.usuario_id = u.id
+            LEFT JOIN funcionario f ON f.usuario_id = u.id
+            LEFT JOIN cargo c ON c.id = f.cargo_id
+            WHERE u.id = ?
+        ', [$usuarioId]);
+    }
+
     public function findByEmailOrCpf(string $email, string $cpf): ?array
     {
         return $this->fetch(

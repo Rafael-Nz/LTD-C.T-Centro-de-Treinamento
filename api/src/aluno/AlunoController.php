@@ -50,19 +50,17 @@ class AlunoController extends Controller {
 
         try {
             $result = $this->service->create($dto);
-            $message = $result['conta_reutilizada']
-                ? 'Perfil de aluno adicionado a conta existente. O usuario deve usar as mesmas credenciais.'
-                : ($result['email_enviado']
-                    ? 'Aluno criado com sucesso. A senha inicial foi enviada para o e-mail cadastrado.'
-                    : 'Aluno criado com sucesso, mas nao foi possivel enviar a senha inicial por e-mail. Verifique a configuracao de e-mail e o log do servidor.');
+            $message = $result['email_enviado']
+                ? 'Aluno criado com sucesso. A senha inicial foi enviada para o e-mail cadastrado.'
+                : 'Aluno criado com sucesso, mas nao foi possivel enviar a senha inicial por e-mail. Verifique a configuracao de e-mail e o log do servidor.';
             $this->json([
                 'id' => $result['id'],
                 'email_enviado' => $result['email_enviado'],
-                'conta_reutilizada' => $result['conta_reutilizada'],
+                'conta_reutilizada' => false,
                 'message' => $message,
             ], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\PDOException $e) {
             $errorCode = (int) ($e->errorInfo[1] ?? 0);
             $details = strtolower($e->getMessage());
@@ -89,7 +87,7 @@ class AlunoController extends Controller {
             $this->service->update($id, $dto);
             $this->json(['message' => 'Aluno atualizado com sucesso.']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[AlunoController::update] ' . $e->getMessage());
             $this->error("Erro ao atualizar aluno.", 500);

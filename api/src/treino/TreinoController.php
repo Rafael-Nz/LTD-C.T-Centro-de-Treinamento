@@ -53,9 +53,9 @@ class TreinoController extends Controller {
             $id = $this->service->create($dto);
             $this->json(['id' => $id, 'message' => 'Treino criado com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 409);
+            $this->errorFrom($e, 409);
         } catch (\Throwable $e) {
             error_log('[TreinoController::store] ' . $e->getMessage());
             $this->error("Erro interno ao processar requisicao.", 500);
@@ -69,9 +69,9 @@ class TreinoController extends Controller {
             $this->service->update($id, $dto);
             $this->json(['message' => 'Treino atualizado com sucesso.']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TreinoController::update] ' . $e->getMessage());
             $this->error("Erro ao atualizar treino.", 500);
@@ -83,7 +83,7 @@ class TreinoController extends Controller {
             $this->service->deactivate($id);
             $this->json(['message' => 'Treino desativado com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TreinoController::cancelar] ' . $e->getMessage());
             $this->error("Erro ao desativar treino.", 500);
@@ -95,7 +95,7 @@ class TreinoController extends Controller {
             $this->service->reactivate($id);
             $this->json(['message' => 'Treino reativado com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TreinoController::reactivate] ' . $e->getMessage());
             $this->error("Erro ao reativar treino.", 500);

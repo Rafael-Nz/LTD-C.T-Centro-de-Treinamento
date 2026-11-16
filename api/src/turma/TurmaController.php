@@ -87,9 +87,9 @@ class TurmaController extends Controller {
                 'message' => 'Treino agendado com sucesso.'
             ], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 409);
+            $this->errorFrom($e, 409);
         } catch (\Throwable $e) {
             error_log('[TurmaController::confirmTreino] ' . $e->getMessage());
             $this->error("Erro ao agendar treino da turma.", 500);
@@ -108,9 +108,9 @@ class TurmaController extends Controller {
                 'resumo' => $resumo,
             ]);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TurmaController::savePresencas] ' . $e->getMessage());
             $this->error("Erro ao salvar presencas do treino.", 500);
@@ -127,9 +127,9 @@ class TurmaController extends Controller {
                 'message' => 'Treino cancelado com sucesso.',
             ]);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TurmaController::cancelTreino] ' . $e->getMessage());
             $this->error("Erro ao cancelar treino da turma.", 500);
@@ -146,7 +146,7 @@ class TurmaController extends Controller {
             $this->json(['id' => $id, 'message' => 'Turma criada com sucesso.'], 201);
         } catch (\Exception $e) {
             error_log('[TurmaController::store] ' . $e->getMessage());
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[TurmaController::store] ' . $e->getMessage());
             $this->error("Erro interno ao criar turma.", 500);
@@ -163,7 +163,7 @@ class TurmaController extends Controller {
             $this->json(['message' => 'Turma atualizada com sucesso.']);
         } catch (\Exception $e) {
             error_log('[TurmaController::update] ' . $e->getMessage());
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[TurmaController::update] ' . $e->getMessage());
             $this->error("Erro interno ao atualizar turma.", 500);
@@ -179,7 +179,7 @@ class TurmaController extends Controller {
             $this->json(['message' => 'Turma desativada com sucesso.']);
         } catch (\Exception $e) {
             error_log('[TurmaController::deactivate] ' . $e->getMessage());
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TurmaController::deactivate] ' . $e->getMessage());
             $this->error("Erro interno ao desativar turma.", 500);
@@ -195,7 +195,7 @@ class TurmaController extends Controller {
             $this->json(['message' => 'Turma reativada com sucesso.']);
         } catch (\Exception $e) {
             error_log('[TurmaController::reactivate] ' . $e->getMessage());
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[TurmaController::reactivate] ' . $e->getMessage());
             $this->error("Erro interno ao reativar turma.", 500);

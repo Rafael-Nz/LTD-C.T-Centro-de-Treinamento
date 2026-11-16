@@ -59,9 +59,9 @@ class CargoController extends Controller {
             $id = $this->service->create($dto, $permissoes);
             $this->json(['id' => $id, 'message' => 'Cargo cadastrado com sucesso.'], 201);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 409);
+            $this->errorFrom($e, 409);
         } catch (\Throwable $e) {
             error_log('[CargoController::store] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro interno ao processar requisicao.', 500);
@@ -77,9 +77,9 @@ class CargoController extends Controller {
             $this->service->update($id, $dto, $permissoes);
             $this->json(['message' => 'Cargo atualizado com sucesso.']);
         } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage(), 422);
+            $this->errorFrom($e, 422);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[CargoController::update] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro ao atualizar cargo.', 500);
@@ -91,7 +91,7 @@ class CargoController extends Controller {
             $this->service->deactivate($id);
             $this->json(['message' => 'Cargo desativado com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[CargoController::deactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro ao desativar cargo.', 500);
@@ -103,7 +103,7 @@ class CargoController extends Controller {
             $this->service->reactivate($id);
             $this->json(['message' => 'Cargo reativado com sucesso.']);
         } catch (\RuntimeException $e) {
-            $this->error($e->getMessage(), 404);
+            $this->errorFrom($e, 404);
         } catch (\Throwable $e) {
             error_log('[CargoController::reactivate] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
             $this->error('Erro ao reativar cargo.', 500);

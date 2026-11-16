@@ -23,19 +23,6 @@ class FuncionarioService extends Service {
         $cadastro = $this->transaction(function() use ($dto, $senhaInicial) {
             $dto->senha = $senhaInicial;
             $dto->conta_ativada = false;
-            $usuarioExistente = $this->usuarioService->findByEmailOrCpf($dto->email, $dto->cpf);
-            if ($usuarioExistente) {
-                if ($usuarioExistente['email'] !== $dto->email || $usuarioExistente['cpf'] !== $dto->cpf) {
-                    throw new \InvalidArgumentException('O e-mail e o CPF devem ser os mesmos da conta existente.');
-                }
-
-                if ($this->funcionarioRepo->findFuncionarioData((int) $usuarioExistente['id'])) {
-                    throw new \InvalidArgumentException('Este usuario ja possui um cadastro de funcionario.');
-                }
-
-                $this->funcionarioRepo->create($dto, (int) $usuarioExistente['id']);
-                return ['id' => (int) $usuarioExistente['id'], 'nova_conta' => false, 'enviar_senha' => true];
-            }
 
             // Força o tipo de usuário
             $dto->tipo_usuario = 'funcionario';
@@ -46,24 +33,22 @@ class FuncionarioService extends Service {
             // Cria o registro específico de funcionário
             $this->funcionarioRepo->create($dto, $usuarioId);
 
-            return ['id' => $usuarioId, 'nova_conta' => true, 'enviar_senha' => true];
+            return ['id' => $usuarioId];
         });
 
         $emailEnviado = false;
-        if ($cadastro['enviar_senha']) {
+        try {
+            $this->authService->sendInitialPassword($cadastro['id'], $senhaInicial);
             $emailEnviado = true;
-            try {
-                $this->authService->sendInitialPassword($cadastro['id'], $senhaInicial);
-            } catch (\Throwable $e) {
-                $emailEnviado = false;
-                error_log('[FuncionarioService::create] Falha ao enviar senha inicial do funcionario ' . $cadastro['id'] . ': ' . $e->getMessage());
-            }
+        } catch (\Throwable $e) {
+            $emailEnviado = false;
+            error_log('[FuncionarioService::create] Falha ao enviar senha inicial do funcionario ' . $cadastro['id'] . ': ' . $e->getMessage());
         }
 
         return [
             'id' => $cadastro['id'],
             'email_enviado' => $emailEnviado,
-            'conta_reutilizada' => !$cadastro['nova_conta'],
+            'conta_reutilizada' => false,
         ];
     }
 

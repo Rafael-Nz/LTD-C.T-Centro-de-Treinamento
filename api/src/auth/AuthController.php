@@ -20,6 +20,7 @@ class AuthController extends Controller
     public function login()
     {
         $this->only('POST');
+        $this->requireCsrf();
 
         try {
             $body = $this->body();
@@ -33,16 +34,17 @@ class AuthController extends Controller
             $user = $this->authService->login($dto, $area);
             $this->json(['message' => 'Login realizado com sucesso', 'user' => $user]);
         } catch (AuthRateLimitException $e) {
-            $this->error($e->getMessage(), 429);
+            $this->errorFrom($e, 429);
         } catch (\PDOException $e) {
             $this->error("Algo deu errado. Por favor, tente novamente em instantes.", 500);
         } catch (Throwable $e) {
-            $this->error($e->getMessage(), 401);
+            $this->errorFrom($e, 401);
         }
     }
 
     public function logout()
     {
+        \Core\Auth\Csrf::validate();
         $body = $this->body();
         $area = $body['area'] ?? ($_SERVER['HTTP_X_AUTH_AREA'] ?? null);
         if ($area && !in_array($area, ['admin', 'aluno'], true)) {
@@ -55,6 +57,7 @@ class AuthController extends Controller
     public function requestPasswordReset()
     {
         $this->only('POST');
+        $this->requireCsrf();
         try {
             $body = $this->body();
             $email = $body['email'] ?? '';
@@ -68,17 +71,18 @@ class AuthController extends Controller
             // Mensagem genérica por segurança: não revela se o e-mail existe
             $this->json(['message' => 'Se o e-mail estiver cadastrado, um link de recuperação será enviado.']);
         } catch (AuthRateLimitException $e) {
-            $this->error($e->getMessage(), 429);
+            $this->errorFrom($e, 429);
         } catch (\PDOException $e) {
             $this->error("Algo deu errado. Tente novamente em instantes.", 500);
         } catch (Throwable $e) {
-            $this->error($e->getMessage(), 400);
+            $this->errorFrom($e, 400);
         }
     }
 
     public function resetPassword()
     {
         $this->only('POST');
+        $this->requireCsrf();
         try {
             $body = $this->body();
             $this->authService->updatePasswordWithToken(
@@ -88,16 +92,19 @@ class AuthController extends Controller
             );
 
             $this->json(['message' => 'Senha redefinida com sucesso!']);
+        } catch (AuthRateLimitException $e) {
+            $this->errorFrom($e, 429);
         } catch (\PDOException $e) {
             $this->error("Erro ao conectar ao banco.", 500);
         } catch (Throwable $e) {
-            $this->error($e->getMessage(), 400);
+            $this->errorFrom($e, 400);
         }
     }
 
     public function activateAccount()
     {
         $this->only('POST');
+        $this->requireCsrf();
         try {
             $body = $this->body();
             $this->authService->activateAccount(
@@ -106,16 +113,19 @@ class AuthController extends Controller
                 (string) ($body['confirmar_senha'] ?? '')
             );
             $this->json(['message' => 'Conta ativada com sucesso.']);
+        } catch (AuthRateLimitException $e) {
+            $this->errorFrom($e, 429);
         } catch (\PDOException $e) {
             $this->error('Erro ao conectar ao banco.', 500);
         } catch (Throwable $e) {
-            $this->error($e->getMessage(), 400);
+            $this->errorFrom($e, 400);
         }
     }
 
     public function resendActivationLink()
     {
         $this->only('POST');
+        $this->requireCsrf();
         try {
             $body = $this->body();
             $perfil = (string) ($body['perfil'] ?? (\Core\Auth\Auth::user('tipo') === 'aluno' ? 'aluno' : 'funcionario'));
@@ -124,7 +134,7 @@ class AuthController extends Controller
         } catch (\PDOException $e) {
             $this->error('Erro ao conectar ao banco.', 500);
         } catch (Throwable $e) {
-            $this->error($e->getMessage(), 400);
+            $this->errorFrom($e, 400);
         }
     }
 }

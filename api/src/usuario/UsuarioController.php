@@ -75,9 +75,11 @@ class UsuarioController extends Controller {
             };
 
             $this->json(['id' => $id], 201);
+        } catch (\InvalidArgumentException $e) {
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[UsuarioController::store] ' . $e->getMessage());
-            $this->error('Erro ao criar usuario: ' . $e->getMessage(), 500);
+            $this->error('Erro interno ao criar usuario. Tente novamente mais tarde.', 500);
         }
     }
 
@@ -88,14 +90,21 @@ class UsuarioController extends Controller {
             return;
         }
 
-        $dto = UsuarioDTO::fromArray($this->body());
+        $body = $this->body();
+        if ($userTipo === 'aluno') {
+            unset($body['ativo'], $body['cpf'], $body['tipo_usuario']);
+        }
+
+        $dto = UsuarioDTO::fromArray($body);
 
         try {
             $this->service->update($id, $dto);
             $this->json(['message' => 'Usuario atualizado com sucesso.']);
+        } catch (\InvalidArgumentException $e) {
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[UsuarioController::update] ' . $e->getMessage());
-            $this->error('Erro ao atualizar usuario: ' . $e->getMessage(), 500);
+            $this->error('Erro interno ao atualizar usuario. Tente novamente mais tarde.', 500);
         }
     }
 
@@ -103,9 +112,11 @@ class UsuarioController extends Controller {
         try {
             $this->service->deactivate($id);
             $this->json(['message' => 'Usuario desativado com sucesso.']);
+        } catch (\InvalidArgumentException $e) {
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[UsuarioController::destroy] ' . $e->getMessage());
-            $this->error('Erro ao desativar usuario: ' . $e->getMessage(), 500);
+            $this->error('Erro interno ao desativar usuario. Tente novamente mais tarde.', 500);
         }
     }
 
@@ -113,9 +124,11 @@ class UsuarioController extends Controller {
         try {
             $this->service->reactivate($id);
             $this->json(['message' => 'Usuario reativado com sucesso.']);
+        } catch (\InvalidArgumentException $e) {
+            $this->errorFrom($e, 422);
         } catch (\Throwable $e) {
             error_log('[UsuarioController::reactivate] ' . $e->getMessage());
-            $this->error('Erro ao reativar usuario: ' . $e->getMessage(), 500);
+            $this->error('Erro interno ao reativar usuario. Tente novamente mais tarde.', 500);
         }
     }
 }

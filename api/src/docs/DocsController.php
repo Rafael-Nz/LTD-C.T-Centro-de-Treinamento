@@ -9,6 +9,8 @@ class DocsController
         // Envia cabeçalho HTML explicitamente para sobrepor o default JSON do bootstrap
         header('Content-Type: text/html; charset=utf-8');
         header('X-Frame-Options: SAMEORIGIN');
+        // Swagger UI é servido localmente (sem CDN); a CSP global da API é relaxada somente aqui.
+        header("Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'");
 
         $csrf = $_COOKIE['CTT_CSRF_TOKEN'] ?? '';
 
@@ -20,8 +22,7 @@ class DocsController
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross C.T | Documentação da API (Swagger)</title>
     <link rel="icon" type="image/png" href="/ctt/public/img/logo.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui.css">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ctt/plugins/swagger-ui/swagger-ui.css">
     <style>
         :root {
             --brand-primary: #dc3545;
@@ -129,8 +130,8 @@ class DocsController
 
     <div id="swagger-ui"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui-bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui-standalone-preset.js"></script>
+    <script src="/ctt/plugins/swagger-ui/swagger-ui-bundle.js"></script>
+    <script src="/ctt/plugins/swagger-ui/swagger-ui-standalone-preset.js"></script>
     <script>
         window.onload = function() {
             const ui = SwaggerUIBundle({
@@ -173,7 +174,6 @@ HTML;
     public function openapi(): void
     {
         header('Content-Type: application/json; charset=utf-8');
-        header('Access-Control-Allow-Origin: *');
 
         $specFile = __DIR__ . '/openapi.json';
         if (is_file($specFile)) {

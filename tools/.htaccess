@@ -1,0 +1,3 @@
+# tools/.htaccess
+# Impede acesso web direto a ferramentas internas, rotinas de CLI e suites de testes.
+Require all denied

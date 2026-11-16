@@ -1,0 +1,3 @@
+# admin/views/.htaccess
+# Bloqueia acesso web direto aos templates de views.
+Require all denied

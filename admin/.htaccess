@@ -2,6 +2,9 @@
 RewriteEngine On
 RewriteBase /ctt/admin/
 
+# Impede acesso direto a views e rotas internas
+RewriteRule ^(?:views|routes)/ - [F,L,NC]
+
 # Remove o cache para evitar problemas no desenvolvimento e login
 <IfModule mod_headers.c>
     Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"

@@ -1,0 +1,14 @@
+# public/.htaccess
+# Configuração de reescrita para quando o DocumentRoot do servidor web apontar para esta pasta (public/).
+RewriteEngine On
+
+# Impede acesso direto a templates de views
+RewriteRule ^views/ - [F,L,NC]
+
+# Serve arquivos estáticos reais (CSS, JS, imagens, fontes)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Roteamento central via public/index.php
+RewriteRule ^(.*)$ index.php [QSA,L]

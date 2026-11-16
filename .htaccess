@@ -7,8 +7,17 @@ RewriteRule ^docs/?$ api/docs [R=301,L,NC]
 
 # Arquivos de configuracao, SQL e ferramentas sao somente internos/CLI.
 Options -Indexes
+ServerSignature Off
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), camera=(), microphone=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+    Header always unset X-Powered-By
+</IfModule>
 RewriteRule (^|/)\. - [F,L]
-RewriteRule ^(?:docs|tools|vendor)/ - [F,L,NC]
+RewriteRule ^(?:docs|tools|vendor|public/views|public/routes)/ - [F,L,NC]
 RewriteRule ^(?:composer\.(?:json|lock)|README\.md)(?:/|$) - [F,L,NC]
 <FilesMatch "(?i)(^\.env(?:\..*)?$|\.(?:sql|bak|backup|old)$)">
     Require all denied
@@ -18,7 +27,8 @@ RewriteRule ^(?:composer\.(?:json|lock)|README\.md)(?:/|$) - [F,L,NC]
 RewriteRule ^admin($|/) - [L]
 RewriteRule ^api($|/) - [L]
 
-# Servir arquivos estáticos de public/
+# Servir arquivos estáticos de public/ quando não existirem diretamente na raiz
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|pdf|mp4|webm)$ [NC]
 RewriteCond %{REQUEST_URI} !^/ctt/public/ [NC]
 RewriteRule ^(.+)$ public/$1 [L]

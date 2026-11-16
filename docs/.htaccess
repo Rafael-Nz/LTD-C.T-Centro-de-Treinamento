@@ -1,0 +1,6 @@
+# docs/.htaccess
+# Redireciona o acesso à raiz /ctt/docs para a documentação Swagger (/ctt/api/docs)
+# e bloqueia o acesso web direto aos arquivos internos Markdown e SQL.
+RewriteEngine On
+RewriteRule ^$ /ctt/api/docs [R=301,L]
+RewriteRule ^ - [F,L]

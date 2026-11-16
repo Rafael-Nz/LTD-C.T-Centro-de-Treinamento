@@ -1,6 +1,7 @@
 RewriteEngine On
 
-# Impede acesso direto a arquivos sensíveis
+# Impede acesso direto a arquivos sensíveis e código interno
+RewriteRule ^(?:core|routes|src)/ - [F,L,NC]
 <FilesMatch "\.(env|log|ini|yaml|yml|json)$">
     Require all denied
 </FilesMatch>

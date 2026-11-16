@@ -8,7 +8,7 @@ Depois de concluir as etapas deste guia, prossiga para o **[Guia de Setup da Apl
 
 ---
 
-## 🗺️ Visão Geral do Processo
+## Visão Geral do Processo
 
 ```mermaid
 flowchart LR
@@ -20,7 +20,7 @@ flowchart LR
 
 ---
 
-## 💻 1. Requisitos do Sistema
+## 1. Requisitos do Sistema
 
 ### A. Requisitos de Execução (Qualquer Máquina com XAMPP)
 São os componentes do XAMPP obrigatórios para que a aplicação execute:
@@ -45,7 +45,7 @@ Se a nova máquina for utilizada por um desenvolvedor para programar, atualizar 
 
 ---
 
-## ⚙️ 2. Configuração do XAMPP e Ferramentas
+## 2. Configuração do XAMPP e Ferramentas
 
 ### 2.1 Adicionar o PHP do XAMPP ao PATH do Sistema
 Por padrão, o instalador do XAMPP **não** adiciona o binário do PHP ao `PATH` do Windows. Sem essa configuração, comandos como `php` ou `composer` exibirão o erro `'php' não é reconhecido como comando interno`.
@@ -117,7 +117,7 @@ O sistema depende da reescrita de rotas amigáveis via arquivo `.htaccess`.
 
 ---
 
-## 📥 3. Obtenção do Código e Localização no XAMPP
+## 3. Obtenção do Código e Localização no XAMPP
 
 > [!IMPORTANT]
 > **Nome da pasta no XAMPP:**
@@ -153,7 +153,7 @@ A estrutura no servidor ficará:
 
 ---
 
-## 📦 4. Instalação das Dependências PHP (Composer)
+## 4. Instalação das Dependências PHP (Composer)
 
 Na raiz do projeto (`htdocs/ctt`), instale as dependências declaradas no `composer.json` (`vlucas/phpdotenv` e `phpmailer/phpmailer`):
 
@@ -174,9 +174,12 @@ O comando gerará o diretório `vendor/` e o arquivo `vendor/autoload.php`.
 
 ---
 
-## 📧 5. Compilação dos Templates de E-mail (Ambiente de Desenvolvimento)
+## 5. Compilação dos Templates de E-mail (Ambiente de Desenvolvimento)
 
-O sistema utiliza a biblioteca **MJML** para gerar e-mails responsivos de recuperação e ativação de senha. O template fonte fica em `tools/email/templates/password-reset.mjml` e precisa ser compilado para o arquivo HTML de produção: `api/src/auth/password-reset.html`.
+O sistema utiliza a biblioteca **MJML** para gerar e-mails responsivos de alta compatibilidade. Os templates fonte ficam em `tools/email/templates/`:
+- `account-activation.mjml`: Boas-vindas e ativação de nova conta;
+- `initial-password.mjml`: Credenciais de acesso inicial e código de matrícula;
+- `password-reset.mjml`: Link seguro para redefinição de senha.
 
 No terminal da raiz do projeto:
 
@@ -184,23 +187,40 @@ No terminal da raiz do projeto:
 # 1. Instalar dependências da ferramenta de e-mail
 npm install --prefix tools/email
 
-# 2. Compilar o template MJML para o HTML de produção
+# 2. Compilar todos os templates MJML para os HTMLs de produção
 npm run email:build --prefix tools/email
 ```
 
 > [!IMPORTANT]
-> Certifique-se de que o arquivo `api/src/auth/password-reset.html` foi criado. Ele é obrigatório para que os e-mails com links de acesso e redefinição de senha funcionem.
+> Certifique-se de que os três arquivos HTML foram criados em `api/src/auth/`:
+> - `account-activation.html`
+> - `initial-password.html`
+> - `password-reset.html`
 > 
-> Durante alterações visuais no template, você pode usar o modo observador contínuo:
+> Durante alterações visuais nos templates, você pode usar o modo observador contínuo:
 > ```powershell
 > npm run email:watch --prefix tools/email
 > ```
 
 ---
 
-## 🛡️ 6. Permissões de Script no PowerShell (Windows)
+## 5.1 Plugins e Dependências Visuais (Versionados no Git)
 
-Alguns scripts auxiliares do projeto utilizam PowerShell (`.ps1`), como a criação de administrador e o agendamento de tarefas. Por padrão, o Windows pode bloquear a execução de scripts locais.
+Para garantir estabilidade absoluta, ausência de quebras de compatibilidade em APIs do front-end e operação 100% offline imediata no XAMPP, todas as bibliotecas de interface (Bootstrap 5, DataTables 2, Phosphor Icons, FontAwesome 6, FullCalendar, Chart.js, Select2, SweetAlert2, iMask, etc.) **são versionadas diretamente no repositório** dentro do diretório [`plugins/`](../plugins/).
+
+Portanto, **não é necessário fazer downloads adicionais** após clonar o projeto.
+
+Caso você seja um mantenedor do sistema e deseje verificar, recompor ou atualizar controladamente os assets a partir das fontes oficiais CDN, pode utilizar o utilitário universal em PHP puro:
+
+```powershell
+php tools/download_all_plugins.php
+```
+
+---
+
+## 6. Permissões de Script no PowerShell (Windows)
+
+Alguns scripts auxiliares do projeto utilizam PowerShell (`.ps1`), como o download de plugins, criação de administrador e testes. Por padrão, o Windows pode bloquear a execução de scripts locais.
 
 Para liberar a execução na sessão atual do seu terminal:
 
@@ -210,7 +230,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ---
 
-## 🚀 7. Preparação de Pacote para Servidor de Produção
+## 7. Preparação de Pacote para Servidor de Produção
 
 Se você for entregar ou publicar o sistema em uma máquina de uso final onde **não** haverá Git, Composer ou Node.js:
 
@@ -222,11 +242,11 @@ Se você for entregar ou publicar o sistema em uma máquina de uso final onde **
    ```
 
 2. **Arquivos que devem ser copiados para a pasta `htdocs/ctt` do XAMPP:**
-   - `admin/`, `api/`, `public/`, `vendor/`
+   - `admin/`, `api/`, `public/`, `plugins/`, `vendor/`
    - `tools/financeiro/`, `tools/sistema/`
    - `docs/setup.md`, `docs/sql/`
    - `index.php`, `.htaccess`, `.env.example`, `autoload.php`, `composer.json`, `composer.lock`
-   - `api/src/auth/password-reset.html` (já compilado)
+   - `api/src/auth/account-activation.html`, `initial-password.html`, `password-reset.html` (já compilados)
 
 3. **Arquivos que NUNCA devem ser transferidos:**
    - `.env` local com credenciais da máquina de desenvolvimento;
@@ -236,33 +256,33 @@ Se você for entregar ou publicar o sistema em uma máquina de uso final onde **
 
 ---
 
-## ❓ 8. Resolução de Problemas Comuns (Troubleshooting)
+## 8. Resolução de Problemas Comuns (Troubleshooting)
 
-### 🔴 `'php'` ou `'composer'` não é reconhecido no terminal
+### `'php'` ou `'composer'` não é reconhecido no terminal
 - **Causa:** O caminho da pasta `php` do XAMPP não está na variável de ambiente `PATH`.
 - **Solução:** Adicione o caminho do PHP do XAMPP (ex: `C:\xampp\php`) ao `PATH` do sistema e reabra o terminal.
 
-### 🔴 `Fatal error: Class 'Dotenv\Dotenv' not found`
+### `Fatal error: Class 'Dotenv\Dotenv' not found`
 - **Causa:** A pasta `vendor/` não existe ou as dependências do Composer não foram instaladas.
 - **Solução:** Execute `composer install` na raiz do projeto.
 
-### 🔴 Apache ou MySQL não iniciam no painel do XAMPP
+### Apache ou MySQL não iniciam no painel do XAMPP
 - **Causa:** Conflito de portas com outros softwares (ex: IIS/Skype na porta 80 ou 443; outra instância de MySQL rodando na porta 3306).
 - **Solução:** Encerre os processos conflitantes ou ajuste a porta do Apache no `httpd.conf` para 8080 (se fizer isso, atualize o `APP_URL` no `.env` para `http://localhost:8080/ctt`).
 
-### 🔴 Rotas retornam erro 404 ao navegar no painel administrativo ou na API
+### Rotas retornam erro 404 ao navegar no painel administrativo ou na API
 - **Causa 1:** O módulo `mod_rewrite` do Apache não está habilitado no `httpd.conf`.
 - **Causa 2:** A diretiva `AllowOverride All` não está configurada para a pasta `htdocs`.
 - **Causa 3:** O projeto foi clonado com nome de pasta diferente de `ctt` dentro de `htdocs`.
 
-### 🔴 `Arquivo password-reset.html não encontrado`
+### `Arquivo password-reset.html não encontrado`
 - **Causa:** O template MJML não foi compilado com o comando do Node.js.
 - **Solução:** Execute `npm run email:build --prefix tools/email`.
 
 ---
 
-## ➡️ Próximo Passo
+## Próximo Passo
 
 Com os pré-requisitos validados, o XAMPP configurado e as dependências instaladas, prossiga para a configuração do banco de dados e ativação do sistema:
 
-👉 **[Continuar para o Guia de Setup da Aplicação (setup.md)](setup.md)**
+**[Continuar para o Guia de Setup da Aplicação (setup.md)](setup.md)**

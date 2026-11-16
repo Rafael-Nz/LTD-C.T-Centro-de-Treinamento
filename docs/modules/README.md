@@ -4,7 +4,7 @@ Os módulos da API do **LTD-C.T** estão organizados por domínio de negócio no
 
 ---
 
-## 🏛️ Padrão Arquitetural dos Módulos
+## Padrão Arquitetural dos Módulos
 
 Todos os módulos de negócio seguem rigorosamente o mesmo padrão de camadas:
 
@@ -19,9 +19,9 @@ api/src/<modulo>/
 
 ---
 
-## 📂 Catálogo de Módulos por Categoria
+## Catálogo de Módulos por Categoria
 
-### 👥 1. Gestão de Pessoas & Acesso
+### 1. Gestão de Pessoas & Acesso
 | Módulo | Descrição | Documentação |
 | :--- | :--- | :--- |
 | **Auth** | Login, logout, recuperação e redefinição de senha, tokens e cookies de sessão | [auth.md](auth.md) |
@@ -30,7 +30,7 @@ api/src/<modulo>/
 | **Funcionário** | Gestão de colaboradores, instrutores e vínculo com cargos | [funcionario.md](funcionario.md) |
 | **Cargo** | Cargos operacionais e atribuição de permissões granulares | [cargo.md](cargo.md) |
 
-### 🏋️ 2. Operação & Treinamento
+### 2. Operação & Treinamento
 | Módulo | Descrição | Documentação |
 | :--- | :--- | :--- |
 | **Aluno** | Cadastro de alunos, geração atômica de matrícula e histórico | [aluno.md](aluno.md) |
@@ -39,18 +39,18 @@ api/src/<modulo>/
 | **Modalidade** | Cadastro de modalidades de treino (Cross, Musculação, Pilates, etc.) | [modalidade.md](modalidade.md) |
 | **Local** | Controle de espaços físicos e capacidade de lotação | [local.md](local.md) |
 
-### 🩺 3. Saúde & Acompanhamento Físico
+### 3. Saúde & Acompanhamento Físico
 | Módulo | Descrição | Documentação |
 | :--- | :--- | :--- |
 | **Anamnese** | Fichas de anamnese, questionários de saúde, histórico médico e alergias | [anamnese.md](anamnese.md) |
 | **Avaliação** | Avaliações físicas antropométricas, bioimpedância, dobras e composição corporal | [avaliacao.md](avaliacao.md) |
 
-### 💳 4. Gestão Financeira
+### 4. Gestão Financeira
 | Módulo | Descrição | Documentação |
 | :--- | :--- | :--- |
 | **Financeiro** | Serviços, planos comerciais, contratos com snapshot de valores, cobranças automáticas com chave de idempotência, recebimentos, cancelamentos e estornos | [financeiro.md](financeiro.md) |
 
-### 📊 5. Inteligência & Governança
+### 5. Inteligência & Governança
 | Módulo | Descrição | Documentação |
 | :--- | :--- | :--- |
 | **Relatórios** | Geração de relatórios operacionais, frequência e consolidações | [relatorio.md](relatorio.md) |
@@ -58,7 +58,7 @@ api/src/<modulo>/
 | **Auditoria - Eventos** | Catálogo completo de eventos auditáveis e disparadores | [auditoria_eventos.md](auditoria_eventos.md) |
 | **Auditoria - Operações**| Instalação de permissões estritas para `ctt_app` e checkpoints | [auditoria_operacoes.md](auditoria_operacoes.md) |
 
-### 📖 6. Documentação Viva & Swagger
+### 6. Documentação Viva & Swagger
 | Módulo | Descrição | Documentação |
 | :--- | :--- | :--- |
 | **Docs (Swagger)** | Interface Swagger UI navegável com injeção automática de CSRF e especificação OpenAPI 3.0 | [docs.md](docs.md) |

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Disponibiliza métricas operacionais, relatórios tabulares e exportações dos principais dados do centro de treinamento. O módulo é somente leitura e consolida informações de alunos, presença, avaliações físicas, turmas, funcionários e agenda de treinos.
+Disponibiliza métricas operacionais, relatórios tabulares e exportações dos principais dados do centro de treinamento. O módulo é somente leitura e consolida informações de alunos, contratos de planos, contratos de serviços avulsos, presença, avaliações físicas, turmas, funcionários e agenda de treinos.
 
 ## Diretório
 
@@ -37,6 +37,8 @@ Quando não houver registros de presença no período, `taxa_presenca` será `0`
 Gera um relatório em JSON. O parâmetro obrigatório `tipo` aceita:
 
 - `alunos`
+- `contratos_planos` (ou `contratos` com `tipoContrato=plano`)
+- `contratos_servicos` (ou `contratos` com `tipoContrato=servico`)
 - `presenca`
 - `avaliacoes`
 - `turmas`
@@ -70,21 +72,32 @@ Os filtros são opcionais e podem ser enviados tanto para `gerar` quanto para `e
 
 | Parâmetro | Formato | Aplicação |
 | --- | --- | --- |
+| `tipoContrato` | `plano` ou `servico` | Contratos: define se busca contratos de planos ou itens de serviços avulsos. |
 | `modalidade` | ID numérico | Alunos, presença e turmas. |
-| `aluno` | ID numérico | Avaliações. Obrigatório neste relatório: não é permitido gerar evolução de todos os alunos ao mesmo tempo. |
+| `aluno` | ID numérico | Avaliações (obrigatório), presença e contratos (opcional). |
+| `plano` | ID numérico | Contratos de planos: filtra por plano específico. |
+| `servico` | ID numérico | Contratos de serviços: filtra por serviço avulso específico. |
 | `turma` | ID numérico | Presença e treinos. |
 | `cargo` | ID numérico | Funcionários. |
-| `dataInicio` | `dd/mm/YYYY` ou `YYYY-mm-dd` | Presença, avaliações e treinos; inclui a partir da data informada. |
-| `dataFim` | `dd/mm/YYYY` ou `YYYY-mm-dd` | Presença, avaliações e treinos; inclui o dia inteiro informado. |
-| `status` | Ver tabela abaixo | Alunos, funcionários e treinos. |
+| `dataInicio` | `dd/mm/YYYY` ou `YYYY-mm-dd` | Presença, avaliações, treinos e contratos; inclui a partir da data informada. |
+| `dataFim` | `dd/mm/YYYY` ou `YYYY-mm-dd` | Presença, avaliações, treinos e contratos; inclui o dia inteiro informado. |
+| `status` | Ver tabela abaixo | Alunos, funcionários, treinos e contratos. |
 
-Para `alunos` e `funcionarios`, `status` aceita `ativo` ou `inativo`. Para `treinos`, aceita `agendado`, `concluido` ou `cancelado`. Valores de status não reconhecidos são ignorados nessas consultas.
+Para `alunos` e `funcionarios`, `status` aceita `ativo` ou `inativo`. Para `treinos`, aceita `agendado`, `concluido` ou `cancelado`. Para `contratos`, aceita `ativo`, `pausado`, `encerrado` ou `cancelado`. Valores de status não reconhecidos são ignorados nessas consultas.
 
 ## Relatórios disponíveis
 
 ### Alunos
 
 Retorna `id`, `nome`, `sobrenome`, `cpf`, `email`, `ativo`, `data_matricula`, `codigo_matricula`, `total_turmas` e `modalidades`. O filtro de modalidade considera as modalidades das turmas associadas ao aluno.
+
+### Contratos de Planos (`contratos_planos`)
+
+Focado na análise de **quais planos comerciais são mais contratados**: retorna `contrato_id`, `aluno_id`, `aluno`, `cpf`, `email`, `plano`, `plano_id`, `periodicidade`, `data_inicio`, `data_fim`, `dia_vencimento`, `valor_contratado`, `desconto`, `valor_liquido` e `status`. Inclui gráficos de quantidade por plano (ranking de adesão) e receita contratada por plano.
+
+### Contratos de Serviços Avulsos (`contratos_servicos`)
+
+Focado na análise de **quais serviços avulsos são mais contratados**: retorna `item_id`, `contrato_id`, `aluno_id`, `aluno`, `cpf`, `email`, `servico`, `servico_id`, `quantidade`, `valor_unitario`, `valor_desconto`, `valor_total`, `data_inicio`, `dia_vencimento`, `status` e `origem_contrato`. Inclui gráficos de quantidade contratada por serviço avulso (ranking de mais procurados) e receita total gerada por cada serviço avulso.
 
 ### Presença
 
@@ -156,6 +169,7 @@ Responsável por:
 ## Relação com outros módulos
 
 - `aluno`: dados cadastrais, matrícula e vínculos com turmas;
+- `financeiro`: contratos, planos e serviços vinculados;
 - `avaliacao`: avaliações físicas e avaliadores;
 - `funcionario` e `cargo`: equipe, cargos e treinos realizados;
 - `modalidade`: classificação de alunos, turmas e treinos;

@@ -70,8 +70,11 @@ Responsável por:
 
 - O aluno é tratado com status ativo ou inativo.
 - O cadastro pode ser associado a avaliações físicas.
-- A matrícula pode seguir uma lógica sequencial e automatizada.
-- Alunos e avaliações devem manter relacionamento confiável por `aluno_id`.
+- A matrícula segue lógica sequencial automatizada.
+- Alunos e avaliações mantêm relacionamento confiável por `aluno_id`.
+- **Criação de Conta Independente**: Todo cadastro cria uma nova conta exclusiva (`tipo_usuario = 'aluno'`). O sistema não reutiliza contas pré-existentes.
+- **Credenciais**: A senha inicial é gerada automaticamente pelo sistema e enviada por e-mail para ativação.
+- **Unicidade**: Tentativas de cadastrar CPF ou e-mail já existentes retornam erro HTTP 409 (Conflito).
 
 ## Observação
 

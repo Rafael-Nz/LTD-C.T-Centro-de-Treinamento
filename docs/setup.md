@@ -4,23 +4,7 @@ Este procedimento deve ser executado logo após a conclusão do **[Guia de Insta
 
 ---
 
-## 🗺️ Visão Geral do Setup
-
-```mermaid
-flowchart TD
-    S1["1. Iniciar Serviços\nApache & MySQL no XAMPP"] --> S2["2. Criar Banco de Dados\nImportar docs/sql/setup/banco.sql"]
-    S2 --> S3["3. Usuário ctt_app & Auditoria\nCriar usuário + auditoria_permissoes.sql"]
-    S3 --> S4["4. Configurar .env\nCredenciais de BD, URL e SMTP"]
-    S4 --> S5["5. Criar Admin Inicial\nphp tools/sistema/criar_admin.php"]
-    S5 --> S6["6. (Opcional) Seed de Testes\nImportar sistema_seed.sql"]
-    S6 --> S7["7. Validar Integridade\nverify_audit.php & testes"]
-    S7 --> S8["8. Rotina Financeira\nAgendador de Tarefas do Windows"]
-    S8 --> S9["✅ Concluído!\nAcessar /ctt/admin/login"]
-```
-
----
-
-## 🚀 1. Iniciar os Serviços no Painel do XAMPP
+## 1. Iniciar os Serviços no Painel do XAMPP
 
 1. Abra o **XAMPP Control Panel**.
 2. Clique no botão **Start** para os módulos **Apache** e **MySQL**.
@@ -32,7 +16,7 @@ flowchart TD
 
 ---
 
-## 🗄️ 2. Criar e Estruturar o Banco de Dados
+## 2. Criar e Estruturar o Banco de Dados
 
 O banco de dados oficial do sistema chama-se **`db_centro_treinamento`** com conjunto de caracteres `utf8mb4_unicode_ci`.
 O script com todas as tabelas, índices e triggers de integridade reside em:
@@ -67,12 +51,12 @@ mysql -u root < docs/sql/setup/banco.sql
 
 ---
 
-## 🛡️ 3. Criar a Conta de Serviço (`ctt_app`) e Configurar Permissões
+## 3. Criar a Conta de Serviço (`ctt_app`) e Configurar Permissões
 
 > [!IMPORTANT]
 > **Princípio do Menor Privilégio e Integridade da Auditoria:**
 > O sistema implementa uma **trilha de auditoria criptográfica imutável** (estilo blockchain interna) com encadeamento de hashes SHA-256 gerados diretamente pelas Triggers do banco de dados.
-> 
+>
 > A aplicação **NUNCA deve rodar como usuário `root`**. O usuário `root` não possui as restrições de permissão que protegem a cadeia de blocos de modificações manuais. A aplicação exige uma conta dedicada: **`ctt_app`**.
 
 ### 3.1 Criar o usuário `ctt_app` no MySQL
@@ -99,7 +83,7 @@ mysql -u root -e "source docs/sql/auditoria_permissoes.sql"
 
 ---
 
-## 📝 4. Configurar as Variáveis de Ambiente (`.env`)
+## 4. Configurar as Variáveis de Ambiente (`.env`)
 
 Na raiz do projeto (`htdocs/ctt`), copie o modelo `.env.example` para `.env`:
 
@@ -154,7 +138,7 @@ MAIL_FROM_NAME="Cross C.T"
 
 ---
 
-## 👤 5. Criar o Administrador Inicial do Sistema
+## 5. Criar o Administrador Inicial do Sistema
 
 O banco de dados provisionado está limpo de senhas por questões de segurança. O sistema possui um utilitário CLI para criar o primeiro usuário Administrador respeitando as diretrizes de segurança da aplicação (`PasswordPolicy`).
 
@@ -182,7 +166,7 @@ php tools/sistema/criar_admin.php --email="admin@ctt.local" --senha="AdminForte@
 
 ---
 
-## 🧪 6. (Opcional) Popular com Dados de Teste (Seed de Desenvolvimento)
+## 6. (Opcional) Popular com Dados de Teste (Seed de Desenvolvimento)
 
 Para máquinas de desenvolvimento onde você precisa de dados fictícios para testes (alunos, turmas, funcionários, planos e contratos):
 
@@ -201,7 +185,7 @@ Para máquinas de desenvolvimento onde você precisa de dados fictícios para te
 
 ---
 
-## 🔍 7. Validação de Integridade e Testes de Ambiente
+## 7. Validação de Integridade e Testes de Ambiente
 
 Valide se a instalação e o ambiente estão 100% íntegros antes de liberar o uso:
 
@@ -230,42 +214,53 @@ composer test
 
 ---
 
-## ⏰ 8. Ativar a Rotina Financeira (Cobranças Automáticas)
+## 8. Rotina Financeira & Automação Just-In-Time (JIT)
 
-A rotina financeira calcula competências devidas, atualiza contratos e gera faturas pendentes de forma idempotente.
+A partir da refatoração financeira, **não é mais necessário configurar o Agendador de Tarefas do Windows**. O sistema adota uma arquitetura **Just-In-Time (JIT)** com triggers automáticas de banco de dados (`docs/sql/migrations/cobrancas_dinamicas_jit.sql`):
 
-### 8.1 Teste Manual de Execução
+### 8.1 Como Opera o Modelo Just-In-Time:
+- **Disparo Transparente na Aplicação:** Ao acessar contratos, cobranças ou métricas financeiras (`FinanceiroController::executarJit()`), a aplicação processa pendências automaticamente.
+- **Faturamento Imediato em Contratos:** Ao cadastrar ou reativar um contrato (`criarContrato()` e `statusContrato()`), as cobranças devidas são geradas no mesmo instante.
+- **Triggers no Banco de Dados:** Triggers SQL convertem status de cobranças para `vencida` no exato momento da gravação caso a data de vencimento já tenha expirado.
+- **Throttle Diário Inteligente:** O arquivo [`tools/financeiro/financeiro_jit_state.json`](../tools/financeiro/financeiro_jit_state.json) armazena a última data processada para que a varredura completa ocorra no máximo uma vez ao dia, mantendo o tempo de resposta inferior a 1ms.
+
+### 8.2 Teste Operacional das Triggers e JIT
+Para validar o funcionamento completo da rotina JIT e das triggers no seu banco:
+```powershell
+php tools/testes/financeiro/test_jit_triggers.php
+```
+
+### 8.3 Execução Manual ou Cron (Linux / Opcional)
+Caso queira disparar manualmente a geração ou rodar via crontab em servidores Linux:
 ```powershell
 php tools/financeiro/gerar_cobrancas.php
 ```
 
-### 8.2 Agendamento da Rotina Diária no Windows (06:00)
-Execute o assistente com privilégios de Administrador no PowerShell:
-
-```powershell
-& .\tools\financeiro\instalar_rotina_financeiro.ps1
-```
-Esse script cria no **Agendador de Tarefas do Windows** (`taskschd.msc`) a tarefa `CTT - Gerar cobrancas`, configurada para rodar diariamente às **06:00**, gravando o histórico de execuções no arquivo `tools/financeiro/financeiro_rotina.log`.
-
 ---
 
-## 🌐 9. Acesso e Validação no Navegador
+## 9. Acesso e Validação no Navegador
 
 Abra o navegador e verifique os pontos de entrada do sistema:
 
 1. **Painel Administrativo:**
    - **URL:** [http://localhost/ctt/admin/login](http://localhost/ctt/admin/login)
-   - **Login:** O e-mail cadastrado no Passo 5 (ou `admin@centrotreinamento.com` se usou o seed).
+   - **Login:** O e-mail cadastrado no Passo 5 (ou `admin@centrotreinamento.com` com seed) ou CPF.
    - **Senha:** A senha mestra definida no Passo 5 (ou `Senha@Teste123` com o seed).
-   - Teste a navegação pelas telas de Alunos, Turmas, Treinos e Financeiro.
+   - Teste a navegação pelas telas de Alunos, Funcionários, Turmas, Treinos e Financeiro.
 
-2. **Documentação Interativa da API (Swagger / OpenAPI):**
+2. **Portal do Aluno:**
+   - **URL:** [http://localhost/ctt/login](http://localhost/ctt/login)
+   - **Login:** E-mail ou Código de Matrícula (ex: `MAT-2026-00001` no seed).
+   - **Senha:** `Senha@Teste123` (se utilizou o seed de testes).
+   - Valide o acesso ao Dashboard, Dados Pessoais, Matrícula, Avaliações Físicas, Horários e Financeiro do Aluno.
+
+3. **Documentação Interativa da API (Swagger / OpenAPI):**
    - **URL:** [http://localhost/ctt/api/docs](http://localhost/ctt/api/docs) ou [http://localhost/ctt/docs](http://localhost/ctt/docs)
-   - Valide se a interface interativa carrega as especificações dos endpoints.
+   - Valide se a interface interativa carrega as especificações dos endpoints. Em produção (`APP_ENV=production`), esta rota exige autenticação prévia de administrador.
 
 ---
 
-## 🔄 10. Atualizações Futuras e Migrações
+## 10. Atualizações Futuras e Migrações
 
 Para atualizar uma base já em funcionamento em uma nova versão:
 
@@ -284,25 +279,40 @@ Para atualizar uma base já em funcionamento em uma nova versão:
 
 ---
 
-## ❓ 11. Diagnóstico de Problemas Comuns (FAQ)
+## 11. Diagnóstico de Problemas Comuns (FAQ)
 
-### 🔴 `Access denied for user 'ctt_app'@'localhost'`
+### `Access denied for user 'ctt_app'@'localhost'`
 - **Causa:** A senha configurada em `DB_PASSWORD` no `.env` não é a mesma definida no MySQL do XAMPP para o usuário `ctt_app`.
 - **Solução:** Atualize a senha do usuário com `ALTER USER 'ctt_app'@'localhost' IDENTIFIED BY 'NovaSenha';` e ajuste o `.env`.
 
-### 🔴 `SQLSTATE[42000]: Access denied to table ...`
+### `SQLSTATE[42000]: Access denied to table ...`
 - **Causa:** As permissões estritas de auditoria não foram concedidas à conta `ctt_app`.
 - **Solução:** Execute `docs/sql/auditoria_permissoes.sql` conectado como `root`.
 
-### 🔴 Hash de auditoria divergente ao rodar `verify_audit.php`
+### Hash de auditoria divergente ao rodar `verify_audit.php`
 - **Causa:** Registros foram inseridos, alterados ou removidos manualmente na tabela `audit_logs` sem passar pelas Triggers.
 - **Solução:** Em ambiente de testes/dev, reimporte `banco.sql` e execute o seed novamente.
 
 ---
 
-## 📚 Documentação Complementar
+## 12. Configuração de Produção (DocumentRoot Seguro em `public/`)
 
-- 🏗️ **[Arquitetura do Sistema](arquitetura.md)**: Conheça a divisão em camadas (Controller, Service, Repository, DTO).
-- 🛡️ **[Cadeia de Auditoria & Blockchain Interna](modules/auditoria.md)**: Detalhamento técnico da imutabilidade dos logs.
-- 💰 **[Módulo Financeiro](modules/financeiro.md)**: Regras de contratos, inadimplência e geração de faturas.
-- 📖 **[Página Inicial da Wiki](Home.md)**: Índice completo da documentação do projeto.
+Para servidores de produção (Linux / VPS / Nuvem com Apache ou Nginx), a melhor prática de segurança da OWASP é configurar a raiz web (`DocumentRoot` no Apache ou `root` no Nginx) apontando **exclusivamente para a pasta `public/`**, em vez da raiz do projeto.
+
+### Vantagens do DocumentRoot em `public/`:
+1. **Isolamento Físico de Arquivos Sensíveis:** O arquivo `.env`, arquivos de configuração (`composer.json`, `package.json`), diretórios de scripts de linha de comando (`tools/`), documentações (`docs/`) e dependências (`vendor/`) ficam fisicamente localizados um nível acima da pasta pública (`../`), tornando impossível seu acesso ou download via navegador, mesmo em caso de falha de reescrita de URL.
+2. **Ponto de Entrada Unificado:** Todas as requisições passam pelo [`public/index.php`](../public/index.php), que delega o tráfego da API, Painel Admin ou Portal do Aluno com as devidas variáveis de ambiente e headers de segurança.
+3. **Proteção Automática da Documentação OpenAPI:** Em ambiente de produção (`APP_ENV=production`), as rotas `/docs` e `/openapi.json` são automaticamente bloqueadas contra acessos públicos anônimos, exigindo autenticação prévia de administrador.
+
+Modelos prontos para produção disponíveis no repositório:
+- **Apache 2.4 VirtualHost:** [`docs/setup/apache-vhost.conf`](setup/apache-vhost.conf)
+- **Nginx Server Block:** [`docs/setup/nginx.conf`](setup/nginx.conf)
+
+---
+
+## Documentação Complementar
+
+- **[Arquitetura do Sistema](arquitetura.md)**: Conheça a divisão em camadas (Controller, Service, Repository, DTO).
+- **[Cadeia de Auditoria & Blockchain Interna](modules/auditoria.md)**: Detalhamento técnico da imutabilidade dos logs.
+- **[Módulo Financeiro](modules/financeiro.md)**: Regras de contratos, inadimplência e geração de faturas.
+- **[Página Inicial da Wiki](Home.md)**: Índice completo da documentação do projeto.

@@ -1,5 +1,10 @@
 -- Seed completo para testar o sistema apos docs/sql/setup/banco.sql
 --
+-- !!! ATENCAO DE SEGURANCA !!!
+-- Este seed cria contas (inclusive ADMIN) com senha publica conhecida.
+-- NUNCA execute em producao/homologacao acessivel pela internet.
+-- Se foi executado por engano: troque/desative todas as contas '@ctt.teste' e 'admin@centrotreinamento.com'.
+--
 -- Como usar:
 -- 1. Execute docs/sql/setup/banco.sql (apaga e recria o banco)
 -- 2. Execute este arquivo

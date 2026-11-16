@@ -2,11 +2,11 @@
 
 Este diretório contém a documentação técnica e operacional completa do **LTD - C.T - Centro de Treinamento**. Esta estrutura foi projetada para funcionar nativamente como a **Wiki oficial do repositório**.
 
-> 📖 **Página Principal da Wiki:** Acesse **[Home.md](Home.md)** para o índice completo e navegação interativa.
+> **Página Principal da Wiki:** Acesse **[Home.md](Home.md)** para o índice completo e navegação interativa.
 
 ---
 
-## 🗂️ Estrutura de Diretórios
+## Estrutura de Diretórios
 
 - **[`Home.md`](Home.md)**: Página inicial da Wiki com mapa visual do sistema.
 - **[`_Sidebar.md`](_Sidebar.md)**: Menu lateral global para a Wiki do GitHub/GitLab.

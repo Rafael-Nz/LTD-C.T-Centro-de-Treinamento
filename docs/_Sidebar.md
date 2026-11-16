@@ -1,24 +1,25 @@
-### 🏋️‍♂️ LTD - C.T Wiki
+### LTD - C.T Wiki
 
-* **[🏠 Início](Home.md)**
-* **[🏗️ Arquitetura](arquitetura.md)**
-* **[📖 Guia da Wiki](wiki_guia.md)**
+* **[Início](Home.md)**
+* **[Arquitetura](arquitetura.md)**
+* **[Guia da Wiki](wiki_guia.md)**
 
 ---
 
-### 🚀 Primeiros Passos
+### Primeiros Passos
 * **[Instalação](instalacao.md)**
 * **[Setup Inicial](setup.md)**
 * **[Configuração de E-mail](modules/auth-email.md)**
 
 ---
 
-### 🖥️ Painel Administrativo
-* **[Visão Geral & Rotas](admin/README.md)**
+### Interfaces de Usuário
+* **[Painel Administrativo](admin/README.md)**
+* **[Portal do Aluno](aluno/README.md)**
 
 ---
 
-### ⚙️ Core & Infraestrutura
+### Core & Infraestrutura
 * **[Visão Geral do Core](core/README.md)**
 * **[Auth & Sessão](core/auth.md)**
 * **[Database & PDO](core/database.md)**
@@ -32,7 +33,7 @@
 
 ---
 
-### 📦 Módulos da API
+### Módulos da API
 * **[Índice de Módulos](modules/README.md)**
 * **[Autenticação](modules/auth.md)**
 * **[Usuários](modules/usuario.md)**
@@ -51,13 +52,13 @@
 
 ---
 
-### 🛡️ Auditoria & Segurança
+### Auditoria & Segurança
 * **[Cadeia de Auditoria](modules/auditoria.md)**
 * **[Catálogo de Eventos](modules/auditoria_eventos.md)**
 * **[Operação & Triggers](modules/auditoria_operacoes.md)**
 
 ---
 
-### 🗄️ Dados & Ferramentas
+### Dados & Ferramentas
 * **[Banco de Dados (Schema)](database/README.md)**
 * **[Ferramentas & Automações](tools/README.md)**

@@ -6,7 +6,7 @@ A modelagem de dados foi desenhada para garantir integridade referencial, rastre
 
 ---
 
-## 🗄️ Visão Geral dos Domínios de Dados
+## Visão Geral dos Domínios de Dados
 
 As tabelas do sistema estão agrupadas logicamente por áreas funcionais:
 
@@ -45,7 +45,7 @@ erDiagram
 
 ---
 
-## 📋 Dicionário de Tabelas
+## Dicionário de Tabelas
 
 ### 1. Sistema, Acesso & Segurança
 - **`usuario`**: Contas do sistema com e-mail único, hash de senha (`password_hash`), tipo (`admin`, `funcionario`, `aluno`) e status (`ativo`, `inativo`).
@@ -95,7 +95,7 @@ erDiagram
 
 ---
 
-## 🛠️ Scripts SQL do Projeto
+## Scripts SQL do Projeto
 
 Os scripts SQL estão organizados no diretório [`docs/sql/`](../sql/):
 
@@ -109,7 +109,7 @@ Os scripts SQL estão organizados no diretório [`docs/sql/`](../sql/):
 
 ---
 
-## 🔒 Princípio de Menor Privilégio (`ctt_app`)
+## Princípio de Menor Privilégio (`ctt_app`)
 
 Por razões de segurança e conformidade, a aplicação web **nunca** deve ser conectada com o usuário `root`.
 - A aplicação utiliza o usuário `ctt_app`.

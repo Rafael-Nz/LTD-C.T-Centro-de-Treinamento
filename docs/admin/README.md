@@ -4,7 +4,7 @@ O painel administrativo do **LTD-C.T** concentra a interface gráfica de gestão
 
 ---
 
-## 🏛️ Arquitetura do Painel
+## Arquitetura do Painel
 
 O painel administrativo está localizado no diretório [`admin/`](../../admin/) e possui seu próprio ciclo de vida de requisição:
 
@@ -29,7 +29,7 @@ flowchart LR
 
 ---
 
-## 🔐 Sessão, Autenticação e Middlewares
+## Sessão, Autenticação e Middlewares
 
 O painel gerencia a autenticação através de sessões nativas do PHP configuradas em `admin/routes/admin.php`:
 
@@ -50,7 +50,7 @@ O painel gerencia a autenticação através de sessões nativas do PHP configura
 
 ---
 
-## 🗺️ Mapa de Telas e Rotas
+## Mapa de Telas e Rotas
 
 As rotas são resolvidas a partir do prefixo `/ctt/admin/`:
 
@@ -106,7 +106,7 @@ As rotas são resolvidas a partir do prefixo `/ctt/admin/`:
 
 ---
 
-## 🎨 Comunicação com a API e Proteção CSRF
+## Comunicação com a API e Proteção CSRF
 
 As páginas administrativas interagem com os endpoints REST de `/ctt/api/` utilizando chamadas HTTP assíncronas:
 

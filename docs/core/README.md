@@ -6,7 +6,7 @@ Localização do código-fonte: [`api/core/`](../../api/core/)
 
 ---
 
-## 🧭 Índice dos Componentes
+## Índice dos Componentes
 
 | Componente | Diretório Fonte | Descrição | Documento |
 | :--- | :--- | :--- | :--- |
@@ -22,7 +22,7 @@ Localização do código-fonte: [`api/core/`](../../api/core/)
 
 ---
 
-## 🏛️ Fluxo de Execução no Core
+## Fluxo de Execução no Core
 
 ```mermaid
 sequenceDiagram

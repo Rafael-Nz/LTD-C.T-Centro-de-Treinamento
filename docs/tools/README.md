@@ -1,101 +1,133 @@
 # Ferramentas & Scripts do Sistema (CLI & Automação)
 
-O diretório [`tools/`](../../tools/) contém scripts de linha de comando, rotinas agendadas para o sistema operacional, ferramentas de verificação de integridade e suítes de testes automatizados.
+O diretório [`tools/`](../../tools/) contém scripts de linha de comando em PHP puro, rotinas utilitárias de banco de dados, testes automatizados e ferramentas para desenvolvimento e manutenção contínua do sistema, totalmente desacoplados de sistemas operacionais específicos.
 
 ---
 
-## 📂 Organização das Ferramentas
+## Organização das Ferramentas
 
 ```text
 tools/
-|-- financeiro/         # Rotinas operacionais de cobrança e agendamento
-|-- sistema/            # Ferramentas de validação e verificação de integridade
-|-- email/              # Compilação e templates de e-mail MJML
-|-- testes/             # Testes de integração e banco de dados isolado
-|-- desenvolvimento/    # Utilitários auxiliares de desenvolvimento e migração
-`-- wiki/               # Utilitários de sincronização e exportação da documentação
+|-- financeiro/         # Rotinas de faturamento, estado JIT e integridade
+|-- sistema/            # Ferramentas de validação de integridade e usuário mestre
+|-- email/              # Compilação e templates de e-mail MJML (Node.js)
+|-- testes/             # Suíte de testes automatizados (JIT, RBAC, e-mails, seed)
+|-- desenvolvimento/    # Utilitários de migração SQL
+|-- wiki/               # Sincronização automatizada da documentação com a Wiki Git
+`-- download_all_plugins.php # Utilitário para recomposição e upgrade dos assets de UI
 ```
 
 ---
 
-## 💰 1. Operação Financeira & Agendador de Tarefas
+## 1. Operação Financeira & Automação Just-In-Time (JIT)
 
-A rotina financeira é responsável por gerar novas faturas conforme os contratos ativos dos alunos e atualizar o status de faturas vencidas.
+A operação financeira funciona de maneira nativa **Just-In-Time (JIT)** na API aliada a **triggers no MariaDB/MySQL** (`docs/sql/migrations/cobrancas_dinamicas_jit.sql`).
 
-### Componentes:
-- **`tools/financeiro/gerar_cobrancas.php`**: Script PHP executado via CLI que consulta contratos vigentes, calcula competências pendentes e grava as cobranças de forma idempotente.
-- **`tools/financeiro/rotina_financeiro.ps1`**: Script PowerShell que executa o script PHP e direciona a saída para o arquivo de log local (`financeiro_rotina.log`).
-- **`tools/financeiro/instalar_rotina_financeiro.ps1`**: Cria uma tarefa agendada no **Agendador de Tarefas do Windows** (Task Scheduler) chamada `CTT - Gerar cobrancas`, configurada para rodar diariamente às **06:00**.
-- **`tools/financeiro/financeiro_status.php`**: Verifica se todas as colunas, chaves de idempotência e índices necessários existem no banco de dados antes da execução.
+### Como Funciona a Execução JIT:
+1. **Transparência na API e Painel:** Toda vez que um administrador ou aluno acessa rotas de contratos, cobranças ou métricas (`/api/financeiro/*`), o método `FinanceiroController::executarJit()` é acionado.
+2. **Atualização Imediata em Eventos:** Ao cadastrar um novo contrato ou reativar um contrato pausado (`criarContrato()` e `statusContrato()`), a geração de faturas é executada instantaneamente via `gerarAutomaticasContrato()`.
+3. **Triggers no Banco de Dados:** Triggers `BEFORE INSERT` e `BEFORE UPDATE` garantem que cobranças com vencimento anterior à data atual sejam marcadas como `vencida` automaticamente em tempo de gravação.
+4. **Throttle Diário Inteligente:** Para evitar varreduras de contratos desnecessárias em múltiplos acessos sucessivos no mesmo dia, o sistema grava o carimbo diário em `tools/financeiro/financeiro_jit_state.json`. A sincronização de cobranças vencidas roda em tempo real (< 1ms), enquanto a varredura completa de contratos ativos roda no máximo uma vez ao dia.
 
-### Instalação no Servidor / XAMPP:
-```powershell
-# Verificar o status das migrações financeiras
-& 'D:\xampp\php\php.exe' tools/financeiro/financeiro_status.php
-
-# Fazer a primeira execução manual
-& 'D:\xampp\php\php.exe' tools/financeiro/gerar_cobrancas.php
-
-# Instalar a tarefa diária no Windows
-& .\tools\financeiro\instalar_rotina_financeiro.ps1
-```
+### Componentes de `tools/financeiro/`:
+- **`financeiro_jit_state.json`**: Guarda a data da última varredura diária (`ultima_execucao`), quantidade de cobranças geradas e vencidas atualizadas.
+- **`gerar_cobrancas.php`**: Permite disparo manual via linha de comando ou integração com `cron` em servidores Linux de produção (mantido como fallback operacional).
+- **`financeiro_status.php`**: Verifica a integridade do banco de dados e se as migrações financeiras foram aplicadas.
 
 ---
 
-## 🛡️ 2. Administração, Segurança & Verificação
+## 2. Administração, Segurança & Verificação
 
 ### Criação / Redefinição do Administrador Inicial:
-- **`tools/sistema/criar_admin.php`** (e wrapper **`tools/sistema/criar_admin.ps1`**):
+- **`tools/sistema/criar_admin.php`**:
   Permite definir de forma interativa ou via parâmetros de linha de comando o e-mail e a senha mestra do primeiro administrador do sistema na instalação (ou redefinir a senha de uma conta existente), garantindo o cumprimento estrito das políticas de segurança (`PasswordPolicy`).
   
-  ```powershell
-  # Modo interativo (solicita nome, e-mail e senha com máscara)
-  & .\tools\sistema\criar_admin.ps1
+  ```bash
+  # Modo interativo (solicita nome, e-mail e senha)
+  php tools/sistema/criar_admin.php
 
-  # Modo silencioso / automação
-  & .\tools\sistema\criar_admin.ps1 -Email "admin@meuclube.com" -Senha "MinhaSenhaForte!123"
+  # Modo silencioso / parâmetros
+  php tools/sistema/criar_admin.php --email="admin@meuclube.com" --senha="MinhaSenhaForte!123"
 
   # Redefinir a senha de um administrador já cadastrado
-  & .\tools\sistema\criar_admin.ps1 -Reset
+  php tools/sistema/criar_admin.php --reset
   ```
 
 ### Verificação da Cadeia Criptográfica de Auditoria:
 - **`tools/sistema/verify_audit.php`**:
-  Percorre todos os registros da tabela `audit_logs` desde o bloco gênesis até o topo da cadeia, recalculando os hashes SHA-256 e verificando se houve qualquer adulteração manual no banco de dados.
+  Percorre todos os registros da tabela `audit_logs` desde o bloco gênesis até o topo da cadeia, recalculando os hashes SHA-256 encadeados e verificando se houve qualquer alteração ou adulteração manual no banco de dados.
 
-  ```powershell
-  & 'D:\xampp\php\php.exe' tools/sistema/verify_audit.php
+  ```bash
+  php tools/sistema/verify_audit.php
   ```
   Se a integridade estiver intacta, o script retorna código `0` com a confirmação da validação. Em caso de divergência de hash, o script aponta exatamente o ID da linha corrompida.
 
 ---
 
-## 📧 3. Templates de E-mail (MJML & Node.js)
+## 3. Templates de E-mail (MJML & Node.js)
 
-O sistema utiliza a tecnologia **MJML** para gerar e-mails responsivos que são compatíveis com Gmail, Outlook e clientes mobile.
+O sistema utiliza a tecnologia **MJML** para compilar e-mails responsivos que são compatíveis com Gmail, Outlook e clientes mobile.
 
-### Comandos:
-```powershell
+### Templates Disponíveis:
+- `templates/account-activation.mjml`: E-mail de boas-vindas com link/token para ativação de conta.
+- `templates/initial-password.mjml`: Envio de credenciais iniciais com código de matrícula e senha provisória gerada pelo sistema.
+- `templates/password-reset.mjml`: Solicitação segura de recuperação e redefinição de senha.
+
+### Comandos de Compilação:
+```bash
 # Instalar dependências Node.js
 npm install --prefix tools/email
 
-# Compilar o template de redefinição de senha para HTML de produção
+# Compilar todos os templates para HTML de produção em api/src/auth/
 npm run email:build --prefix tools/email
 
-# Modo observador durante a edição do template (.mjml)
+# Modo observador durante a edição contínua do template (.mjml)
 npm run email:watch --prefix tools/email
 ```
-O arquivo final compilado é salvo automaticamente em:
-`api/src/auth/password-reset.html`
 
 ---
 
-## 🧪 4. Suíte de Testes Automatizados
+## 4. Suíte de Testes Automatizados
 
-O projeto conta com testes unitários e de integração configurados via Composer e PHPUnit.
+O projeto conta com testes unitários, testes de integração de regras de negócio e validação de triggers de banco.
 
 ### Execução dos Testes Rápidos:
-```powershell
+```bash
 composer test
 ```
-Este comando executa a suíte rápida de validação de regras de negócio em memória sem depender do banco MySQL.
+
+### Testes Específicos:
+- **Triggers JIT e Cache:**
+  ```bash
+  php tools/testes/financeiro/test_jit_triggers.php
+  ```
+- **RBAC e Isolamento de Sessão:**
+  ```bash
+  php tools/testes/rbac/test_session_guard_isolation.php
+  php tools/testes/rbac/test_rbac_permissoes.php
+  ```
+- **Templates de E-mail:**
+  ```bash
+  php tools/testes/test_email_templates.php
+  ```
+- **Credenciais de Teste / Seeds:**
+  ```bash
+  php tools/testes/test_seed_logins.php
+  ```
+
+---
+
+## 5. Gestão de Assets de Front-end & Utilitários de Desenvolvimento
+
+A pasta [`plugins/`](../../plugins/) (contendo Bootstrap 5, DataTables 2, Phosphor Icons, FontAwesome 6, FullCalendar, Chart.js, Select2, SweetAlert2, etc.) **é versionada no Git**, garantindo compatibilidade entre versões de componentes JS/CSS e funcionamento offline imediato sem necessidade de downloads no setup.
+
+- **`tools/download_all_plugins.php`**:
+  Script CLI em PHP puro utilizado para manutenção e upgrade controlado das 44 dependências de front-end a partir de seus CDNs oficiais. Executável em qualquer sistema operacional (Windows, Linux, macOS).
+  ```bash
+  php tools/download_all_plugins.php
+  ```
+- **`tools/wiki/sincronizar_wiki.php`**:
+  Script multiplataforma em PHP puro que sincroniza a pasta local `docs/` com o repositório Git Wiki do projeto (GitHub/GitLab):
+  ```bash
+  php tools/wiki/sincronizar_wiki.php ../ctt.wiki
+  ```

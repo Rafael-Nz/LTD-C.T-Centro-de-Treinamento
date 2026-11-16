@@ -6,7 +6,7 @@ Esta documentação foi desenhada especificamente para funcionar de duas formas:
 
 ---
 
-## 🎯 Como o GitHub Wiki Funciona
+## Como o GitHub Wiki Funciona
 
 No GitHub, a Wiki de um repositório é, nos bastidores, um **repositório Git independente** cujo endereço segue o padrão:
 ```text
@@ -24,7 +24,7 @@ Todos esses 3 arquivos já estão criados e configurados dentro de [`docs/`](Hom
 
 ---
 
-## 🚀 Como Publicar a Wiki (Passo a Passo)
+## Como Publicar a Wiki (Passo a Passo)
 
 ### Passo 1: Habilitar a Wiki no GitHub
 1. No seu repositório no GitHub, clique na aba **Settings** (Configurações).
@@ -66,7 +66,7 @@ Pronto! Ao atualizar a aba **Wiki** no GitHub, todas as páginas, índices, menu
 
 ---
 
-## 🤖 Bônus: Sincronização Automática via GitHub Actions (CI/CD)
+## Bônus: Sincronização Automática via GitHub Actions (CI/CD)
 
 Se desejar que toda alteração feita na pasta `docs/` do repositório principal seja enviada automaticamente para a Wiki a cada `git push`, crie o arquivo `.github/workflows/sync-wiki.yml`:
 
@@ -104,7 +104,7 @@ jobs:
 
 ---
 
-## 📝 Boas Práticas ao Editar a Documentação
+## Boas Práticas ao Editar a Documentação
 
 1. **Mantenha os links relativos**: Use `[Nome](subpasta/arquivo.md)` para garantir que funcionem tanto na visualização de arquivos do repositório quanto na Wiki.
 2. **Atualize o `_Sidebar.md`**: Sempre que criar um documento novo, inclua o link na seção correspondente do menu lateral.

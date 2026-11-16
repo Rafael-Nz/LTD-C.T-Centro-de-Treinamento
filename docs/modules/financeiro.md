@@ -12,15 +12,24 @@ A visao geral (`/admin/financeiro`) reune os indicadores financeiros e a tabela 
 
 A tela separada de contratos foi removida do menu. O endereco antigo redireciona para a visao geral. O cadastro de contrato continua disponivel pelo botao Novo contrato, retornando para a visao geral ao salvar ou voltar.
 
-## Atualizacao de seguranca e ativacao
+## Atualizacao de seguranca e arquitetura Just-In-Time (JIT)
 
-Em banco existente, aplicar **uma vez**, usando uma conta administradora, `docs/sql/migrations/financeiro_seguranca.sql`. Nao executar `setup/banco.sql` no banco existente: esse arquivo recria o banco. Fazer backup antes da migracao. A migracao preserva recebimentos e cobrancas; cria campos, indices e atualiza os gatilhos de auditoria. DDL no MariaDB tem commit implicito: pare e investigue qualquer erro, sem continuar a execucao de um arquivo parcialmente aplicado.
+Em banco existente, aplicar **uma vez**, usando uma conta administradora:
+1. `docs/sql/migrations/financeiro_seguranca.sql` (estrutura inicial de integridade financeira);
+2. `docs/sql/migrations/cobrancas_dinamicas_jit.sql` (triggers automaticas de vencimento e suporte dinamico).
+
+Nao executar `setup/banco.sql` no banco existente: esse arquivo recria o banco. Fazer backup antes da migracao. A migracao preserva recebimentos e cobrancas; cria campos, indices e atualiza os gatilhos de auditoria. DDL no MariaDB tem commit implicito: pare e investigue qualquer erro, sem continuar a execucao de um arquivo parcialmente aplicado.
 
 O preflight rejeita referencias bancarias duplicadas e uma migracao ja aplicada/parcial. Revisar duplicidades manualmente; nao apagar historico para forcar o indice. A conta `ctt_app` continua restrita: nao conceder ALTER/CREATE/TRIGGER a ela. A API informa atualizacao pendente enquanto os campos novos nao existem.
 
-Depois, executar `php tools/financeiro/financeiro_status.php` e `powershell -File tools/financeiro/instalar_rotina_financeiro.ps1` no computador que executa o XAMPP. O instalador cria/atualiza a tarefa **CTT - Gerar cobrancas**, diariamente as 06:00, no usuario atual, sem janela visivel. A tarefa depende desse usuario estar conectado e de MySQL estar disponivel; para servidor permanente, configurar o agendador com uma conta de servico apropriada. A saida fica em `tools/financeiro/financeiro_rotina.log`. O instalador recusa ativacao antes da migracao.
-
-Tambem e possivel executar `php tools/financeiro/gerar_cobrancas.php`, inclusive por cron em Linux. A tela de cobrancas nao possui botao de geracao manual: a geracao fica a cargo da tarefa agendada. A rotina nao envia mensagens nem movimenta dinheiro em bancos.
+### Automacao Just-In-Time (Substituicao do Agendador do Windows)
+O sistema foi refatorado para utilizar o modelo **Just-In-Time (JIT)**, eliminando a dependencia de tarefas externas no Agendador de Tarefas do Windows:
+- **Disparo Automatico:** Qualquer requisicao aos endpoints `/api/financeiro/cobrancas`, `/api/financeiro/contratos` ou `/api/financeiro/metricas` aciona `FinanceiroService::processarJustInTime()`.
+- **Sincronizacao em Tempo Real:** Faturas com data expirada sao sincronizadas para status `vencida` em milissegundos (< 1ms).
+- **Triggers de Integridade:** Triggers no banco de dados (`BEFORE INSERT` e `BEFORE UPDATE`) convertem cobrancas retroativas para `vencida` instantaneamente.
+- **Throttle Diario Inteligente:** Para evitar varreduras desnecessarias de contratos, o carimbo da ultima geracao do dia e mantido em `tools/financeiro/financeiro_jit_state.json`.
+- **Geracao Imediata em Contratos:** Ao salvar ou reativar um contrato (`criarContrato()` ou `statusContrato()`), as cobrancas devidas sao criadas imediatamente sem necessidade de aguardar qualquer rotina.
+- **Execucao CLI Opcional:** O script `php tools/financeiro/gerar_cobrancas.php` permanece disponivel caso deseje executar faturamentos manuais ou via crontab em servidores Linux.
 
 ## Recebimentos e correcoes
 
@@ -33,23 +42,30 @@ Tambem e possivel executar `php tools/financeiro/gerar_cobrancas.php`, inclusive
 - Estorno e um registro interno: eventual devolucao via Pix/cartao deve ser efetuada fora deste modulo. Nao ha estorno parcial nesta implementacao.
 - Os gatilhos registram `payment_reversed` e os motivos de estorno/cancelamento na auditoria. A lista de cobrancas mostra total recebido e saldo liquidos de estornos.
 
-## Geração automática
+## Geracao automatica e encargos moratorios
 
-### Catálogo e contratos
+### Catalogo e contratos
 
-Serviços e planos podem ser editados, ativados ou desativados. Essas alterações não modificam valores já registrados em contratos e cobranças, preservando o histórico financeiro.
+Servicos e planos podem ser editados, ativados ou desativados. Essas alteracoes nao modificam valores ja registrados em contratos e cobrancas, preservando o historico financeiro.
 
-Contratos podem assumir os estados `ativo`, `pausado`, `encerrado` ou `cancelado`. Contratos encerrados ou cancelados não podem ser reabertos, e contratos com vigência expirada não podem ser retomados. Alterar o estado do contrato não cancela cobranças nem estorna pagamentos existentes.
+Contratos podem assumir os estados `ativo`, `pausado`, `encerrado` ou `cancelado`. Contratos encerrados ou cancelados nao podem ser reabertos, e contratos com vigencia expirada nao podem ser retomados. Alterar o estado do contrato nao cancela cobrancas nem estorna pagamentos existentes.
 
-Ao retomar um contrato pausado, a rotina pode gerar cobranças referentes ao período da pausa, pois o sistema não mantém intervalos de suspensão para conceder isenções automáticas.
+Ao retomar um contrato pausado, a rotina pode gerar cobrancas referentes ao periodo da pausa, pois o sistema nao mantem intervalos de suspensao para conceder isencoes automaticas.
 
-### Calendário de cobranças
+### Calendario de cobrancas
 
-Todo contrato ativo participa da geração automática. A periodicidade (`mensal`, `trimestral`, `semestral`, `anual` ou `avulso`) é copiada para o contrato, garantindo que alterações posteriores no plano não modifiquem seu calendário.
+Todo contrato ativo participa da geracao automatica. A periodicidade (`mensal`, `trimestral`, `semestral`, `anual` ou `avulso`) e copiada para o contrato, garantindo que alteracoes posteriores no plano nao modifiquem seu calendario.
 
-O primeiro vencimento é a primeira ocorrência do dia escolhido igual ou posterior ao início da vigência. Por exemplo, um contrato trimestral iniciado em 15/01, com vencimento no dia 10, gera cobranças em 10/02, 10/05 e 10/08. Contratos avulsos geram uma única cobrança e não há rateio proporcional automático.
+O primeiro vencimento e a primeira ocorrencia do dia escolhido igual ou posterior ao inicio da vigencia. Por exemplo, um contrato trimestral iniciado em 15/01, com vencimento no dia 10, gera cobrancas em 10/02, 10/05 e 10/08. Contratos avulsos geram uma unica cobranca e nao ha rateio proporcional automatico.
 
-A rotina gera competências pendentes até o mês atual e respeita a data final do contrato. Contratos pausados, encerrados ou cancelados são ignorados. A operação é idempotente: executá-la novamente não duplica cobranças, e uma cobrança cancelada continua vinculada à sua competência.
+A rotina gera competencias pendentes ate o mes atual e respeita a data final do contrato. Contratos pausados, encerrados ou cancelados sao ignorados. A operacao e idempotente: executa-la novamente nao duplica cobrancas, e uma cobranca cancelada continua vinculada a sua competencia.
+
+### Calculo de Encargos Moratorios (Multa e Juros)
+
+O metodo `FinanceiroService::calcularEncargos()` calcula dinamicamente o valor atualizado das faturas vencidas:
+- **Multa:** Percentual fixo contratual aplicado sobre o valor base líquido (`valor_original - desconto`).
+- **Juros:** Juros contratuais mensais calculados no regime pró-rata dia (`(juros_percentual / 100) / 30 * dias_atraso`).
+- Os encargos nao alteram a fatura original no banco antes da quitacao; sao exibidos ao operador e consolidados no momento do recebimento.
 
 ## Testes
 
@@ -61,7 +77,12 @@ composer test
 
 Esse comando cobre calendario de cobrancas, regras de edicao e status, paginacao, filtros, contagens, saldos e exclusao de pagamentos estornados. Os testes de repositorio usam SQLite em memoria e o teste de acoes usa um repositorio falso; nenhum deles depende do banco da aplicacao.
 
-Os cenarios completos exigem um MariaDB isolado em `127.0.0.1:33317`, com diretorio de dados cujo caminho contenha `ctt-financeiro-`. O teste recusa qualquer outro servidor para proteger o banco normal. Com o servidor isolado em execucao, use:
+Para testar especificamente as triggers e o mecanismo Just-In-Time contra o MySQL:
+```powershell
+php tools/testes/financeiro/test_jit_triggers.php
+```
+
+Os cenarios completos de integracao exigem um MariaDB isolado em `127.0.0.1:33317`, com diretorio de dados cujo caminho contenha `ctt-financeiro-`. O teste recusa qualquer outro servidor para proteger o banco normal. Com o servidor isolado em execucao, use:
 
 ```powershell
 composer test:financeiro:setup
@@ -99,6 +120,8 @@ Todas as rotas exigem `AuthMiddleware`.
 | POST | `/financeiro/cobrancas/{id}/pagamentos/{pagamento_id}/estornar` | Estorna integralmente um pagamento mediante justificativa. |
 | POST | `/financeiro/cobrancas/gerar-automaticas` | Gera competencias pendentes dos contratos ativos. |
 | POST | `/financeiro/cobrancas/atualizar-vencidas` | Marca cobrancas abertas vencidas. |
+| GET | `/financeiro/metricas` | Consolida faturamento, recebido, a receber e inadimplencia. |
+| GET | `/financeiro/cobrancas/{id}/recibo/{pagamento_id}` | Emite comprovante/recibo com dados do estabelecimento. |
 
 ## Exemplos de payload
 
@@ -160,10 +183,11 @@ Pagamento:
 
 ## Regras
 
-As listagens de Serviços (`/admin/financeiro/servicos`) e Planos (`/admin/financeiro/planos`) têm acessos separados no menu Financeiro, com busca, filtros e paginação. Os botões de cadastro abrem formulários próprios em `/admin/financeiro/servicos/cadastrar` e `/admin/financeiro/planos/cadastrar`; após salvar, retornam à respectiva listagem. Não há uma aba adicional em Configurações.
+As listagens de Servicos (`/admin/financeiro/servicos`) e Planos (`/admin/financeiro/planos`) tem acessos separados no menu Financeiro, com busca, filtros e paginacao. Os botoes de cadastro abrem formularios proprios em `/admin/financeiro/servicos/cadastrar` e `/admin/financeiro/planos/cadastrar`; apos salvar, retornam a respectiva listagem. Nao ha uma aba adicional em Configuracoes.
 
 - O dia de vencimento aceita valores de 1 a 28 para evitar datas inexistentes.
 - A mesma competencia nao pode ser gerada duas vezes para o mesmo contrato.
 - Pagamentos parciais sao permitidos, mas nao podem ultrapassar o saldo.
 - A cobranca muda para `paga` quando o saldo chega a zero.
-- O endpoint de vencidas deve ser executado por uma rotina diaria ou tarefa agendada.
+- O status de cobrancas vencidas e faturamentos pendentes e sincronizado automaticamente via triggers SQL e pelo mecanismo Just-In-Time (JIT) a cada requisicao, dispensando o agendador de tarefas do sistema operacional.
+- Encargos moratorios (multa contratual fixa e juros proporcionais ao dia de atraso) sao calculados dinamicamente via `FinanceiroService::calcularEncargos()`.

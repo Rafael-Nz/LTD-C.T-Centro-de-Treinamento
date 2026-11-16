@@ -58,14 +58,16 @@ Responsável por:
 - [`EnderecoDTO.php`](../../api/src/usuario/DTO/EnderecoDTO.php)
 - [`ContatoDTO.php`](../../api/src/usuario/DTO/ContatoDTO.php)
 
-Esses objetos representam a estrutura do usuário, do endereço e dos contatos e são convertidos automaticamete pelo `BaseDTO`.
+Esses objetos representam a estrutura do usuário, do endereço e dos contatos e são convertidos automaticamente pelo `BaseDTO`.
 
 ## Regras de negócio
 
-- Usuários podem ser ativados ou desativados sem exclusão física.
-- A autenticação usa `email` ou `cpf` como identificador de login.
-- A senha é armazenada em hash com `password_hash()`.
+- Usuários podem ser ativados ou desativados sem exclusão física (soft delete / controle de status `ativo`).
+- A autenticação usa `email` ou `cpf` como identificador de login no painel administrativo, e `email` ou `codigo_matricula` no portal do aluno.
+- As senhas são armazenadas em hash seguro utilizando `password_hash()` com o algoritmo Argon2id (`PASSWORD_ARGON2ID`).
 - O cadastro do usuário pode incluir endereço e contatos como dados relacionados.
+- **Isolamento de Contas**: O sistema adota relação 1:1 entre a conta `usuario` e o respectivo perfil (`aluno` ou `funcionario`), sem compartilhamento de contas ou reutilização de credenciais entre papéis.
+- **Unicidade de Identificadores**: `cpf` e `email` possuem índices únicos. Tentativas de duplicidade retornam HTTP 409 (Conflito).
 
 ## Padrão de acesso
 

@@ -57,6 +57,8 @@ Responsável por:
 - O funcionário pode ser tratado com status ativo/inativo.
 - O módulo se conecta ao perfil de usuário para permitir acesso ao sistema administrativo.
 - O vínculo com cargo é importante para separar funções e permissões de operação.
+- **Criação de Conta Independente**: Todo cadastro cria uma nova conta exclusiva (`tipo_usuario = 'funcionario'`). O sistema não reutiliza contas pré-existentes.
+- **Unicidade**: Tentativas de cadastrar CPF ou e-mail já existentes retornam erro HTTP 409 (Conflito).
 
 ## Relação com outros módulos
 
